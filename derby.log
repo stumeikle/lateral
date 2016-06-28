@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Tue Jun 21 16:36:32 BST 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0155-739b-1852-000003a22128 
+on database directory /home/stumeikle/scratch/lauterbrunnen/projects/lauterbrunnen/dev/src/proto/lateral/simpleDb with class loader sun.misc.Launcher$AppClassLoader@9ee92 
+Loaded from file:/home/stumeikle/.m2/repository/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_65-b17
+user.dir=/home/stumeikle/scratch/lauterbrunnen/projects/lauterbrunnen/dev/src/proto/lateral
+os.name=Linux
+os.arch=i386
+os.version=3.16.0-38-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
