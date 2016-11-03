@@ -71,7 +71,7 @@ class GeneratePersister {
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "        " << entity << " " << entityLC << " = new " << entity << "();" << System.lineSeparator() +
                 "        " << entityTransformer << ".transform( " << entityLC << ", " << implLC << " );" << System.lineSeparator() +
-                "        TransactionManager.getInstance().runInTransactionalContext(em -> {" << System.lineSeparator() +
+                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            em.persist(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
                 "    }" << System.lineSeparator() +
@@ -81,7 +81,7 @@ class GeneratePersister {
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "" << System.lineSeparator() +
-                "        TransactionManager.getInstance().runInTransactionalContext(em -> {" << System.lineSeparator() +
+                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, " << implLC << ".getRepositoryId() );" << System.lineSeparator() +
                 "            " << entityTransformer << ".transform(" << entityLC << ", " << implLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
@@ -92,7 +92,7 @@ class GeneratePersister {
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "" << System.lineSeparator() +
-                "        TransactionManager.getInstance().runInTransactionalContext(em -> {" << System.lineSeparator() +
+                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, " << implLC << ".getRepositoryId() );" << System.lineSeparator() +
                 "            em.remove(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
