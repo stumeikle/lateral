@@ -95,4 +95,14 @@ public class UniqueId implements Serializable{
         UUID uuid = new UUID(msb,lsb);
         return uuid.toString();
     }
+
+    public static byte[] convertToByteArray(UniqueId uniqueId) {
+        return uniqueId.getValue();
+    }
+    public static UniqueId createFromByteArray(byte[] byteArray) {
+        UniqueId retval = new UniqueId();
+        retval.setValue(byteArray);
+        return retval;
+    }
+
 }

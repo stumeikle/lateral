@@ -1,5 +1,7 @@
 package transgenic.lauterbrunnen.lateral.entity.generator
 
+import transgenic.lauterbrunnen.lateral.domain.generator.GenerateConverterName
+
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
@@ -41,6 +43,8 @@ class GenerateEntity {
         this.basePath=basePath;
     }
 
+    private Set<GenerateConverterName>  converterNames;
+
     public void generate(Class proto, Class impl) {
 
         //we're going to write the entity and the transformer here together
@@ -53,8 +57,14 @@ class GenerateEntity {
         def transformerfn = basePath + "/"+jpaEntityPackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + "EntityTransformer.java";
         println "Writing " + transformerfn;
         def transformer = new File(transformerfn);
+        def transformTo = new StringBuilder();
+        def transformFrom = new StringBuilder();
+
+        converterNames = new HashSet<>();
 
         writeTransformerHeader(transformer, proto);
+        writeTransformToDeclaration(transformTo, proto);
+        writeTransformFromDeclaration(transformFrom, proto);
 
         output << "package " + jpaEntityPackage + ";" << System.lineSeparator()
         output << "" << System.lineSeparator();
@@ -157,15 +167,16 @@ class GenerateEntity {
             output << "    }" << System.lineSeparator()
 
             //generate the setter to the entity from the impl for this field ----------------------------------------
-            createSetLogic( transformer, field, firstUpperFN );
-
+            // type is the type of the field in the Entity class
+            createSetLogicImplToEntity( transformTo, field, firstUpperFN );
+            createSetLogicEntityToImpl( transformFrom, field, firstUpperFN );
             //-------------------------------------------------------------------------------------------------------
         }
 
         output << "" << System.lineSeparator()
         output << "}" << System.lineSeparator()
 
-        writeTransformerTail(transformer);
+        writeTransformerTail(transformer, transformTo, transformFrom );
     }
 
     private void iterateGenerics(Type type, Consumer<Type> classConsumer) {
@@ -232,7 +243,7 @@ class GenerateEntity {
         return fieldName.toUpperCase();
     }
 
-    private void createSetLogic(def transformer, Field field, String firstUpperFN) {
+    private void createSetLogicImplToEntity(def transformer, Field field, String firstUpperFN) {
         Type type = field.getGenericType();
 
         //need to transform the fieldname
@@ -250,12 +261,14 @@ class GenerateEntity {
             transformer << "if (impl." << fufn << "()!=null) "
         transformer << "entity.set" + firstUpperFN + "("
 
-        recurseSetLogic(transformer, type, fieldName);
+        recurseSetLogicImplToEntity(transformer, type, fieldName);
 
         transformer << ");" << System.lineSeparator();
     }
 
-    private void recurseSetLogic(def transformer, Type type, String fieldName) {
+    private void recurseSetLogicImplToEntity(def transformer, Type type, String fieldName) {
+
+        String entityType = swapType(type);
 
         String typeName= type.getTypeName();
         if (type instanceof ParameterizedType) {
@@ -264,13 +277,29 @@ class GenerateEntity {
 
         if (typeName.contains(implPackage)) {
             String ref = type.getTypeName() + "Reference";
-            transformer << "((" + ref + ")" + fieldName + ").getRepositoryId()";
 
             //sometimes the repository id is eg unique id but we need to convert it to eg byte[]
             String reptype =idFields.get(type.getTypeName());
             String converter = properties.get("entity.type.converter." + reptype);
             if (converter!=null) {
-                transformer << converter;
+                //transformer << converter;
+
+                //getting pretty hideous
+                //we need to
+                //(1) establish the name of a linking method for the conversion
+                //(2) add the name to a set of such names
+                //(3) use that method plus the config to convert the type
+                GenerateConverterName converterName = GenerateConverterName.createHook( reptype, entityType );
+
+                //add to the set of known converternames
+                converterNames.add(converterName);
+                transformer << converterName.getConverterMethodName() << "( " <<
+                        "((" + ref + ")" + fieldName + ").getRepositoryId()" << ", " <<
+                        converter << ")";
+
+            } else {
+                //no conversion needed
+                transformer << "((" + ref + ")" + fieldName + ").getRepositoryId()";
             }
 
         } else {
@@ -279,21 +308,26 @@ class GenerateEntity {
                 ParameterizedType pt = (ParameterizedType) type;
                 String rawname = pt.getRawType().getTypeName();
 
-                handleList(transformer, rawname, fieldName, pt);
-                handleMap( transformer, rawname, fieldName, pt);
+                handleListImplToEntity(transformer, rawname, fieldName, pt);
+                handleMapImplToEntity( transformer, rawname, fieldName, pt);
 
             }
             else {
-                transformer << fieldName;
                 String converter = properties.get("entity.type.converter." + type.getTypeName());
                 if (converter != null) {
-                    transformer << converter;
+                    //we need the type associated with fieldName ...
+                    GenerateConverterName converterName = GenerateConverterName.createHook( type.getTypeName(), entityType );
+                    converterNames.add(converterName);
+                    transformer << converterName.getConverterMethodName() << "( " <<
+                    fieldName << ", " << converter << ")";
+                } else {
+                    transformer << fieldName;
                 }
             }
         }
     }
 
-    private void handleList( def transformer, String rawName, String fieldName, ParameterizedType parameterizedType) {
+    private void handleListImplToEntity( def transformer, String rawName, String fieldName, ParameterizedType parameterizedType) {
         try {
 
             Class c = Class.forName(rawName);
@@ -313,7 +347,7 @@ class GenerateEntity {
 
                 //then recurse into the type
                 for (Type t : parameterizedType.getActualTypeArguments()) {
-                    recurseSetLogic(transformer,t, "item");
+                    recurseSetLogicImplToEntity(transformer,t, "item");
                 }
 
                 //then postamble
@@ -326,7 +360,7 @@ class GenerateEntity {
         }
     }
 
-    private void handleMap( def transformer, String rawName, String fieldName, ParameterizedType parameterizedType) {
+    private void handleMapImplToEntity( def transformer, String rawName, String fieldName, ParameterizedType parameterizedType) {
         try {
             Class c = Class.forName(rawName);
             boolean map = false;
@@ -345,11 +379,11 @@ class GenerateEntity {
 
                 //then recurse into the type
                 Type keytype = parameterizedType.getActualTypeArguments()[0];
-                recurseSetLogic(transformer, keytype, "e.getKey()");
+                recurseSetLogicImplToEntity(transformer, keytype, "e.getKey()");
                 transformer << "," << System.lineSeparator()
                 transformer << "            e-> ";
                 Type valuetype = parameterizedType.getActualTypeArguments()[1];
-                recurseSetLogic(transformer, valuetype,"e.getValue()");
+                recurseSetLogicImplToEntity(transformer, valuetype,"e.getValue()");
 
                 //then postamble
                 transformer << "))"
@@ -366,15 +400,189 @@ class GenerateEntity {
         transformer << "//DO NOT MODIFY, this class was generated by xxx " << System.lineSeparator();
         transformer << ""<< System.lineSeparator();
         transformer << "import java.util.stream.Collectors;" << System.lineSeparator()
+        transformer << "import transgenic.lauterbrunnen.lateral.domain.UniqueId;" << System.lineSeparator()
+        transformer << "import java.util.function.Function;" << System.lineSeparator();
         transformer << ""<< System.lineSeparator();
         transformer << "public class " << proto.getSimpleName() << "EntityTransformer {" << System.lineSeparator();
         transformer << "" << System.lineSeparator();
-        transformer << "    public static void transform(" << proto.getSimpleName() << "Entity entity, " <<
+//        transformer << "    public static void transform(" << proto.getSimpleName() << "Entity entity, " <<
+//                implPackage << "." << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
+    }
+
+    private void writeTransformToDeclaration(def transformTo, Class proto) {
+        transformTo << "    public static void transform(" << proto.getSimpleName() << "Entity entity, " <<
                 implPackage << "." << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
     }
 
-    private void writeTransformerTail(def transformer) {
-        transformer << "    }" << System.lineSeparator()
+    private void writeTransformFromDeclaration( def transformFrom, Class proto) {
+        transformFrom << "    public static void transform(" << implPackage << "." << proto.getSimpleName() << "Impl impl," <<
+                proto.getSimpleName() << "Entity entity) {" << System.lineSeparator();
+    }
+
+    private void writeTransformerTail(def transformer, def transformTo, def transformFrom) {
+        transformer << transformTo << System.lineSeparator() << "    }" << System.lineSeparator() << System.lineSeparator();
+        transformer << transformFrom << System.lineSeparator() << "    }" << System.lineSeparator() << System.lineSeparator();
+
+        //write all the hooks
+        for(GenerateConverterName converterName: converterNames) {
+            converterName.writeHookMethod( transformer );
+        }
+
         transformer << "}" << System.lineSeparator()
+    }
+
+    //--------------------------------------------------------------------------------------------
+    //Field is the IMPL field here, not the entity field
+    private void createSetLogicEntityToImpl(def transformer, Field field, String firstUpperFN) {
+        Type type = field.getGenericType();
+
+        //need to transform the fieldname
+        String fufn = "get" + firstUpperFN;
+        if (field.getType().getTypeName().equalsIgnoreCase("Boolean"))
+        {
+            //fufn = field.getName();
+            firstUpperFN = firstUpperFN.replaceFirst("Is", "");
+        }
+
+        String fieldName = "entity." + fufn + "()";
+
+        //prefix need to be controlled by annotations TODO
+        transformer << "        ";
+        if (!field.getType().isPrimitive())
+            transformer << "if (entity." << fufn << "()!=null) "
+        transformer << "impl.set" + firstUpperFN + "("
+
+        recurseSetLogicEntityToImpl(transformer, type, fieldName);
+
+        transformer << ");" << System.lineSeparator();
+    }
+
+    private void recurseSetLogicEntityToImpl(def transformer, Type type, String fieldName) {
+
+        String entityType = swapType(type);
+
+        String typeName= type.getTypeName();
+        if (type instanceof ParameterizedType) {
+            typeName = ((ParameterizedType)type).getRawType().getTypeName();
+        }
+
+        //Different here. We need to look at the type in the Impl not the type in the entity
+        //to know if we need to convert, eg, byte[] to new ObjectReference(byte[] bb)
+        if (typeName.contains(implPackage)) {
+            String ref = type.getTypeName() + "Reference";
+
+            //(2) fine if there is a conversion then let's convert
+            //sometimes the repository id is eg unique id but we need to convert it to eg byte[]
+            String reptype = idFields.get(type.getTypeName());
+            String converter = properties.get("entity.type.reverse.converter." + reptype);
+            if (converter!=null) {
+                //we need to
+                //(1) establish the name of a linking method for the conversion
+                //(2) add the name to a set of such names
+                //(3) use that method plus the config to convert the type
+                GenerateConverterName converterName = GenerateConverterName.createHook( entityType, reptype);
+
+                //add to the set of known converternames
+                converterNames.add(converterName);
+                transformer << "new " << ref << "( "
+                transformer << converterName.getConverterMethodName() << "( " <<
+                        fieldName + ", " <<
+                        converter << "))";
+
+            } else {
+                //(1) if there is no conversion needed we just do
+                // eg impl.setTeacher( new TeacherReference( entity.getTeacher() ) )
+                transformer << "new " << ref << "( " <<  fieldName << " )"
+            }
+
+        } else {
+
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                String rawname = pt.getRawType().getTypeName();
+
+                handleListEntityToImpl(transformer, rawname, fieldName, pt);
+                handleMapEntityToImpl( transformer, rawname, fieldName, pt);
+
+            }
+            else {
+                String converter = properties.get("entity.type.reverse.converter." + type.getTypeName());
+                if (converter != null) {
+                    //we need the type associated with fieldName ...
+                    GenerateConverterName converterName = GenerateConverterName.createHook( entityType, type.getTypeName() );
+                    converterNames.add(converterName);
+                    transformer << converterName.getConverterMethodName() << "( " <<
+                            fieldName << ", " << converter << ")";
+                } else {
+                    transformer << fieldName;
+                }
+            }
+        }
+    }
+
+    private void handleListEntityToImpl( def transformer, String rawName, String fieldName, ParameterizedType parameterizedType) {
+        try {
+
+            Class c = Class.forName(rawName);
+            boolean list = false;
+            if (List.class.getName().equals(c.getName())) list = true;
+            for(Class iface: c.getInterfaces()) {
+                if (List.class.getName().equals(iface.getName())) {
+                    list = true;
+                    break;
+                }
+            }
+
+            if (list) {
+                //preamble
+                transformer << fieldName << " == null ? null : "+ fieldName + ".stream().map( item -> " << System.lineSeparator();
+                transformer << "            ";
+
+                //then recurse into the type
+                for (Type t : parameterizedType.getActualTypeArguments()) {
+                    recurseSetLogicEntityToImpl(transformer,t, "item");
+                }
+
+                //then postamble
+                transformer << System.lineSeparator() << "        ).collect(Collectors.toList())"
+
+            }
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleMapEntityToImpl( def transformer, String rawName, String fieldName, ParameterizedType parameterizedType) {
+        try {
+            Class c = Class.forName(rawName);
+            boolean map = false;
+            if (Map.class.getName().equals(c.getName())) map = true;
+            for(Class iface: c.getInterfaces()) {
+                if (Map.class.getName().equals(iface.getName())) {
+                    map = true;
+                    break;
+                }
+            }
+
+            if (map) {
+                //preamble
+                transformer << fieldName + " ==null ? null : " << fieldName + ".entrySet().stream().collect(Collectors.toMap( " << System.lineSeparator()
+                transformer << "            e -> "
+
+                //then recurse into the type
+                Type keytype = parameterizedType.getActualTypeArguments()[0];
+                recurseSetLogicEntityToImpl(transformer, keytype, "e.getKey()");
+                transformer << "," << System.lineSeparator()
+                transformer << "            e-> ";
+                Type valuetype = parameterizedType.getActualTypeArguments()[1];
+                recurseSetLogicEntityToImpl(transformer, valuetype,"e.getValue()");
+
+                //then postamble
+                transformer << "))"
+
+            }
+
+        } catch(Exception e) {}
     }
 }

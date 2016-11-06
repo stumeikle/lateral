@@ -55,6 +55,12 @@ class GenerateRef extends GenerateImpl{
         //output << "        this.proxee = " << classNameLowerFirst << ";" << System.lineSeparator()
         output << "    }" << System.lineSeparator()
         output << System.lineSeparator()
+
+        output << "    public " << classNameRef << "(" << idfieldType << " repositoryId ) {" << System.lineSeparator()
+        output << "        this.repositoryId = repositoryId;" << System.lineSeparator()
+        output << "    }" << System.lineSeparator()
+        output << System.lineSeparator()
+
         output << "    public " << classNameImpl << " getProxee() {" << System.lineSeparator()
         output << "        return proxee;" << System.lineSeparator()
         output << "    }" << System.lineSeparator()

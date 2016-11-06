@@ -2,6 +2,10 @@ package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.config.MapStoreConfig;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,6 +29,11 @@ public class HazelcastPlugin implements ApplicationPlugin {
         LOG.info("Initialising hazelcast plugin...");
 
         HazelcastInstance hazel=null;
+
+        // NOTE: configure the map store if needed
+        //(no!) for hazelcast the mapstores can only be configured for the
+        //server not the client, so put the code there
+
         ClientConfig clientConfig = new ClientConfig();
         hazel = HazelcastClient.newHazelcastClient(clientConfig);
 

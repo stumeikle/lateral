@@ -118,6 +118,20 @@ class GenerateHazelcastCachePersist {
             gp.setEntityPackage(entityPackage);
             gp.generate(proto);
 
+            GenerateRetriever gr = new GenerateRetriever();
+            gr.setBasePath( dbdumpbase  );
+            gr.setImplPackage( implPackage );
+            gr.setCachePackage(cachePackage);
+            gr.setEntityPackage(entityPackage);
+            gr.generate(proto);
+
+            GenerateMapStore gms = new GenerateMapStore();
+            gms.setBasePath( dbdumpbase  );
+            gms.setImplPackage( implPackage );
+            gms.setCachePackage(cachePackage);
+            gms.setEntityPackage(entityPackage);
+            gms.generate(proto);
+
         }
 
         GenerateChangeListener gcl = new GenerateChangeListener();
@@ -126,6 +140,14 @@ class GenerateHazelcastCachePersist {
         gcl.setCachePackage(cachePackage);
         gcl.setEntityPackage(entityPackage);
         gcl.generate(classes, idFields);
+
+        GenerateMapStoreFactory gmsf = new GenerateMapStoreFactory();
+        gmsf.setBasePath( dbdumpbase  );
+        gmsf.setImplPackage( implPackage );
+        gmsf.setCachePackage(cachePackage);
+        gmsf.setEntityPackage(entityPackage);
+        gmsf.generate(classes, idFields);
+
 
     }
 
