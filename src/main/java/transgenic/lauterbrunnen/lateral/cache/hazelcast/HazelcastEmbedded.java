@@ -1,7 +1,5 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.config.ClasspathXmlConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MapConfig;
@@ -10,8 +8,8 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import transgenic.lauterbrunnen.lateral.plugin.ApplicationPlugin;
-import transgenic.lauterbrunnen.lateral.plugin.ApplicationPluginParameters;
+import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
+import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
 import java.util.Properties;
 
@@ -21,8 +19,8 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
  * Created by stumeikle on 21/06/16.
  */
 
-@ApplicationPluginParameters(configName = "hazelcast_embedded_server", groups = "hazelcast_server" )
-public class HazelcastEmbedded implements ApplicationPlugin {
+@LateralPluginParameters(configName = "hazelcast_embedded_server", groups = "hazelcast_server" )
+public class HazelcastEmbedded implements LateralPlugin {
 
     private static final Log LOG = LogFactory.getLog(HazelcastEmbedded.class);
 

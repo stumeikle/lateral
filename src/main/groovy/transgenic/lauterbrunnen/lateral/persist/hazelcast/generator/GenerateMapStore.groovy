@@ -118,12 +118,15 @@ class GenerateMapStore {
                 "" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    public void delete(Object o) {" << System.lineSeparator() +
-                "        LOG.debug(\"Not yet implemented\");" << System.lineSeparator() +
+                "        LOG.debug(\"Deleting object:\" +o);" << System.lineSeparator() +
+                "        persister.remove(o);" << System.lineSeparator() +
                 "    }" << System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    public void deleteAll(Collection<Object> collection) {" << System.lineSeparator() +
-                "        LOG.debug(\"Not yet implemented\");" << System.lineSeparator() +
+                "        for(Object object: collection) {" << System.lineSeparator() +
+                "            delete(object);" << System.lineSeparator() +
+                "        }" << System.lineSeparator() +
                 "    }" << System.lineSeparator()
         output << "}" << System.lineSeparator()
         

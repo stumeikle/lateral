@@ -201,4 +201,10 @@ public class Repository {
         return (T) repo.retrieve(id);
     }
 
+    //Delete ...
+    public static <T> void delete(Class<? extends T> clazz, Object id) {
+        CRUDRepository repo = Factory.getRepositoryForClass(clazz);
+        repo.delete(id);
+    }
+
 }

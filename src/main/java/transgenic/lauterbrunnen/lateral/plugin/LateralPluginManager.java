@@ -8,16 +8,16 @@ import java.util.*;
 /**
  * Created by Stuart.meikle on 05/05/2016.
  */
-public enum ApplicationPluginManager {
+public enum LateralPluginManager {
 
     INSTANCE;
 
-    private static final Log LOG = LogFactory.getLog(ApplicationPluginManager.class);
+    private static final Log LOG = LogFactory.getLog(LateralPluginManager.class);
     private static final String DEFAULT_GROUP = "default";
-    private final HashMap<Class, ApplicationPlugin>  plugins = new HashMap<>();
-    private final Map<String, Set<Class<? extends ApplicationPlugin>>> pluginsPerGroup = new HashMap<>();
+    private final HashMap<Class, LateralPlugin>  plugins = new HashMap<>();
+    private final Map<String, Set<Class<? extends LateralPlugin>>> pluginsPerGroup = new HashMap<>();
 
-    public ApplicationPlugin getApplicationPlugin(Class fp) {
+    public LateralPlugin getApplicationPlugin(Class fp) {
         return plugins.get(fp);
     }
 
@@ -26,9 +26,9 @@ public enum ApplicationPluginManager {
 
         sb.append("Enabled plugins: ");
         boolean first = true;
-        for(Class c: AnnotationScanner.INSTANCE.get(ApplicationPluginParameters.class)) {
+        for(Class c: AnnotationScanner.INSTANCE.get(LateralPluginParameters.class)) {
             if (plugins.containsKey(c)) {
-                ApplicationPluginParameters note = (ApplicationPluginParameters) c.getAnnotation(ApplicationPluginParameters.class);
+                LateralPluginParameters note = (LateralPluginParameters) c.getAnnotation(LateralPluginParameters.class);
                 if (!first) sb.append(", ");
                 sb.append(note.configName().toUpperCase());
                 first= false;
@@ -45,10 +45,10 @@ public enum ApplicationPluginManager {
         //Get all the plugins
         //Hash by groups
         //initialise according to the specified order
-        if (AnnotationScanner.INSTANCE.get(ApplicationPluginParameters.class) == null) return;
+        if (AnnotationScanner.INSTANCE.get(LateralPluginParameters.class) == null) return;
 
-        for (Class c : AnnotationScanner.INSTANCE.get(ApplicationPluginParameters.class)) {
-            ApplicationPluginParameters note = (ApplicationPluginParameters) c.getAnnotation(ApplicationPluginParameters.class);
+        for (Class c : AnnotationScanner.INSTANCE.get(LateralPluginParameters.class)) {
+            LateralPluginParameters note = (LateralPluginParameters) c.getAnnotation(LateralPluginParameters.class);
 
             String groups = note.groups();
             if (groups==null || groups.isEmpty()) {
@@ -57,7 +57,7 @@ public enum ApplicationPluginManager {
             String[] groupArray = groups.split(",");
             for(String group: groupArray) {
                 group = group.trim();
-                Set<Class<? extends ApplicationPlugin>> set = pluginsPerGroup.get(group);
+                Set<Class<? extends LateralPlugin>> set = pluginsPerGroup.get(group);
                 if (set==null) {
                     set = new HashSet<>();
                     pluginsPerGroup.put(group,set);
@@ -71,7 +71,7 @@ public enum ApplicationPluginManager {
 
         checkMutexGroups(properties);
 
-        String order = properties.getProperty(ApplicationPlugin.APPLICATION_PLUGIN +".groups.initialise_order");
+        String order = properties.getProperty(LateralPlugin.LATERAL_PLUGIN +".groups.initialise_order");
         if (order!=null) {
             initialisePluginsByGroup(order, properties);
         }
@@ -84,7 +84,7 @@ public enum ApplicationPluginManager {
     }
 
     private void checkMutexGroups(Properties properties) throws Exception {
-        String mutex_groups = properties.getProperty(ApplicationPlugin.APPLICATION_PLUGIN + ".groups.mutually_exclusive");
+        String mutex_groups = properties.getProperty(LateralPlugin.LATERAL_PLUGIN + ".groups.mutually_exclusive");
         if (mutex_groups!=null) {
             String[] groups = mutex_groups.split(",");
             for(String group: groups) {
@@ -102,7 +102,7 @@ public enum ApplicationPluginManager {
             group = group.trim();
 
             if (pluginsPerGroup.containsKey(group)) {
-                for(Class<? extends ApplicationPlugin> clazz: pluginsPerGroup.get(group)) {
+                for(Class<? extends LateralPlugin> clazz: pluginsPerGroup.get(group)) {
                     initialisePlugin(clazz, properties);
                 }
             }
@@ -111,9 +111,9 @@ public enum ApplicationPluginManager {
         }
     }
 
-    private boolean classEnabled(Class<? extends ApplicationPlugin> clazz, Properties properties) {
-        ApplicationPluginParameters note = (ApplicationPluginParameters)clazz.getAnnotation(ApplicationPluginParameters.class);
-        String feature = ApplicationPlugin.APPLICATION_PLUGIN + "." + note.configName() + ".enabled";
+    private boolean classEnabled(Class<? extends LateralPlugin> clazz, Properties properties) {
+        LateralPluginParameters note = (LateralPluginParameters)clazz.getAnnotation(LateralPluginParameters.class);
+        String feature = LateralPlugin.LATERAL_PLUGIN + "." + note.configName() + ".enabled";
         String enabledProperty = (String) properties.get(feature);
         boolean enabled = note.enabledByDefault();
         if (enabledProperty!=null) {
@@ -127,12 +127,12 @@ public enum ApplicationPluginManager {
         return enabled;
     }
 
-    private void initialisePlugin(Class<? extends ApplicationPlugin> clazz, Properties properties) {
+    private void initialisePlugin(Class<? extends LateralPlugin> clazz, Properties properties) {
         //skip if already initialised
         if (plugins.containsKey(clazz)) return;
 
         //(2) look at the config for which ones should be initialised
-        ApplicationPlugin fp = null;
+        LateralPlugin fp = null;
         try {
             fp = clazz.newInstance();
             fp.initialise(properties);

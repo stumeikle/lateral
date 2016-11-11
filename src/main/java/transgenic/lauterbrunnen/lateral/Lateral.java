@@ -3,7 +3,7 @@ package transgenic.lauterbrunnen.lateral;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import transgenic.lauterbrunnen.lateral.di.ApplicationDI;
-import transgenic.lauterbrunnen.lateral.plugin.ApplicationPluginManager;
+import transgenic.lauterbrunnen.lateral.plugin.LateralPluginManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +31,7 @@ public enum Lateral {
 
         ApplicationDI.initialise(properties);
         try {
-            ApplicationPluginManager.INSTANCE.initialise(properties);
+            LateralPluginManager.INSTANCE.initialise(properties);
         } catch (Exception ex) {
             LOG.fatal("Unable to initialise plugins",ex);
         }

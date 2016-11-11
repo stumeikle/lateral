@@ -5,9 +5,9 @@ import java.util.Properties;
 /**
  * Created by Stuart.meikle on 05/05/2016.
  */
-public interface ApplicationPlugin {
+public interface LateralPlugin {
 
-    public static final String APPLICATION_PLUGIN = "application_plugin";
+    public static final String LATERAL_PLUGIN = "lateral_plugin";
     default void initialise(Properties properties) {}
 
 }

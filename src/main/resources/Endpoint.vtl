@@ -1,0 +1,169 @@
+package ${restGeneratedPackage};
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import transgenic.lauterbrunnen.lateral.domain.PersistenceException;
+import transgenic.lauterbrunnen.lateral.domain.Repository;
+import $domainGeneratedPackage.${entityName};
+import $domainGeneratedPackage.${entityName}Impl;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+/**
+ * Created by stumeikle on 08/11/16.
+ * To be generated
+ *
+ * CRUD operations. perhaps Search to come later
+ */
+@Path("$restPath/$lcEntityName")
+public class ${entityName}Endpoint {
+
+    private static final Log LOG = LogFactory.getLog(${entityName}Endpoint.class);
+
+    //------------------------------------------
+    //
+    // CREATE
+    //
+    //------------------------------------------
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response create${entityName}JSON(${entityName}_$entityVersion ${entityName}) {
+
+        //persist the object
+        try {
+            Repository.persist(${entityName}.createImpl());
+            String result = "success";
+            return Response.status(201).entity(result).build();
+        } catch(PersistenceException persistenceException) {
+            String result = "fail:" + persistenceException.getMessage();
+
+            //really we should check if its a user fail or a server fail
+            return Response.status(500).entity(result).build();
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_XML)
+    public Response create${entityName}XML(${entityName}_$entityVersion ${entityName}) {
+
+        //persist the object
+        try {
+            Repository.persist(${entityName}.createImpl());
+            String result = "success";
+            return Response.status(201).entity(result).build();
+        } catch(PersistenceException persistenceException) {
+            String result = "fail:" + persistenceException.getMessage();
+
+            //really we should check if its a user fail or a server fail
+            return Response.status(500).entity(result).build();
+        }
+    }
+
+    //------------------------------------------
+    //
+    // READ
+    //
+    //------------------------------------------
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ${entityName}_$entityVersion retrieve${entityName}ByIdJSON(@PathParam("id") String repositoryId) {
+        ${entityName} retval = Repository.retrieve(${entityName}.class, repositoryId);
+
+        if (retval!=null) return ${entityName}_${entityVersion}.createFrom${entityName}(retval);
+
+        throw new NotFoundException();
+    }
+
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_XML)
+    public ${entityName}_$entityVersion retrieve${entityName}ByIdXML(@PathParam("id") String repositoryId) {
+        ${entityName} retval = Repository.retrieve(${entityName}.class, repositoryId);
+
+        if (retval!=null) return ${entityName}_${entityVersion}.createFrom${entityName}(retval);
+
+        throw new NotFoundException();
+    }
+
+    //------------------------------------------
+    //
+    // UPDATE
+    // TODO SHOULD THIS BE PUT / PATCH?
+    //------------------------------------------
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response update${entityName}JSON(${entityName}_$entityVersion ${entityName}) {
+
+        //Really we should
+        //(1) retrieve the object from the cache
+        //(2) update only the fields which are sent in by the client
+        //(3) update the cache with the new values
+        try {
+            ${entityName} found = Repository.retrieve(${entityName}.class, ${entityName}.get${idFieldName}());
+            if (found!=null) {
+                if (found instanceof ${entityName}Impl) {
+                    ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
+                    ${entityName}.updateImpl(${entityName}Impl);
+                    Repository.update(${entityName}Impl);
+                    String result = "success";
+                    return Response.status(201).entity(result).build();
+                }
+            }
+
+            String result = "failed to find object (" + ${entityName}.get${idFieldName}() + ") to update";
+            return Response.status(500).entity(result).build();
+        } catch(PersistenceException persistenceException) {
+            String result = "fail:" + persistenceException.getMessage();
+
+            //really we should check if its a user fail or a server fail
+            return Response.status(500).entity(result).build();
+        }
+    }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    public Response update${entityName}XML(${entityName}_$entityVersion ${entityName}) {
+
+        //(1) retrieve the object from the cache
+        //(2) update only the fields which are sent in by the client
+        //(3) update the cache with the new values
+        try {
+            ${entityName} found = Repository.retrieve(${entityName}.class, ${entityName}.get${idFieldName}());
+            if (found!=null) {
+                if (found instanceof ${entityName}Impl) {
+                    ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
+                    ${entityName}.updateImpl(${entityName}Impl);
+                    Repository.update(${entityName}Impl);
+                    String result = "success";
+                    return Response.status(201).entity(result).build();
+                }
+            }
+
+            String result = "failed to find object (" + ${entityName}.get${idFieldName}() + ") to update";
+            return Response.status(500).entity(result).build();
+        } catch(PersistenceException persistenceException) {
+            String result = "fail:" + persistenceException.getMessage();
+
+            //really we should check if its a user fail or a server fail
+            return Response.status(500).entity(result).build();
+        }
+    }
+
+    //------------------------------------------
+    //
+    // DELETE
+    //
+    //------------------------------------------
+    @DELETE
+    @Path("{id}")
+    public Response delete${entityName}(@PathParam("id") String repositoryId) {
+
+        //why no exceptions here?
+        Repository.delete(${entityName}.class, repositoryId);
+        String result ="success";
+        return Response.status(202).entity(result).build();
+    }
+}

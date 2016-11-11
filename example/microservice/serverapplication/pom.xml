@@ -103,6 +103,7 @@
                         <goals>
                             <goal>generateEntities</goal>
                             <goal>generatePersisters</goal>
+                            <goal>generateRestPojos</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -1,0 +1,23 @@
+package $restGeneratedPackage;
+
+import org.glassfish.jersey.server.ResourceConfig;
+import transgenic.lauterbrunnen.lateral.di.DefaultImpl;
+import transgenic.lauterbrunnen.lateral.rest.PluggableResourceConfig;
+
+/**
+ * Created by stumeikle on 10/11/16.
+ * To be generated
+ */
+@DefaultImpl
+public class PluggableResourceConfigImpl implements PluggableResourceConfig {
+
+    private ResourceConfig resourceConfig;
+
+    public PluggableResourceConfigImpl() {
+        resourceConfig = new ResourceConfig(${endpointClasses});
+    }
+
+    public ResourceConfig getResourceConfig() {
+        return resourceConfig;
+    }
+}

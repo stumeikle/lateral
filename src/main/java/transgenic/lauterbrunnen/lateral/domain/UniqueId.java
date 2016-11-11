@@ -96,6 +96,14 @@ public class UniqueId implements Serializable{
         return uuid.toString();
     }
 
+    //incoming string is from a unique id. ie it is already reordered
+    public static UniqueId fromString(String uuidString) {
+        UUID uuid = UUID.fromString(uuidString);
+        UniqueId retval = new UniqueId();
+        retval.setValue(toByteArray(uuid));
+        return retval;
+    }
+
     public static byte[] convertToByteArray(UniqueId uniqueId) {
         return uniqueId.getValue();
     }

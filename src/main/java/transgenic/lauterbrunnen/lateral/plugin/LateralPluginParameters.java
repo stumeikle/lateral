@@ -11,7 +11,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Target({ TYPE })
 @Retention(RUNTIME)
-public @interface ApplicationPluginParameters {
+public @interface LateralPluginParameters {
     boolean enabledByDefault() default false;
     String configName() default "";
     String groups() default "";

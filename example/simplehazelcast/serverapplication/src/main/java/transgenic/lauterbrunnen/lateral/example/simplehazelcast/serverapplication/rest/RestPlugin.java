@@ -4,16 +4,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import transgenic.lauterbrunnen.lateral.example.simplehazelcast.serverapplication.ServerApplication;
-import transgenic.lauterbrunnen.lateral.plugin.ApplicationPlugin;
-import transgenic.lauterbrunnen.lateral.plugin.ApplicationPluginParameters;
+import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
+import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
 import java.util.Properties;
 
 /**
  * Created by stumeikle on 21/06/16.
  */
-@ApplicationPluginParameters(configName="rest", enabledByDefault=true)
-public class RestPlugin implements ApplicationPlugin {
+@LateralPluginParameters(configName="rest", enabledByDefault=true)
+public class RestPlugin implements LateralPlugin {
 
     private static final Log LOG = LogFactory.getLog(RestPlugin.class);
 
