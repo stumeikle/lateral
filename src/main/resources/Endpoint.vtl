@@ -27,6 +27,7 @@ public class ${entityName}Endpoint {
     // CREATE
     //
     //------------------------------------------
+#if ( $jsonSupported )
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create${entityName}JSON(${entityName}_$entityVersion ${entityName}) {
@@ -43,7 +44,9 @@ public class ${entityName}Endpoint {
             return Response.status(500).entity(result).build();
         }
     }
+    #end
 
+#if ( $xmlSupported )
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     public Response create${entityName}XML(${entityName}_$entityVersion ${entityName}) {
@@ -60,12 +63,14 @@ public class ${entityName}Endpoint {
             return Response.status(500).entity(result).build();
         }
     }
+    #end
 
     //------------------------------------------
     //
     // READ
     //
     //------------------------------------------
+#if ( $jsonSupported )
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -76,7 +81,9 @@ public class ${entityName}Endpoint {
 
         throw new NotFoundException();
     }
+    #end
 
+#if ( $xmlSupported )
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_XML)
@@ -87,12 +94,14 @@ public class ${entityName}Endpoint {
 
         throw new NotFoundException();
     }
+    #end
 
     //------------------------------------------
     //
     // UPDATE
     // TODO SHOULD THIS BE PUT / PATCH?
     //------------------------------------------
+#if ( $jsonSupported )
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update${entityName}JSON(${entityName}_$entityVersion ${entityName}) {
@@ -122,7 +131,9 @@ public class ${entityName}Endpoint {
             return Response.status(500).entity(result).build();
         }
     }
+    #end
 
+#if ( $xmlSupported )
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     public Response update${entityName}XML(${entityName}_$entityVersion ${entityName}) {
@@ -151,6 +162,7 @@ public class ${entityName}Endpoint {
             return Response.status(500).entity(result).build();
         }
     }
+    #end
 
     //------------------------------------------
     //

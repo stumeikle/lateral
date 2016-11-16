@@ -69,10 +69,25 @@ class GenerateEndpoint {
         String restPath = properties.get("rest.path");
         if (restPath==null) restPath="/api";
         context.put("restPath", restPath);
-        context.put("lcEntityName", proto.getSimpleName().toLowerCase());
+
+        //try to pluralise the name
+        String propPlural = properties.get("rest.pojo." + proto.getSimpleName().toLowerCase() + ".plural");
+        if (propPlural!=null) {
+            context.put("lcEntityName", propPlural);
+        } else {
+            context.put("lcEntityName", proto.getSimpleName().toLowerCase() +"s");
+        }
+
         context.put("entityName", proto.getSimpleName());
 
-        String api_version = properties.getProperty("rest.version");
+        boolean json = true;
+        boolean xml = true;
+        if( "false".equalsIgnoreCase(properties.getProperty("rest.support.json"))) json = false;
+        if( "false".equalsIgnoreCase(properties.getProperty("rest.support.xml")))  xml = false;
+        context.put("jsonSupported", json);
+        context.put("xmlSupported",  xml);
+
+        String api_version = properties.getProperty("rest.version");context.put("lcEntityName", proto.getSimpleName().toLowerCase());
         String pojo_version = properties.getProperty("rest.pojo." + proto.getSimpleName().toLowerCase() + ".version");
         if (api_version == null) api_version = "1";
         if (pojo_version == null) pojo_version = api_version;
