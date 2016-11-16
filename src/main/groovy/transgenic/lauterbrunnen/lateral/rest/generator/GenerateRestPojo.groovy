@@ -68,6 +68,7 @@ class GenerateRestPojo {
         output << "" << System.lineSeparator();
         output << "import transgenic.lauterbrunnen.lateral.domain.UniqueId;" << System.lineSeparator();
         output << "import " << domainGeneratedPackage << ".*;" << System.lineSeparator();
+        output << "import java.util.stream.Collectors;" << System.lineSeparator();
         output << "" << System.lineSeparator()
         output << "public class " << className << " {" << System.lineSeparator();
         output << System.lineSeparator();
@@ -217,17 +218,27 @@ class GenerateRestPojo {
         output << "        " << proto.getSimpleName() << "Impl retval = new " << proto.getSimpleName() << "Impl();" << System.lineSeparator();
 
         for (Field field : allFields) {
+            String setFn = field.getName();
+
+            //Fix the booleans
+            if (field.getType().getTypeName().equalsIgnoreCase("Boolean")) {
+                setFn = setFn.replaceFirst("^is", "");
+            }
 
             //need to test if the field is a domain object
-            output << "        if (isPresent" << capitalizeFirst(field.getName()) << ") retval.set" << capitalizeFirst(field.getName()) <<
+            output << "        if (isPresent" << capitalizeFirst(field.getName()) << ") retval.set" << capitalizeFirst(setFn) <<
                     "("
 
-            String typename= field.getType().getTypeName();
-            if (classMap.containsKey(typename)) {
-                output << field.getName() << ".createImpl());" << System.lineSeparator();
-            } else {
-                output << field.getName() << ");" << System.lineSeparator();
-            }
+            //Here we need to differentiate between various types
+            //between types which are in our domain and we need to handle all the mapping possibilities with
+            //lists and sets
+            recurseSetLogic(output, field.getGenericType() ,field.getName(), new SetFromDomainField() {
+                @Override
+                void doIt(Object o, Object fn, Object tn) {
+                    o << fn << ".createImpl()"
+                }
+            } );
+            output << ");" << System.lineSeparator();
         }
 
         //repositoryid
@@ -244,16 +255,28 @@ class GenerateRestPojo {
         output << "        " << proto.getSimpleName() << "Impl retval = basis;" << System.lineSeparator();
         for (Field field : allFields) {
 
+            String setFn = field.getName();
+
+            //Fix the booleans
+            if (field.getType().getTypeName().equalsIgnoreCase("Boolean")) {
+                setFn = setFn.replaceFirst("^is", "");
+            }
+
             //need to test if the field is a domain object
-            output << "        if (isPresent" << capitalizeFirst(field.getName()) << ") retval.set" << capitalizeFirst(field.getName()) <<
+            output << "        if (isPresent" << capitalizeFirst(field.getName()) << ") retval.set" << capitalizeFirst(setFn) <<
                     "("
 
-            String typename= field.getType().getTypeName();
-            if (classMap.containsKey(typename)) {
-                output << field.getName() << ".createImpl());" << System.lineSeparator();
-            } else {
-                output << field.getName() << ");" << System.lineSeparator();
-            }
+            //Here we need to differentiate between various types
+            //between types which are in our domain and we need to handle all the mapping possibilities with
+            //lists and sets
+            //looks like groovy no java8
+            recurseSetLogic(output, field.getGenericType() ,field.getName(), new SetFromDomainField() {
+                @Override
+                void doIt(Object o, Object fn, Object tn) {
+                    o << fn << ".createImpl()"
+                }
+            } );
+            output << ");" << System.lineSeparator();
         }
 
         //repositoryid
@@ -266,6 +289,12 @@ class GenerateRestPojo {
 
     }
 
+    //This part needs to reuse the recursive logic from generate entity transformer
+    //ie lists and maps need to be descended into and package classes need to be transformed
+    //
+
+    //Me to break the logic out
+
     def generateCreateFromEntity(def output, Class proto, List<Field> allFields) {
         output << ""<< System.lineSeparator();
 
@@ -276,36 +305,69 @@ class GenerateRestPojo {
         output << ""<< System.lineSeparator();
         output << "        " << restEntityName << " retval = new " << restEntityName << "();" << System.lineSeparator();
 
+        output << "        if ( " << uncapitalizeFirst(proto.getSimpleName()) <<" instanceof " <<
+                proto.getSimpleName() << "Impl ) {" << System.lineSeparator();
+        writeFields( true, output, proto, allFields );
+        output << "        } else { " << System.lineSeparator();
+        writeFields( false, output, proto, allFields );
+        output << "        }" << System.lineSeparator();
+
+        output << "        return retval;" << System.lineSeparator();
+        output << "    }" << System.lineSeparator();
+    }
+
+    private void writeFields(def writeAll, def output, def proto, def allFields) {
         for (Field field : allFields) {
 
-            //need to test if the field is a domain object
+            if (!writeAll) {
+                if (field!=idField) continue;
+            }
 
+            //need to test if the field is a domain object
+            String setFn = field.getName();
+            String getFn = "get" + capitalizeFirst(field.getName());
+
+            //Fix the booleans
+            if (field.getType().getTypeName().equalsIgnoreCase("Boolean")) {
+                setFn = setFn.replaceFirst("^is", "");
+                getFn = field.getName();
+            }
 
             String typename= field.getType().getTypeName();
-            if (classMap.containsKey(typename)) {
-                output << "        retval.set" << capitalizeFirst(field.getName()) << "( ";
+            output << "            retval.set" << capitalizeFirst(setFn) << "( ";
 
+            String fieldname = uncapitalizeFirst(proto.getSimpleName()) << "." << getFn << "()";
+            recurseSetLogic(output, field.getGenericType() ,fieldname, new SetFromDomainField() {
+                @Override
+                void doIt(Object o, Object fn, Object tn) {
+                    String simpleName = classMap.get(tn).getSimpleName();
+
+                    String otherRest = getClassName(simpleName);
+                    o << otherRest << ".createFrom" << simpleName << "(" << fn << ")";
+                }
+            } );
+            output << ");" << System.lineSeparator();
+
+            /*
+            if (classMap.containsKey(typename)) {
                 //need the type of the field
                 String otherRest = getClassName(field.getType().getSimpleName());
                  output << otherRest << ".createFrom" << field.getType().getSimpleName() << "(" <<
                         uncapitalizeFirst(proto.getSimpleName()) << ".get" << capitalizeFirst(field.getName()) << "()));" << System.lineSeparator()
             } else {
-                output << "        retval.set" << capitalizeFirst(field.getName()) << "( " <<
-                        uncapitalizeFirst(proto.getSimpleName()) << ".get" << capitalizeFirst(field.getName()) << "());" << System.lineSeparator()
-            }
 
+
+                output <<
+                        uncapitalizeFirst(proto.getSimpleName()) << "." << getFn << "());" << System.lineSeparator()
+            }*/
         }
-
         //repositoryid
         if (idField==null) {
 
             //retval.setRepositoryId(((GarageImpl)garage).getRepositoryId().toString());
-            output << "        retval.setRepositoryId(((" << proto.getSimpleName() << "Impl)" <<
+            output << "            retval.setRepositoryId(((" << proto.getSimpleName() << "Impl)" <<
                     uncapitalizeFirst(proto.getSimpleName()) << ").getRepositoryId().toString());" << System.lineSeparator()
         }
-
-        output << "        return retval;" << System.lineSeparator();
-        output << "    }" << System.lineSeparator();
     }
 
     //copied from generate impl
@@ -377,4 +439,106 @@ class GenerateRestPojo {
         retval.addAll( klass.getDeclaredFields() );
         return retval;
     }
+
+    //---------------------------------------------------------------------------------------
+    //Largely copied from generate entity for now
+    interface SetFromDomainField {
+        void doIt( def output, def field_name, def type_name );
+    }
+
+
+    private void recurseSetLogic(def output, def type, def field_name, SetFromDomainField sfdf) {
+        String typename = type.getTypeName();
+
+        if (type instanceof ParameterizedType) {
+            typename = ((ParameterizedType)type).getRawType().getTypeName();
+        }
+
+        if (classMap.containsKey(typename)) {
+            //This is one of ours
+            //No need to think about converters in this instance
+            //output << field_name << ".createImpl()";
+
+            sfdf.doIt( output, field_name, typename );
+        } else {
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) type;
+                String rawname = pt.getRawType().getTypeName();
+
+                recurseSetHandleList(output, rawname, field_name, pt, sfdf );
+                recurseSetHandleMap( output, rawname, field_name, pt, sfdf );
+
+            }
+            else {
+                output << field_name
+            }
+        }
+    }
+
+    private def recurseSetHandleList(def output, def raw_name, def field_name, def parameterized_type,SetFromDomainField sfdf) {
+        try {
+            //test if this is a list
+            Class c = Class.forName(raw_name);
+            boolean list = false;
+            if (List.class.getName().equals(c.getName())) list = true;
+            for(Class iface: c.getInterfaces()) {
+                if (List.class.getName().equals(iface.getName())) {
+                    list = true;
+                    break;
+                }
+            }
+
+            if (list) {
+                //No null check this time as we are already checking isPresent
+                //Preamble
+                output << field_name << ".stream().map( item -> " << System.lineSeparator();
+                output << "            ";
+
+                //then recurse into the type
+                for (Type t : parameterized_type.getActualTypeArguments()) {
+                    recurseSetLogic(output,t, "item",sfdf);
+                }
+
+                //then postamble
+                output << System.lineSeparator() << "        ).collect(Collectors.toList())"
+            }
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private def recurseSetHandleMap(def output, def raw_name, def field_name, def parameterized_type, SetFromDomainField sfdf) {
+        try {
+            Class c = Class.forName(raw_name);
+            boolean map = false;
+            if (Map.class.getName().equals(c.getName())) map = true;
+            for(Class iface: c.getInterfaces()) {
+                if (Map.class.getName().equals(iface.getName())) {
+                    map = true;
+                    break;
+                }
+            }
+
+            if (map) {
+                //preamble
+                output <<  field_name + ".entrySet().stream().collect(Collectors.toMap( " << System.lineSeparator()
+                output << "            e -> "
+
+                //then recurse into the type
+                Type keytype = parameterized_type.getActualTypeArguments()[0];
+                recurseSetLogic(output, keytype, "e.getKey()", sfdf);
+                output << "," << System.lineSeparator()
+                output << "            e-> ";
+                Type valuetype = parameterized_type.getActualTypeArguments()[1];
+                recurseSetLogic(output, valuetype,"e.getValue()", sfdf);
+
+                //then postamble
+                output << "))"
+
+            }
+
+        } catch(Exception e) {}
+    }
+
 }

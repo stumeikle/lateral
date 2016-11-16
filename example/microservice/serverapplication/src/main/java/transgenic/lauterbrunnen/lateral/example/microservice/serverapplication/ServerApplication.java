@@ -15,6 +15,19 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
 
 /**
  * Created by stumeikle on 03/11/16.
+ *
+ * TODO:
+ * ensure the rest JSON and XML flags are honored
+ * ensure that lists and maps are correct supported in the entity generation
+ * ensure that plural names are used in the path structure
+ *
+ * the rest concept wrt References needs to be rethought. why return whole object graphs on
+ * a single retrieve,that makes no sense. should be using references and give the user the option
+ * to descend or pull all. i suppose in general smaller bits is better
+ *
+ * could be clever about it. could say if the object is a reference set the id else set all
+ * the fields. that would allow us to defer object structure to the cache layer and prevent us
+ * duplicating the logic
  */
 public class ServerApplication {
 
