@@ -9,6 +9,7 @@ import java.util.List;
 public class Album {
 
     Artist artist;
+    String name;
     List<Track> trackList;
     URL coverArt;
     List<String>   tags; //genre etc

@@ -30,7 +30,7 @@ public class HazelcastEmbedded implements LateralPlugin {
 
         //Server side we have more options to change default behaviour:
         //check for specified config
-        String cp_fn = properties.getProperty("application_plugin.hazelcast_embedded_server.cp_config");
+        String cp_fn = properties.getProperty("lateral_plugin.hazelcast_embedded_server.cp_config");
         Config cfg = null;
         if (cp_fn!=null) {
             cfg= new ClasspathXmlConfig(cp_fn);
@@ -38,7 +38,7 @@ public class HazelcastEmbedded implements LateralPlugin {
             cfg = new Config();
         }
 
-        if ("true".equalsIgnoreCase(properties.getProperty("application_plugin.hazelcast_embedded_server.write_through.enabled"))){
+        if ("true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_through.enabled"))){
             MapConfig mapConfig = cfg.getMapConfig("*");
             MapStoreConfig mapStoreConfig = mapConfig.getMapStoreConfig();
             HCMapStoreFactory factory = inject(HCMapStoreFactory.class);
