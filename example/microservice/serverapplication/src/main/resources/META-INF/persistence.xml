@@ -5,8 +5,9 @@
     <persistence-unit name="pu" transaction-type="RESOURCE_LOCAL">
 
         <!-- Generate Lateral Entities here: -->
-        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.GarageEntity</class>
-        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.VehicleEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.TrackEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.ArtistEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.AlbumEntity</class>
         <!-- End of Lateral Entities -->
 
         <properties>
