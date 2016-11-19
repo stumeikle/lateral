@@ -123,6 +123,8 @@ class GenerateHazelcastCachePersist {
             gr.setImplPackage( implPackage );
             gr.setCachePackage(cachePackage);
             gr.setEntityPackage(entityPackage);
+            gr.setIdFields(idFields);
+            gr.setProperties(properties);
             gr.generate(proto);
 
             GenerateMapStore gms = new GenerateMapStore();

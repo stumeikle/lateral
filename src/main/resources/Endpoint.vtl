@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
  *
  * CRUD operations. perhaps Search to come later
  */
-@Path("$restPath/$lcEntityName")
+@Path("$restPath/$lcEntityNamePlural")
 public class ${entityName}Endpoint {
 
     private static final Log LOG = LogFactory.getLog(${entityName}Endpoint.class);
@@ -30,11 +30,11 @@ public class ${entityName}Endpoint {
 #if ( $jsonSupported )
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create${entityName}JSON(${entityName}_$entityVersion ${entityName}) {
+    public Response create${entityName}JSON(${entityName}_$entityVersion ${lcEntityName}) {
 
         //persist the object
         try {
-            Repository.persist(${entityName}.createImpl());
+            Repository.persist(${lcEntityName}.createImpl());
             String result = "success";
             return Response.status(201).entity(result).build();
         } catch(PersistenceException persistenceException) {
@@ -49,11 +49,11 @@ public class ${entityName}Endpoint {
 #if ( $xmlSupported )
     @POST
     @Consumes(MediaType.APPLICATION_XML)
-    public Response create${entityName}XML(${entityName}_$entityVersion ${entityName}) {
+    public Response create${entityName}XML(${entityName}_$entityVersion ${lcEntityName}) {
 
         //persist the object
         try {
-            Repository.persist(${entityName}.createImpl());
+            Repository.persist(${lcEntityName}.createImpl());
             String result = "success";
             return Response.status(201).entity(result).build();
         } catch(PersistenceException persistenceException) {
@@ -73,8 +73,9 @@ public class ${entityName}Endpoint {
 #if ( $jsonSupported )
     @GET
     @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ${entityName}_$entityVersion retrieve${entityName}ByIdJSON(@PathParam("id") String repositoryId) {
+    public ${entityName}_$entityVersion retrieve${entityName}ByIdJSON(@PathParam("id") ${repoIdType} repositoryId) {
         ${entityName} retval = Repository.retrieve(${entityName}.class, repositoryId);
 
         if (retval!=null) return ${entityName}_${entityVersion}.createFrom${entityName}(retval);
@@ -86,8 +87,9 @@ public class ${entityName}Endpoint {
 #if ( $xmlSupported )
     @GET
     @Path("{id}")
+    @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    public ${entityName}_$entityVersion retrieve${entityName}ByIdXML(@PathParam("id") String repositoryId) {
+    public ${entityName}_$entityVersion retrieve${entityName}ByIdXML(@PathParam("id") ${repoIdType} repositoryId) {
         ${entityName} retval = Repository.retrieve(${entityName}.class, repositoryId);
 
         if (retval!=null) return ${entityName}_${entityVersion}.createFrom${entityName}(retval);
@@ -104,25 +106,25 @@ public class ${entityName}Endpoint {
 #if ( $jsonSupported )
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update${entityName}JSON(${entityName}_$entityVersion ${entityName}) {
+    public Response update${entityName}JSON(${entityName}_$entityVersion ${lcEntityName}) {
 
         //Really we should
         //(1) retrieve the object from the cache
         //(2) update only the fields which are sent in by the client
         //(3) update the cache with the new values
         try {
-            ${entityName} found = Repository.retrieve(${entityName}.class, ${entityName}.get${idFieldName}());
+            ${entityName} found = Repository.retrieve(${entityName}.class, ${lcEntityName}.get${idFieldName}());
             if (found!=null) {
                 if (found instanceof ${entityName}Impl) {
                     ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
-                    ${entityName}.updateImpl(${entityName}Impl);
+                    ${lcEntityName}.updateImpl(${entityName}Impl);
                     Repository.update(${entityName}Impl);
                     String result = "success";
                     return Response.status(201).entity(result).build();
                 }
             }
 
-            String result = "failed to find object (" + ${entityName}.get${idFieldName}() + ") to update";
+            String result = "failed to find object (" + ${lcEntityName}.get${idFieldName}() + ") to update";
             return Response.status(500).entity(result).build();
         } catch(PersistenceException persistenceException) {
             String result = "fail:" + persistenceException.getMessage();
@@ -136,24 +138,24 @@ public class ${entityName}Endpoint {
 #if ( $xmlSupported )
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
-    public Response update${entityName}XML(${entityName}_$entityVersion ${entityName}) {
+    public Response update${entityName}XML(${entityName}_$entityVersion ${lcEntityName}) {
 
         //(1) retrieve the object from the cache
         //(2) update only the fields which are sent in by the client
         //(3) update the cache with the new values
         try {
-            ${entityName} found = Repository.retrieve(${entityName}.class, ${entityName}.get${idFieldName}());
+            ${entityName} found = Repository.retrieve(${entityName}.class, ${lcEntityName}.get${idFieldName}());
             if (found!=null) {
                 if (found instanceof ${entityName}Impl) {
                     ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
-                    ${entityName}.updateImpl(${entityName}Impl);
+                    ${lcEntityName}.updateImpl(${entityName}Impl);
                     Repository.update(${entityName}Impl);
                     String result = "success";
                     return Response.status(201).entity(result).build();
                 }
             }
 
-            String result = "failed to find object (" + ${entityName}.get${idFieldName}() + ") to update";
+            String result = "failed to find object (" + ${lcEntityName}.get${idFieldName}() + ") to update";
             return Response.status(500).entity(result).build();
         } catch(PersistenceException persistenceException) {
             String result = "fail:" + persistenceException.getMessage();

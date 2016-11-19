@@ -1,5 +1,7 @@
 package transgenic.lauterbrunnen.lateral.example.microservice.libdomain;
 
+import transgenic.lauterbrunnen.lateral.domain.RepositoryId;
+
 import java.net.URL;
 
 /**
@@ -12,5 +14,7 @@ public class Track {
     Artist artist;
     double lengthInMins;
     URL media;
+    @RepositoryId
+    Integer id;
 
 }

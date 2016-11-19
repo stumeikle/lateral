@@ -6,6 +6,7 @@ import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
+import transgenic.lauterbrunnen.lateral.domain.UniqueId
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.Field
@@ -57,10 +58,13 @@ class GenerateEndpoint {
 
         setIdField(proto);
         if (idField!=null) {
+            context.put("repoIdType", idField.getType().getName());
             context.put("idFieldName", capitalizeFirst(idField.getName()));
         } else {
             context.put("idFieldName", "RepositoryId");
+            context.put("repoIdType", UniqueId.class.getName());
         }
+
 
         context.put("domainGeneratedPackage", domainGeneratedPackage);
         context.put("restGeneratedPackage", outputPackage);
@@ -73,10 +77,11 @@ class GenerateEndpoint {
         //try to pluralise the name
         String propPlural = properties.get("rest.pojo." + proto.getSimpleName().toLowerCase() + ".plural");
         if (propPlural!=null) {
-            context.put("lcEntityName", propPlural);
+            context.put("lcEntityNamePlural", propPlural);
         } else {
-            context.put("lcEntityName", proto.getSimpleName().toLowerCase() +"s");
+            context.put("lcEntityNamePlural", proto.getSimpleName().toLowerCase() +"s");
         }
+        context.put("lcEntityName", proto.getSimpleName().toLowerCase());
 
         context.put("entityName", proto.getSimpleName());
 

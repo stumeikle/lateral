@@ -107,15 +107,28 @@ class GenerateEntity {
             }
 
             String columnName = getColumnName(field.getName());
-            String columnExtra = properties.get("entity.column.definition." + type);
 
-            String col = "Column"
-            if (columnExtra == null) {
-                output << "    @" << col << "(name=\"" << columnName << "\")" << System.lineSeparator()
-            } else {
-                output << "    @" << col << "(name=\"" << columnName << "\" , columnDefinition=\"" + columnExtra + "\")" << System.lineSeparator()
+            //if the column is a collection we may need to use the column extra from the contained type here
+            //(1) is it a list
+            //    yes -> get the contained type
+            //           if db text is provided use that in the column definition
+            //           if the contained type is also a collection. stop, we can't do that yet
+            //(2) is it a map
+            //    yes -> do the same with the map key
+            //
+
+            if (!addListAnnotation(field, columnName, output, proto) && !addMapAnnotation(field,columnName,output, proto)) {
+                //do the 'normal' case
+                String columnExtra = properties.get("entity.column.definition." + type);
+                String col = "Column"
+                if (columnExtra == null) {
+                    output << "    @" << col << "(name=\"" << columnName << "\")" << System.lineSeparator()
+                } else {
+                    output << "    @" << col << "(name=\"" << columnName << "\" , columnDefinition=\"" + columnExtra + "\")" << System.lineSeparator()
+                }
             }
 
+            /*
             //if its a collection we need specific annotations
             if (field.getType().getInterfaces()!=null) {
                 for (Class iface : field.getType().getInterfaces()) {
@@ -130,8 +143,8 @@ class GenerateEntity {
                                 idInCaps << "\")})" << System.lineSeparator()
                     }
                 }
-            }
-
+            }*/
+/*
             //and if its a map almost the same
             boolean isMap =false;
             if (Map.class.getName().equals(field.getType().getTypeName())) isMap=true;
@@ -155,7 +168,7 @@ class GenerateEntity {
                 output << "    @CollectionTable(name=\"" << nameInCaps << "_X_" << fieldInCaps << "\", joinColumns={@JoinColumn(name=\"" << nameInCaps << "_" <<
                         idInCaps << "\")})" << System.lineSeparator()
             }
-
+*/
 
             output << "    public " + type + " get" + firstUpperFN + "() {" << System.lineSeparator()
             output << "        return this." + field.getName() + ";" << System.lineSeparator()
@@ -177,6 +190,96 @@ class GenerateEntity {
         output << "}" << System.lineSeparator()
 
         writeTransformerTail(transformer, transformTo, transformFrom );
+    }
+
+    //return true/false if it is a list
+    private boolean addListAnnotation(Field field, String columnName, def output, def proto) {
+        boolean isList = false;
+
+        //if its a collection we need specific annotations
+        if (field.getType().getInterfaces()!=null) {
+            for (Class iface : field.getType().getInterfaces()) {
+                if (iface.getName().equals(Collection.class.getName())) {
+                    isList = true;
+                    break;
+                }
+            }
+        }
+
+        if (isList) {
+
+            //determine the type encapsulated by the list
+            Type type = field.getGenericType();
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType)type;
+                Type containee = pt.getActualTypeArguments()[0];
+                String idtype = idFields.get(containee.typeName);
+
+                String columnExtra = properties.get("entity.column.definition." + idtype);
+                String col = "Column"
+                if (columnExtra == null) {
+                    output << "    @" << col << "(name=\"" << columnName << "\")" << System.lineSeparator()
+                } else {
+                    output << "    @" << col << "(name=\"" << columnName << "\" , columnDefinition=\"" + columnExtra + "\")" << System.lineSeparator()
+                }
+            }
+
+            output << "    @ElementCollection(fetch=FetchType.LAZY)"<< System.lineSeparator()
+
+            String nameInCaps = getColumnName(proto.getSimpleName());
+            String idInCaps = getColumnName(idFieldName);
+            String fieldInCaps = getColumnName(field.getName());
+
+            output << "    @CollectionTable(name=\"" << nameInCaps << "_X_" << fieldInCaps << "\", joinColumns={@JoinColumn(name=\"" << nameInCaps << "_" <<
+                    idInCaps << "\")})" << System.lineSeparator()
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean addMapAnnotation(Field field, String columnName, def output, def proto) {
+        //and if its a map almost the same
+        boolean isMap =false;
+        if (Map.class.getName().equals(field.getType().getTypeName())) isMap=true;
+        if (!isMap && field.getType().getInterfaces()!=null) {
+            for (Class iface : field.getType().getInterfaces()) {
+                if (iface.getName().equals(Map.class.getName())) {
+                    isMap=true;
+                    break;
+                }
+            }
+        }
+
+        if (isMap) {
+            //check if we need extra annotations for the key
+            Type type = field.getGenericType();
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType)type;
+                Type containee = pt.getActualTypeArguments()[0];
+                String idtype = idFields.get(containee.typeName);
+                String columnExtra = properties.get("entity.column.definition." + idtype);
+                String col = "Column"
+                if (columnExtra == null) {
+                    output << "    @" << col << "(name=\"" << columnName << "\")" << System.lineSeparator()
+                } else {
+                    output << "    @" << col << "(name=\"" << columnName << "\" , columnDefinition=\"" + columnExtra + "\")" << System.lineSeparator()
+                }
+            }
+
+            output << "    @ElementCollection(fetch=FetchType.LAZY)"<< System.lineSeparator()
+
+            String nameInCaps = getColumnName(proto.getSimpleName());
+            String idInCaps = getColumnName(idFieldName);
+            String fieldInCaps = getColumnName(field.getName());
+
+            output << "    @MapKeyColumn(name=\"MAP_KEY\")" << System.lineSeparator()
+            output << "    @CollectionTable(name=\"" << nameInCaps << "_X_" << fieldInCaps << "\", joinColumns={@JoinColumn(name=\"" << nameInCaps << "_" <<
+                    idInCaps << "\")})" << System.lineSeparator()
+            return true;
+        }
+
+        return false;
     }
 
     private void iterateGenerics(Type type, Consumer<Type> classConsumer) {

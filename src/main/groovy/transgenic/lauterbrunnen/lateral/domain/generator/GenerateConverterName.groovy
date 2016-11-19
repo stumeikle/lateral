@@ -49,7 +49,7 @@ class GenerateConverterName {
 
         def fromVarname = shortFromClass.substring(0,1).toLowerCase() + shortFromClass.substring(1);
 
-        output << "    private static " << convertTo << " " << converterMethodName <<
+        output << "    public static " << convertTo << " " << converterMethodName <<
                 "( " << convertFrom << " " << fromVarname << ", Function<" << convertFrom << ", " <<
                 convertTo << "> f) {" << System.lineSeparator()
         output << "        return f.apply(" << fromVarname << ");" << System.lineSeparator()
