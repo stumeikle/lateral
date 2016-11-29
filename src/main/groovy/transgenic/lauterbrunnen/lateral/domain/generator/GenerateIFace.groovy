@@ -1,5 +1,8 @@
 package transgenic.lauterbrunnen.lateral.domain.generator
 
+import transgenic.lauterbrunnen.lateral.domain.RepositoryId
+
+import java.lang.annotation.Annotation
 import java.lang.reflect.Field
 
 /**
@@ -46,11 +49,22 @@ class GenerateIFace extends GenerateImpl{
 
             } else {
 
+                String tn = swapType(field.getGenericType());
+                Annotation[] notes = field.getAnnotations();
+                for(Annotation note: notes) {
+                    if (note.annotationType().getName().equals(RepositoryId.class.getName())) {
+                        if (field.getType().isPrimitive()) {
+                            tn = swapPrimitiveForNon(field.getType());
+                        }
+                        break;
+                    }
+                }
+
                 output << ""<< System.lineSeparator();
-                output << "    " + swapType(field.getGenericType()) + " get" + convertFirstCharToUpper(field.getName()) + "();"<< System.lineSeparator()
+                output << "    " + tn + " get" + convertFirstCharToUpper(field.getName()) + "();"<< System.lineSeparator()
 
                 output << ""<< System.lineSeparator()
-                output << "    void set" + convertFirstCharToUpper(field.getName()) + "(" + swapType(field.getGenericType()) + " " + field.getName() + ");"<< System.lineSeparator()
+                output << "    void set" + convertFirstCharToUpper(field.getName()) + "(" + tn + " " + field.getName() + ");"<< System.lineSeparator()
           }
         }
     }

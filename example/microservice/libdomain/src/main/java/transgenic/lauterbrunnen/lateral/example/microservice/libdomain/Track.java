@@ -15,6 +15,6 @@ public class Track {
     double lengthInMins;
     URL media;
     @RepositoryId
-    Integer id;
+    int id;
 
 }

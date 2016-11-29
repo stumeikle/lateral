@@ -25,6 +25,10 @@ class GenerateRepo extends GenerateRef{
         List<Field> allFields = getAllFields(proto);
         setIdField(allFields);
         String idfieldType = (idField!=null?swapType(idField.getGenericType()) : UniqueId.class.getName() );
+        //and more
+        if (idField!=null && idField.getType().isPrimitive()) {
+            idfieldType = swapPrimitiveForNon(idField.getType());
+        }
 
         output << "public interface " + proto.getSimpleName() + "Repository extends CRUDRepository<" + proto.getSimpleName() + "Impl," <<
                 idfieldType << "> {"<< System.lineSeparator()

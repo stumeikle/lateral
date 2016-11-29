@@ -106,9 +106,14 @@ class GenerateImpl {
         for(Field field : allFields) {
 
             Annotation[] notes = field.getAnnotations();
+            String fieldTypeName = swapType(field.getGenericType());
             for(Annotation note: notes) {
                 if (note.annotationType().getName().equals(RepositoryId.class.getName())) {
                     idField = field;
+                    if (idField.getType().isPrimitive()) {
+                        // convert to non primitive
+                        fieldTypeName = swapPrimitiveForNon( idField.getType());
+                    }
                 }
             }
 
@@ -153,7 +158,7 @@ class GenerateImpl {
                 }
             }
 
-            output << "    private " + swapType(field.getGenericType()) + " " + field.getName() + ";"<< System.lineSeparator()
+            output << "    private " + fieldTypeName + " " + field.getName() + ";"<< System.lineSeparator()
         }
 
         //If no id field is annotated , create one
@@ -172,7 +177,14 @@ class GenerateImpl {
 
             output << ""<< System.lineSeparator();
             output << "    @Override"<< System.lineSeparator();
-            output << "    public " << idField.getType().getTypeName() << " getRepositoryId() {" + System.lineSeparator() +
+
+            //20161129 if the idfield is a primitive type make it a non primitive type in the impl
+            // [in progress]
+            String ftn = idField.getType().getTypeName();
+            if (idField.getType().isPrimitive()) {
+                ftn = swapPrimitiveForNon( idField.getType());
+            }
+            output << "    public " << ftn << " getRepositoryId() {" + System.lineSeparator() +
                     "        return get" + convertFirstCharToUpper(idField.getName()) + "();" + System.lineSeparator() +
                     "    }"<< System.lineSeparator();
         }
@@ -182,7 +194,7 @@ class GenerateImpl {
         output << "        return new " + proto.getSimpleName() + "Reference(this);"<< System.lineSeparator();
         output << "    }"<< System.lineSeparator()
 
-        generateGettersAndSetters(output, proto, allFields);
+        generateGettersAndSetters(output, proto, allFields, idField);
         generateTraversal(output, proto, directProtoFields, collectionFields);
 
         //hashcode
@@ -220,7 +232,7 @@ class GenerateImpl {
         return name.substring(0,1).toUpperCase() + name.substring(1);
     }
 
-    protected void generateGettersAndSetters(def output, Class proto, List<Field> allFields) {
+    protected void generateGettersAndSetters(def output, Class proto, List<Field> allFields, Field idField) {
         for(Field field : allFields) {
 
             if (field.getName().startsWith("is")) {
@@ -242,15 +254,22 @@ class GenerateImpl {
 
             } else {
 
+                String tn = swapType(field.getGenericType());
+                if (field==idField) {
+                    if (idField.getType().isPrimitive()) {
+                        tn = swapPrimitiveForNon(idField.getType());
+                    }
+                }
+
                 output << ""<< System.lineSeparator();
                 output << "    @Override"<< System.lineSeparator()
-                output << "    public " + swapType(field.getGenericType()) + " get" + convertFirstCharToUpper(field.getName()) + "() {"<< System.lineSeparator()
+                output << "    public " + tn + " get" + convertFirstCharToUpper(field.getName()) + "() {"<< System.lineSeparator()
                 output << "        return this." + field.getName() + ";"<< System.lineSeparator()
                 output << "    }"<< System.lineSeparator()
 
                 output << ""<< System.lineSeparator()
                 output << "    @Override"<< System.lineSeparator()
-                output << "    public void set" + convertFirstCharToUpper(field.getName()) + "(" + swapType(field.getGenericType()) + " " + field.getName() + ") {"<< System.lineSeparator()
+                output << "    public void set" + convertFirstCharToUpper(field.getName()) + "(" + tn + " " + field.getName() + ") {"<< System.lineSeparator()
                 output << "        this." + field.getName() + " = " + field.getName() + ";"<< System.lineSeparator()
                 output << "    }"<< System.lineSeparator()
             }
@@ -347,5 +366,32 @@ class GenerateImpl {
             }
         }
         return retval;
+    }
+
+    def String swapPrimitiveForNon(Class prim) {
+        if (prim.equals(Boolean.TYPE)) {
+            return "Boolean";
+        }
+        if (prim.equals(Character.TYPE)) {
+            return "Character";
+        }
+        if (prim.equals(Byte.TYPE)) {
+            return "Byte";
+        }
+        if (prim.equals(Short.TYPE)) {
+            return "Short";
+        }
+        if (prim.equals(Integer.TYPE)) {
+            return "Integer";
+        }
+        if (prim.equals(Long.TYPE)) {
+            return "Long";
+        }
+        if (prim.equals(Float.TYPE)) {
+            return "Float";
+        }
+        if (prim.equals(Double.TYPE)) {
+            return "Double";
+        }
     }
 }

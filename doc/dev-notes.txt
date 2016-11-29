@@ -27,7 +27,7 @@ it really is much better to just use guids
 [NEW FEATURE - support generated int ids]
   [info: generators might go into default factory impl. need to set start value tho]
 
-[BUG]
+[BUG] [Done]
 if I set @RepositoryId on a primitive field in my proto then compilation fails. but it shouldn't.
 The generator needs to be fixed to swap types if the user specifies @RepositoryId on a primitive.
 

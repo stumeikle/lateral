@@ -56,29 +56,29 @@ class GenerateHazelcastCachePersist {
         String cachePackage = properties.get("persist.hazelcast.generated.package");
 
 //Find all classes in this package
-        List<Class>     classes = PackageScanner.getClasses( protoPackage );
+        List<Class> classes = PackageScanner.getClasses(protoPackage);
 
 //Skip the enums
-        Iterator<Class>     iterator = classes.iterator();
-        while(iterator.hasNext()) {
-            Class c= iterator.next();
+        Iterator<Class> iterator = classes.iterator();
+        while (iterator.hasNext()) {
+            Class c = iterator.next();
             if (c.isEnum()) {
                 iterator.remove();
             }
         }
 
 
-        def dbdumpbase=generatedSourcesPath;
-        def generatedDir = dbdumpbase + "/" + cachePackage.replaceAll("\\.","/") + "/";
+        def dbdumpbase = generatedSourcesPath;
+        def generatedDir = dbdumpbase + "/" + cachePackage.replaceAll("\\.", "/") + "/";
         def dir = new File(generatedDir);
         dir.mkdirs();
-        for(File file: dir.listFiles()) file.delete();
+        for (File file : dir.listFiles()) file.delete();
 
 
-        Map<String, String>  idFields = new HashMap<>();
+        Map<String, String> idFields = new HashMap<>();
         Map<String, String> idFieldNames = new HashMap<>();
 
-        for( Class proto: classes) {
+        for (Class proto : classes) {
             //For each class we need to know the name of the field which represents the
             //repository id
 
@@ -94,13 +94,20 @@ class GenerateHazelcastCachePersist {
                         repositoryIdFieldName = idField.getName();
 
                         String name = proto.getName().replace(entityPackage, implPackage);
-                        idFields.put(proto.getName(), field.getType().getTypeName());
+
+                        //getting nuts
+                        String fn = field.getType().getTypeName();
+                        if (field.getType().isPrimitive()) {
+                            fn = swapPrimitiveForNon(field.getType());
+                        }
+
+                        idFields.put(proto.getName(), fn);
                         idFieldNames.put(name, repositoryIdFieldName);
                     }
                 }
             }
 
-            if( idField==null) {
+            if (idField == null) {
                 repositoryIdFieldName = "repositoryId";
 
                 String name = proto.getName().replace(entityPackage, implPackage);
@@ -109,29 +116,29 @@ class GenerateHazelcastCachePersist {
             }
         }
 
-        for(Class proto: classes) {
+        for (Class proto : classes) {
 
             GeneratePersister gp = new GeneratePersister();
-            gp.setBasePath( dbdumpbase  );
-            gp.setImplPackage( implPackage );
+            gp.setBasePath(dbdumpbase);
+            gp.setImplPackage(implPackage);
             gp.setCachePackage(cachePackage);
             gp.setEntityPackage(entityPackage);
             gp.generate(proto);
 
             GenerateRetrieverInterface gri = new GenerateRetrieverInterface();
             gri.setCachePackage(cachePackage);
-            gri.setBasePath( dbdumpbase  );
+            gri.setBasePath(dbdumpbase);
             gri.generate(proto);
 
             GenerateRetrieverRemote grr = new GenerateRetrieverRemote();
             grr.setCachePackage(cachePackage);
-            grr.setBasePath( dbdumpbase  );
-            grr.setImplPackage( implPackage );
+            grr.setBasePath(dbdumpbase);
+            grr.setImplPackage(implPackage);
             grr.generate(proto);
 
             GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
-            gr.setBasePath( dbdumpbase  );
-            gr.setImplPackage( implPackage );
+            gr.setBasePath(dbdumpbase);
+            gr.setImplPackage(implPackage);
             gr.setCachePackage(cachePackage);
             gr.setEntityPackage(entityPackage);
             gr.setIdFields(idFields);
@@ -140,9 +147,8 @@ class GenerateHazelcastCachePersist {
 
             GeneratePersisterInterface gpi = new GeneratePersisterInterface();
             gpi.setCachePackage(cachePackage);
-            gpi.setBasePath( dbdumpbase  );
+            gpi.setBasePath(dbdumpbase);
             gpi.generate(proto);
-
 
 //            GenerateMapStore gms = new GenerateMapStore();
 //            gms.setBasePath( dbdumpbase  );
@@ -154,15 +160,15 @@ class GenerateHazelcastCachePersist {
         }
 
         GenerateChangeListener gcl = new GenerateChangeListener();
-        gcl.setBasePath( dbdumpbase  );
-        gcl.setImplPackage( implPackage );
+        gcl.setBasePath(dbdumpbase);
+        gcl.setImplPackage(implPackage);
         gcl.setCachePackage(cachePackage);
         gcl.setEntityPackage(entityPackage);
         gcl.generate(classes, idFields);
 
         GenerateMapStoreFactory gmsf = new GenerateMapStoreFactory();
-        gmsf.setBasePath( dbdumpbase  );
-        gmsf.setImplPackage( implPackage );
+        gmsf.setBasePath(dbdumpbase);
+        gmsf.setImplPackage(implPackage);
         gmsf.setCachePackage(cachePackage);
         gmsf.setEntityPackage(entityPackage);
         gmsf.generate(classes, idFields);
@@ -174,12 +180,40 @@ class GenerateHazelcastCachePersist {
         List<Field> retval = new ArrayList<>();
         Class sc = klass.getSuperclass();
 
-        if (sc!=null) {
-            retval.addAll( getAllFields( sc ));
+        if (sc != null) {
+            retval.addAll(getAllFields(sc));
         }
 
-        retval.addAll( klass.getDeclaredFields() );
+        retval.addAll(klass.getDeclaredFields());
         return retval;
     }
 
+
+    def String swapPrimitiveForNon(Class prim) {
+        if (prim.equals(Boolean.TYPE)) {
+            return "Boolean";
+        }
+        if (prim.equals(Character.TYPE)) {
+            return "Character";
+        }
+        if (prim.equals(Byte.TYPE)) {
+            return "Byte";
+        }
+        if (prim.equals(Short.TYPE)) {
+            return "Short";
+        }
+        if (prim.equals(Integer.TYPE)) {
+            return "Integer";
+        }
+        if (prim.equals(Long.TYPE)) {
+            return "Long";
+        }
+        if (prim.equals(Float.TYPE)) {
+            return "Float";
+        }
+        if (prim.equals(Double.TYPE)) {
+            return "Double";
+
+        }
+    }
 }

@@ -44,6 +44,11 @@ class GenerateRef extends GenerateImpl{
         setIdField(allFields);
         String idfieldType = (idField!=null?swapType(idField.getGenericType()) : UniqueId.class.getName() );
 
+        //and more
+        if (idField!=null && idField.getType().isPrimitive()) {
+            idfieldType = swapPrimitiveForNon(idField.getType());
+        }
+
         output << "    private " + idfieldType + " repositoryId;" << System.lineSeparator()
         output << "    private transient " + classNameImpl + " proxee;" << System.lineSeparator()
         output << "    private static transient final " + className + "Repository " + classNameLowerFirst + "Repository = inject(" + className + "Repository.class);" << System.lineSeparator()
@@ -69,7 +74,7 @@ class GenerateRef extends GenerateImpl{
         output << "        return repositoryId;" << System.lineSeparator()
         output << "    }" << System.lineSeparator()
 
-        generateGettersAndSetters(output, proto, allFields);
+        generateGettersAndSetters(output, proto, allFields, idField);
         generateTail(output,proto);
     }
 
@@ -86,7 +91,7 @@ class GenerateRef extends GenerateImpl{
         }
     }
 
-    protected void generateGettersAndSetters(def output, Class proto, List<Field> allFields) {
+    protected void generateGettersAndSetters(def output, Class proto, List<Field> allFields, Field idField) {
         for(Field field : allFields) {
 
             if (field.getName().startsWith("is")) {
@@ -110,16 +115,23 @@ class GenerateRef extends GenerateImpl{
 
             } else {
 
+                String tn = swapType(field.getGenericType());
+                if (field==idField) {
+                    if (idField.getType().isPrimitive()) {
+                        tn = swapPrimitiveForNon(idField.getType());
+                    }
+                }
+
                 output << ""<< System.lineSeparator();
                 output << "    @Override"<< System.lineSeparator()
-                output << "    public " + swapType(field.getGenericType()) + " get" + convertFirstCharToUpper(field.getName()) + "() {"<< System.lineSeparator()
+                output << "    public " + tn + " get" + convertFirstCharToUpper(field.getName()) + "() {"<< System.lineSeparator()
                 output << "        if (proxee==null) load();"<< System.lineSeparator()
                 output << "        return proxee.get" + convertFirstCharToUpper(field.getName()) + "();"<< System.lineSeparator()
                 output << "    }"<< System.lineSeparator()
 
                 output << ""<< System.lineSeparator()
                 output << "    @Override"<< System.lineSeparator()
-                output << "    public void set" + convertFirstCharToUpper(field.getName()) + "(" + swapType(field.getGenericType()) + " " + field.getName() + ") {"<< System.lineSeparator()
+                output << "    public void set" + convertFirstCharToUpper(field.getName()) + "(" + tn + " " + field.getName() + ") {"<< System.lineSeparator()
                 output << "        if (proxee==null) load();"<< System.lineSeparator()
                 output << "        proxee.set" + convertFirstCharToUpper(field.getName()) + "(" + field.getName() + ");"<< System.lineSeparator()
                 output << "    }"<< System.lineSeparator()
