@@ -1,0 +1,71 @@
+package ${cachePackage};
+
+import ${domainGeneratedPackage}.${entityName}Impl;
+import ${entityPackage}.${entityName}Entity;
+import ${entityPackage}.${entityName}EntityTransformer;
+import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
+${importCacheKey}
+
+import javax.persistence.Query;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Created by stumeikle on 28/11/16.
+ * Now generated. do not edit
+ */
+public class ${entityName}RetrieverImplDirect implements ${entityName}Retriever {
+
+    private ThreadLocal<Object> ${lcEntityName}Entity = new ThreadLocal<>();
+
+    @Override
+    public Object load(Object key) {
+        //convert repository key to db key if needed
+        Object      dbKey=${convertCacheKeyToDbKey};
+        ${lcEntityName}Entity.set(null);
+        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+            ${lcEntityName}Entity.set( em.find( ${entityName}Entity.class, dbKey ));
+        });
+
+        //convert back to impl
+        if (${lcEntityName}Entity.get()!=null) {
+            ${entityName}Impl ${lcEntityName}Impl = new ${entityName}Impl();
+            ${entityName}EntityTransformer.transform(${lcEntityName}Impl,(${entityName}Entity)${lcEntityName}Entity.get());
+
+            return ${lcEntityName}Impl;
+        }
+        return null;    }
+
+	//TODO yes, could be much optimised
+    @Override
+    public Map<Object, Object> loadAll(Collection<Object> collection) {
+        Map<Object, Object> retval = new HashMap<>();
+
+        for(Object key: collection) {
+            Object entity = load(key);
+            if (entity!=null) {
+                retval.put(key,entity);
+            }
+        }
+
+        return retval;
+    }
+
+    @Override
+    public Iterable<Object> loadAllKeys() {
+        //use sql to pull out all the keys
+		//need to add
+		//@NamedQuery(name="TrackEntity.findAllIds", query="SELECT track.id FROM TrackEntity track")
+		//To entities
+        TransactionManager.INSTANCE.runInTransactionalContext((em)->{
+            Query query = em.createNamedQuery("${entityName}Entity.findAllIds");
+            ${lcEntityName}Entity.set(query.getResultList());
+        });
+
+        //convert keys from dbkeys back to cache keys if needed
+        return ${convertDbKeysToCacheKeys};
+    }
+}

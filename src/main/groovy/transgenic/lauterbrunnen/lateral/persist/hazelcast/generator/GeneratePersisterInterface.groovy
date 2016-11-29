@@ -6,33 +6,39 @@ import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 
-import java.lang.reflect.Field
-
 /**
- * Created by stumeikle on 06/11/16.
+ * Created by stumeikle on 29/11/16.
  */
-class GenerateMapStoreFactory extends GeneratePersister {
+class GeneratePersisterInterface {
+    private String cachePackage;
+    private String  basePath;
 
-    public void generate(List<Class> protoclasses, Map<String, Field> idFields) {
+    String getCachePackage() {
+        return cachePackage
+    }
 
+    void setCachePackage(String cachePackage) {
+        this.cachePackage = cachePackage
+    }
+
+    void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    void generate(Class proto) {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
         ve.init();
-        Template t = ve.getTemplate("MapStoreFactory.vtl");
+        Template t = ve.getTemplate("PersisterInterface.vtl");
         VelocityContext context = new VelocityContext();
         context.put("cachePackage", cachePackage);
-        context.put("implPackage",  implPackage);
-        Vector<String>      v = new Vector<>();
-        for(Class c: protoclasses) {
-            v.add(c.getSimpleName());
-        }
-        context.put("allNames", v);
+        context.put("name", proto.getSimpleName());
 
         StringWriter writer = new StringWriter();
         t.merge(context,writer);
 
-        def fn = basePath + "/" + cachePackage.replaceAll("\\.", "/") + "/HCMapStoreFactoryImpl.java";
+        def fn = basePath + "/" + cachePackage.replaceAll("\\.", "/") + "/" + proto.getSimpleName() + "Persister.java";
         //or connector or what
         println "Writing " + fn;
         def output = new File(fn);

@@ -21,9 +21,29 @@ public class ApplicationDI {
     public static void initialise(Properties properties) {
         //look for default implementations
         for(Class c : AnnotationScanner.INSTANCE.get(DefaultImpl.class)) {
-
             for(Class iface: c.getInterfaces()) {
                 ApplicationDI.registerImplementationClass(iface, c);
+            }
+        }
+
+        //override these with configured properties
+        //di.class.for.HCMapStoreFactory=transgenic.lauterbrunnen.lateral.persist.hazelcast.generated.HCReadThroughFactoryImpl
+        //di.class.for.HCMapStoreFactory=transgenic.lauterbrunnen.lateral.persist.hazelcast.generated.HCWriteThroughFactoryImpl
+        //di.class.for.HCMapStoreFactory=transgenic.lauterbrunnen.lateral.persist.hazelcast.generated.HCReadWriteThroughFactoryImpl
+        //Do this by iterating through the properties. This ensures the config is respected if
+        //no default is specified
+        for(Object propertyKey: properties.keySet()) {
+            String pk = (String) propertyKey;
+            if (!pk.startsWith("di.class.for.")) continue;
+            String impClassName= (String) properties.get(pk);
+            try {
+                Class impClass = Class.forName(impClassName);
+                for(Class iface: impClass.getInterfaces()) {
+                    ApplicationDI.registerImplementationClass(iface, impClass);
+                    LOG.info("Using " + impClass + " for " + iface);
+                }
+            } catch (ClassNotFoundException e) {
+                LOG.warn("Unable to find class " + impClassName);
             }
         }
     }
@@ -35,7 +55,6 @@ public class ApplicationDI {
         //if there is no implementation, try to create a new one
         Class implClass = implementationClasses.get(interfaceClass);
         if (implClass!=null) {
-
             try {
                 T   instance = (T) implClass.newInstance();
                 registerImplementation(interfaceClass, instance);
@@ -48,6 +67,10 @@ public class ApplicationDI {
         }
 
         return null;
+    }
+
+    public static Class getImplementationClass(Class interfaceClass) {
+        return implementationClasses.get(interfaceClass);
     }
 
     public static <T> T inject(Class<T> interfaceClass) {

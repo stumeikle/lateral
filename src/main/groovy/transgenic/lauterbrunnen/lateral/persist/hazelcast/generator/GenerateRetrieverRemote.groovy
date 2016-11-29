@@ -6,37 +6,35 @@ import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 
-import java.lang.reflect.Field
-
 /**
- * Created by stumeikle on 06/11/16.
+ * Created by stumeikle on 28/11/16.
  */
-class GenerateMapStoreFactory extends GeneratePersister {
+class GenerateRetrieverRemote {
 
-    public void generate(List<Class> protoclasses, Map<String, Field> idFields) {
+    String basePath;
+    String cachePackage;
+    String implPackage;
 
+    def generate(Class proto) {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
         ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
         ve.init();
-        Template t = ve.getTemplate("MapStoreFactory.vtl");
+        Template t = ve.getTemplate("RetrieverImplRemote.vtl");
         VelocityContext context = new VelocityContext();
         context.put("cachePackage", cachePackage);
-        context.put("implPackage",  implPackage);
-        Vector<String>      v = new Vector<>();
-        for(Class c: protoclasses) {
-            v.add(c.getSimpleName());
-        }
-        context.put("allNames", v);
+        context.put("entityName", proto.getSimpleName());
+        context.put("domainGeneratedPackage", implPackage);
 
         StringWriter writer = new StringWriter();
         t.merge(context,writer);
 
-        def fn = basePath + "/" + cachePackage.replaceAll("\\.", "/") + "/HCMapStoreFactoryImpl.java";
+        def fn = basePath + "/" + cachePackage.replaceAll("\\.", "/") + "/" + proto.getSimpleName() + "RetrieverImplRemote.java";
         //or connector or what
         println "Writing " + fn;
         def output = new File(fn);
 
         output << writer.toString();
     }
+
 }

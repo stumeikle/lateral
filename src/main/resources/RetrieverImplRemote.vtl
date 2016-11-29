@@ -1,0 +1,46 @@
+package ${cachePackage};
+
+import transgenic.lauterbrunnen.lateral.admin.Admin;
+import transgenic.lauterbrunnen.lateral.domain.Repository;
+import $domainGeneratedPackage.${entityName};
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Created by stumeikle on 28/11/16.  --> Now generated do not edit
+ * Loading things via an admin command
+ * ie via dbd or similar
+ *
+ * THIS IS THE CLIENT SIDE
+ * the server side will need to live in dbdumper
+ */
+public class ${entityName}RetrieverImplRemote implements ${entityName}Retriever {
+    @Override
+    public Object load(Object o) {
+
+        //this should get it into the cache (blocks)
+        return Admin.sendCommandAndCompleteAction("loadObject", "${entityName}", o.toString()).getResult();
+    }
+
+    @Override
+    public Map<Object, Object> loadAll(Collection<Object> collection) {
+        Map<Object, Object> retval = new HashMap<>();
+
+        //not really recommended
+        for(Object key: collection) {
+            Object result = load(key);
+            if (result!=null) {
+                retval.put(key,result);
+            }
+        }
+
+        return retval;
+    }
+
+    @Override
+    public Iterable<Object> loadAllKeys() {
+        return (Iterable<Object>)Admin.sendCommandAndCompleteAction("loadAllKeys", "${entityName}").getResult();
+    }
+}

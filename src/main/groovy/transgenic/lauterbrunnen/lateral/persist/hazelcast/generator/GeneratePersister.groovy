@@ -39,7 +39,7 @@ class GeneratePersister {
     }
 
     public void generate(Class proto) {
-        def fn = basePath + "/" + cachePackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + "ImplPersister.java";
+        def fn = basePath + "/" + cachePackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + "PersisterImplDirect.java";
         println "Writing " + fn;
         def output = new File(fn);
 
@@ -52,18 +52,19 @@ class GeneratePersister {
         output << "import " << entityPackage << "." << proto.getSimpleName() << "Entity;" << System.lineSeparator()
         output << "import " << entityPackage << "." << proto.getSimpleName() << "EntityTransformer;" << System.lineSeparator()
         output << "import transgenic.lauterbrunnen.lateral.persist.Persister;" << System.lineSeparator()+
-                "import transgenic.lauterbrunnen.lateral.persist.TransactionManager;"<< System.lineSeparator()
-
+                  "import transgenic.lauterbrunnen.lateral.persist.TransactionManager;"<< System.lineSeparator()
+        output << "import java.util.Collection;" << System.lineSeparator +
+                "import java.util.Map;" << System.lineSeparator
         output << "" << System.lineSeparator();
         
-        String implPersister = proto.getSimpleName() + "ImplPersister";
+        String implPersister = proto.getSimpleName() + "PersisterImplDirect";
         String impl = proto.getSimpleName() + "Impl";
         String entityTransformer = proto.getSimpleName() + "EntityTransformer";
         String entity = proto.getSimpleName() + "Entity";
         String implLC = impl.substring(0,1).toLowerCase() + impl.substring(1);
         String entityLC = entity.substring(0,1).toLowerCase() + entity.substring(1);
         
-        output << "public class " << implPersister << " implements Persister {" << System.lineSeparator() +
+        output << "public class " << implPersister << " implements " << proto.getSimpleName() << "Persister {" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    public void persist(Object object) {" << System.lineSeparator() +
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
@@ -74,6 +75,13 @@ class GeneratePersister {
                 "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            em.persist(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
+                "    }" << System.lineSeparator() +
+                "    @Override" << System.lineSeparator +
+                "    public void persistAll(Map<Object, Object> map) {" << System.lineSeparator +
+                "        //agreed non ideal TODO" << System.lineSeparator +
+                "        for(Object o: map.values()) {" << System.lineSeparator +
+                "            persist(o);" << System.lineSeparator +
+                "        }" << System.lineSeparator +
                 "    }" << System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
@@ -96,7 +104,21 @@ class GeneratePersister {
                 "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, " << implLC << ".getRepositoryId() );" << System.lineSeparator() +
                 "            em.remove(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
-                "    }"<< System.lineSeparator()
+                "    }"<< System.lineSeparator()<< System.lineSeparator() +
+                "    private void removeByKey(Object key) {" << System.lineSeparator +
+                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator +
+                "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, key );" << System.lineSeparator +
+                "            em.remove(" << entityLC << ");" << System.lineSeparator +
+                "        });" << System.lineSeparator +
+                "    }" << System.lineSeparator +
+                "" << System.lineSeparator +
+                "    @Override" << System.lineSeparator +
+                "    public void removeAll(Collection<Object> collection) {" << System.lineSeparator +
+                "        //agreed non ideal TODO" << System.lineSeparator +
+                "        for(Object o: collection) {" << System.lineSeparator +
+                "            removeByKey(o);" << System.lineSeparator +
+                "        }" << System.lineSeparator +
+                "    }" << System.lineSeparator
         output << "}" << System.lineSeparator()
     }
 }

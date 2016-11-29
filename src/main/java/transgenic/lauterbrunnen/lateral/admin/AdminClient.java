@@ -11,6 +11,8 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
 /**
  * Created by stumeikle on 17/06/16.
  *
+ * EXPLORATORY, NOT IN USE
+ *
  * Servers, services created need to connect to the admin bus
  * to send pings and receive commands
  *

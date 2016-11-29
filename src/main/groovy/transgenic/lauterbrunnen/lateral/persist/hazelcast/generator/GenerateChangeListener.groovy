@@ -23,6 +23,7 @@ class GenerateChangeListener extends GeneratePersister{
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.CacheChangeListener;" << System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCCacheChangeManager;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +
+                "import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;"<< System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "import java.util.Map;" << System.lineSeparator();
         output << "" << System.lineSeparator()
@@ -33,10 +34,13 @@ class GenerateChangeListener extends GeneratePersister{
 
         for (Class proto: protoclasses) {
             String idField = idFields.get(proto.getName());
-
+            String lcentity = proto.getSimpleName().substring(0,1) + proto.getSimpleName().substring(1);
+            
+            output << "        " << proto.getSimpleName() << "Persister " << lcentity << "Persister = inject(" << proto.getSimpleName() << "Persister.class);" << System.lineSeparator +
+                    "        if (" << lcentity << "Persister==null) " << lcentity << "Persister = new " << proto.getSimpleName() << "PersisterImplDirect();" << System.lineSeparator
             output << "        iMapMap.get(\"" << proto.getSimpleName() << "\").addEntryListener(" << System.lineSeparator() +
                     "                new CacheChangeListener<" << proto.getSimpleName() << "Impl, " << idField <<">(" << System.lineSeparator() +
-                    "                new " << proto.getSimpleName() << "ImplPersister()), true);"<< System.lineSeparator()
+                    "                " << lcentity << "Persister), true);"<< System.lineSeparator()
         }
         
         output << "    }" << System.lineSeparator()

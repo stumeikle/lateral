@@ -35,6 +35,8 @@ class GenerateManager {
                 "import com.hazelcast.core.IdGenerator;" << System.lineSeparator() +
                 "import java.util.HashMap;" << System.lineSeparator() +
                 "import java.util.Map;" << System.lineSeparator() +
+                "import transgenic.lauterbrunnen.lateral.admin.AdminCommandQueue;" << System.lineSeparator()+
+                "import transgenic.lauterbrunnen.lateral.admin.hazelcast.HCAdminCommandQueueImpl;"<< System.lineSeparator()+
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;" << System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.ApplicationDI;" << "" << System.lineSeparator()
@@ -65,6 +67,14 @@ class GenerateManager {
             output << "        ApplicationDI.registerImplementation(" + repo.getSimpleName() + ".class, " +
                     namelc + "RepositoryImpl);" << System.lineSeparator()
         }
+        
+        output << System.lineSeparator();
+        output << "        //Admin bus" << System.lineSeparator() +
+                "        IMap adminCommandQueue = hazel.getMap(\"AdminCommandQueue\");" << System.lineSeparator() +
+                "        imapNameMap.put(\"AdminCommandQueue\", adminCommandQueue);" << System.lineSeparator() +
+                "        HCAdminCommandQueueImpl hcAdminCommandQueueImpl = new HCAdminCommandQueueImpl();" << System.lineSeparator() +
+                "        ApplicationDI.registerImplementation(AdminCommandQueue.class, hcAdminCommandQueueImpl);" << System.lineSeparator()
+        output << System.lineSeparator();
 
         output << "    }" << System.lineSeparator()
         output << "" << System.lineSeparator()

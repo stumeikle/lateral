@@ -190,7 +190,7 @@ class GenerateImpl {
         output << ""<< System.lineSeparator()
         output << "    @Override"<< System.lineSeparator()
         output << "    public int hashCode() {"<< System.lineSeparator()
-        output << "        return getRepositoryId().hashCode();"<< System.lineSeparator()
+        output << "        return getRepositoryId() == null ? -1 : getRepositoryId().hashCode();"<< System.lineSeparator()
         output << "    }"<< System.lineSeparator()
 
         String implName = proto.getSimpleName() + "Impl";
@@ -200,6 +200,7 @@ class GenerateImpl {
         output << ""<< System.lineSeparator()
         output << "    @Override"<< System.lineSeparator()
         output << "    public boolean equals(Object other) {" + System.lineSeparator() +
+                "        if (getRepositoryId()==null) return false;"+ System.lineSeparator() +
                 "        if (other instanceof " + implName +") {" + System.lineSeparator() +
                 "            " +implName + " " + varImpl + " = (" + implName +")other;" + System.lineSeparator() +
                 "            return " + varImpl + ".getRepositoryId().equals(getRepositoryId());" + System.lineSeparator() +

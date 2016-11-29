@@ -76,6 +76,11 @@ class GenerateEntity {
         output << "" << System.lineSeparator();
         output << "@Entity" << System.lineSeparator();
         output << "@Table(name=\"" << getColumnName(proto.getSimpleName()) << "\")" <<System.lineSeparator()
+
+        //jpqls
+        output << "@NamedQuery(name=\"" << proto.getSimpleName() << "Entity.findAllIds\", query=\"SELECT " <<
+                "x." << idFieldName << " from " << proto.getSimpleName() << "Entity x\")" << System.lineSeparator();
+
         output << "public class " << proto.getSimpleName() << "Entity {" << System.lineSeparator();
         output << "" << System.lineSeparator();
 
@@ -127,48 +132,6 @@ class GenerateEntity {
                     output << "    @" << col << "(name=\"" << columnName << "\" , columnDefinition=\"" + columnExtra + "\")" << System.lineSeparator()
                 }
             }
-
-            /*
-            //if its a collection we need specific annotations
-            if (field.getType().getInterfaces()!=null) {
-                for (Class iface : field.getType().getInterfaces()) {
-                    if (iface.getName().equals(Collection.class.getName())) {
-                        output << "    @ElementCollection(fetch=FetchType.LAZY)"<< System.lineSeparator()
-
-                        String nameInCaps = getColumnName(proto.getSimpleName());
-                        String idInCaps = getColumnName(idFieldName);
-                        String fieldInCaps = getColumnName(field.getName());
-
-                        output << "    @CollectionTable(name=\"" << nameInCaps << "_X_" << fieldInCaps << "\", joinColumns={@JoinColumn(name=\"" << nameInCaps << "_" <<
-                                idInCaps << "\")})" << System.lineSeparator()
-                    }
-                }
-            }*/
-/*
-            //and if its a map almost the same
-            boolean isMap =false;
-            if (Map.class.getName().equals(field.getType().getTypeName())) isMap=true;
-            if (!isMap && field.getType().getInterfaces()!=null) {
-                for (Class iface : field.getType().getInterfaces()) {
-                    if (iface.getName().equals(Map.class.getName())) {
-                            isMap=true;
-                        break;
-                    }
-                }
-            }
-
-            if (isMap) {
-                output << "    @ElementCollection(fetch=FetchType.LAZY)"<< System.lineSeparator()
-
-                String nameInCaps = getColumnName(proto.getSimpleName());
-                String idInCaps = getColumnName(idFieldName);
-                String fieldInCaps = getColumnName(field.getName());
-
-                output << "    @MapKeyColumn(name=\"MAP_KEY\")" << System.lineSeparator()
-                output << "    @CollectionTable(name=\"" << nameInCaps << "_X_" << fieldInCaps << "\", joinColumns={@JoinColumn(name=\"" << nameInCaps << "_" <<
-                        idInCaps << "\")})" << System.lineSeparator()
-            }
-*/
 
             output << "    public " + type + " get" + firstUpperFN + "() {" << System.lineSeparator()
             output << "        return this." + field.getName() + ";" << System.lineSeparator()

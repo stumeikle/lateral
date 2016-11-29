@@ -34,8 +34,9 @@ public class ${entityName}Endpoint {
 
         //persist the object
         try {
-            Repository.persist(${lcEntityName}.createImpl());
-            String result = "success";
+            ${entityName}Impl impl = ${lcEntityName}.createImpl();
+            Repository.persist(impl);
+            String result = impl.getRepositoryId().toString();
             return Response.status(201).entity(result).build();
         } catch(PersistenceException persistenceException) {
             String result = "fail:" + persistenceException.getMessage();
@@ -53,8 +54,9 @@ public class ${entityName}Endpoint {
 
         //persist the object
         try {
-            Repository.persist(${lcEntityName}.createImpl());
-            String result = "success";
+            ${entityName}Impl impl = ${lcEntityName}.createImpl();
+            Repository.persist(impl);
+            String result = impl.getRepositoryId().toString();
             return Response.status(201).entity(result).build();
         } catch(PersistenceException persistenceException) {
             String result = "fail:" + persistenceException.getMessage();

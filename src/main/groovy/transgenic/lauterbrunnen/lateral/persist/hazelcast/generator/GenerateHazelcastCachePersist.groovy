@@ -118,7 +118,18 @@ class GenerateHazelcastCachePersist {
             gp.setEntityPackage(entityPackage);
             gp.generate(proto);
 
-            GenerateRetriever gr = new GenerateRetriever();
+            GenerateRetrieverInterface gri = new GenerateRetrieverInterface();
+            gri.setCachePackage(cachePackage);
+            gri.setBasePath( dbdumpbase  );
+            gri.generate(proto);
+
+            GenerateRetrieverRemote grr = new GenerateRetrieverRemote();
+            grr.setCachePackage(cachePackage);
+            grr.setBasePath( dbdumpbase  );
+            grr.setImplPackage( implPackage );
+            grr.generate(proto);
+
+            GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
             gr.setBasePath( dbdumpbase  );
             gr.setImplPackage( implPackage );
             gr.setCachePackage(cachePackage);
@@ -127,12 +138,18 @@ class GenerateHazelcastCachePersist {
             gr.setProperties(properties);
             gr.generate(proto);
 
-            GenerateMapStore gms = new GenerateMapStore();
-            gms.setBasePath( dbdumpbase  );
-            gms.setImplPackage( implPackage );
-            gms.setCachePackage(cachePackage);
-            gms.setEntityPackage(entityPackage);
-            gms.generate(proto);
+            GeneratePersisterInterface gpi = new GeneratePersisterInterface();
+            gpi.setCachePackage(cachePackage);
+            gpi.setBasePath( dbdumpbase  );
+            gpi.generate(proto);
+
+
+//            GenerateMapStore gms = new GenerateMapStore();
+//            gms.setBasePath( dbdumpbase  );
+//            gms.setImplPackage( implPackage );
+//            gms.setCachePackage(cachePackage);
+//            gms.setEntityPackage(entityPackage);
+//            gms.generate(proto);
 
         }
 

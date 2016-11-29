@@ -64,6 +64,8 @@ import transgenic.lauterbrunnen.lateral.example.microservice.libdomain.generated
  * could possibly use custom generator see http://stackoverflow.com/questions/12742826/how-do-i-know-id-before-saving-object-in-jpa
   * might be ok if i set hashcode to -1 for these items and equals to always be false. need to consider creation in
   * detail
+  * might indeed be ok, but hazelcast doesn't allow null keys, even if these would be assigned with sequences in the map store
+  * :(. harumph
  *
  * (6) ensure x tables use the varchar for bit for foreign keys
  * [Done]
@@ -80,13 +82,6 @@ public class ServerApplication {
 
         BasicConfigurator.configure();
         Lateral.INSTANCE.initialise();
-
-        //UniqueId uuid = UniqueId.fromString("11e6adbe-eab2-3e37-b74d-296553578ef7"); //ok
-        UniqueId uuid = UniqueId.fromString("11e6adbf-87c7-b651-99af-d5b572af5982"); //ok
-//11e6adbf-87c7-b651-99af-d5b572af5982
-
-        Album album = Repository.retrieve(Album.class, uuid);
-        System.out.println("Result=" + album);
 
     }
 }

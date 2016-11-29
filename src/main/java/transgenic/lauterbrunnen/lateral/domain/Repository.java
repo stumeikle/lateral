@@ -1,5 +1,7 @@
 package transgenic.lauterbrunnen.lateral.domain;
 
+import transgenic.lauterbrunnen.lateral.admin.Admin;
+
 import java.util.*;
 
 /**
@@ -14,7 +16,7 @@ public class Repository {
 
             if (subentity instanceof EntityImpl) {
                 EntityImpl impl = (EntityImpl)subentity;
-                if (impl.getRepositoryId()==null) throw new PersistenceException();
+                //if (impl.getRepositoryId()==null) throw new PersistenceException(); able to store with empty ids now
                 if (!persistCollection.contains(impl)) {
                     persistCollection.add(impl);
 
@@ -197,12 +199,14 @@ public class Repository {
     }
 
     public static <T> T retrieve(Class<? extends T> clazz, Object id) {
+
         CRUDRepository repo = Factory.getRepositoryForClass(clazz);
         return (T) repo.retrieve(id);
     }
 
     //Delete ...
-    public static <T> void delete(Class<? extends T> clazz, Object id) {
+    public static <T> void delete(Class<? extends T> clazz, Object id){
+        //this next could also live in the individual caches. consider
         CRUDRepository repo = Factory.getRepositoryForClass(clazz);
         repo.delete(id);
     }

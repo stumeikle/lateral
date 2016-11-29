@@ -38,12 +38,25 @@ public class HazelcastEmbedded implements LateralPlugin {
             cfg = new Config();
         }
 
-        if ("true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_through.enabled"))){
+        boolean write_through = "true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_through.enabled"));
+        boolean read_through  = "true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.read_through.enabled"));
+        if (write_through || read_through){
             MapConfig mapConfig = cfg.getMapConfig("*");
             MapStoreConfig mapStoreConfig = mapConfig.getMapStoreConfig();
             HCMapStoreFactory factory = inject(HCMapStoreFactory.class);
+            factory.setWriteThrough(write_through);
+            factory.setReadThrough(read_through);
             mapStoreConfig.setFactoryImplementation(factory);
-            mapStoreConfig.setWriteDelaySeconds(0); //this means cache writes wait on db commits (write-thru)
+            if (write_through) {
+                int delayValue = 0;
+                String delay = properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_delay_secs");
+                if (delay!=null) {
+                    try{
+                        delayValue = Integer.parseInt(delay);
+                    }catch(NumberFormatException e) {}
+                }
+                mapStoreConfig.setWriteDelaySeconds(delayValue); //this means cache writes wait on db commits (write-thru)
+            }
             mapStoreConfig.setEnabled(true);
         }
 
