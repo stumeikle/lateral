@@ -9,8 +9,8 @@ public interface EntityImpl {
 
     void traverse(EntityTraversalFunction entityTraversalFunction, Collection<EntityImpl> persistCollection) throws PersistenceException;
     Object getRepositoryId();
-    boolean hasBeenPersisted();
-    void setHasBeenPersisted(boolean hasBeenPersisted);
+//    boolean hasBeenPersisted();
+//    void setHasBeenPersisted(boolean hasBeenPersisted);
     EntityReference getReference();
     long getUpdateId();
 }

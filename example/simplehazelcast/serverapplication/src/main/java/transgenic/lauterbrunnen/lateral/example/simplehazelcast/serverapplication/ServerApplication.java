@@ -2,6 +2,7 @@ package transgenic.lauterbrunnen.lateral.example.simplehazelcast.serverapplicati
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.BasicConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import transgenic.lauterbrunnen.lateral.Lateral;
@@ -22,6 +23,7 @@ public class ServerApplication {
     private static ResourceConfig resourceConfig=null;
 
     public ServerApplication() {
+        BasicConfigurator.configure();
         Lateral.INSTANCE.initialise();
 
         //get the properties from lateral

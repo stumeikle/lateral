@@ -6,5 +6,5 @@ package transgenic.lauterbrunnen.lateral.admin;
 public interface CommandFilter {
 
     //boolean matches(String commandName);
-    boolean matches(String commandName, String[] params);
+    boolean matches(String commandName, Object[] params);
 }

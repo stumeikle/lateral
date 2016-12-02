@@ -12,4 +12,5 @@ public interface AdminCommandQueue {
     void removeCommand( UniqueId commandId );
     void create(Command command);
     void callbackWhenDone( UniqueId id, CommandCallback callback );
+    void update(UniqueId commandId, Command command);
 }

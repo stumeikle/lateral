@@ -461,6 +461,7 @@ class GenerateRestPojo {
 
             sfdf.doIt( output, field_name, typename );
         } else {
+
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) type;
                 String rawname = pt.getRawType().getTypeName();

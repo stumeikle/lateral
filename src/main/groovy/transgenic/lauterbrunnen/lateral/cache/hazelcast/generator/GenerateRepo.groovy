@@ -17,7 +17,7 @@ class GenerateRepo extends GenerateManager {
 
         String repoName = repo.getSimpleName();
         String entityName = repoName.replace("Repository", "");
-        String entityNameLc = entityName.substring(0,1) + entityName.substring(1);
+        String entityNameLc = entityName.substring(0,1).toLowerCase() + entityName.substring(1);
 
         //We need the type nane for the repositoryId field
         String repositoryIdType=null;

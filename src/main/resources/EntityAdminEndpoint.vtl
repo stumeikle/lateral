@@ -1,0 +1,58 @@
+package ${cachePackage};
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import transgenic.lauterbrunnen.lateral.admin.Admin;
+import transgenic.lauterbrunnen.lateral.admin.Command;
+import transgenic.lauterbrunnen.lateral.domain.UniqueId;
+
+import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
+
+/**
+ * Created by stumeikle on 01/12/16.
+ *
+ * TODO this is ok for now but in future we need to consider the local file store as well as
+ * the database. and that is db dumper specific tbh. so these classes here are dbdumper specific too
+ * and shouldn't be part of other generation. however.
+ * we could use the retriever injection here to specify our own dbdumper implementation
+ * ContactDetailsEndpoint
+ */
+public class ${entityName}AdminEndpoint {
+    private static final Log LOG = LogFactory.getLog(${entityName}AdminEndpoint.class);
+
+    //doesn't implement the retriever IF but uses it
+    private ${entityName}Retriever ${lcEntityName}Retriever;
+
+    public ${entityName}AdminEndpoint() {
+        ${lcEntityName}Retriever = inject(${entityName}Retriever.class);
+        if (${lcEntityName}Retriever==null) ${lcEntityName}Retriever = new ${entityName}RetrieverImplDirect();
+
+        Admin.registerInterest((c,p)->"loadObject".equals(c) && "${entityName}".equals(p[0]), this::handleLoadObject);
+        Admin.registerInterest((c,p)->"loadAllKeys".equals(c) && "${entityName}".equals(p[0]), this::handleLoadAllKeys);
+        //load all objects we dont expect remotely
+    }
+
+    //generated of course
+    public void handleLoadObject(Command command) {
+        if (Admin.claimOwnershipOf(command)) {
+            //do it
+            LOG.debug("Handling command " + command.getCommand() + "," + command.getParameter());
+
+            //this now needs to be bound to our retriever
+            //create the cache key from the string
+            command.setResult(${lcEntityName}Retriever.load(command.getParameter()[1]));
+            Admin.completeCommand(command);
+        }
+    }
+
+    public void handleLoadAllKeys(Command command) {
+        if (Admin.claimOwnershipOf(command)) {
+            //do it
+            LOG.debug("Handling command " + command.getCommand() + "," + command.getParameter());
+
+            //this now needs to be bound to our retriever
+            command.setResult(${lcEntityName}Retriever.loadAllKeys());
+            Admin.completeCommand(command);
+        }
+    }
+}

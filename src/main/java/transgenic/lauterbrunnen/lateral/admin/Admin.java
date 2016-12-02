@@ -23,6 +23,7 @@ public class Admin {
     }
 
     public static boolean claimOwnershipOf( Command command ){
+        if ("claimed".equals(command.getStatus())) return false;
         try {
             Command proposedValue = (Command) command.clone();
             proposedValue.setOwner(getUniqueName());
@@ -43,7 +44,7 @@ public class Admin {
         return "bob";
     }
 
-    public static void sendCommand(String commandString, String... params) {
+    public static void sendCommand(String commandString, Object... params) {
         Command command = new Command();
 
         command.setCommand(commandString);
@@ -54,7 +55,7 @@ public class Admin {
         adminCommandQueue.create(command);
     }
 
-    public static Command sendCommandAndCompleteAction( String commandString, String... params) {
+    public static Command sendCommandAndCompleteAction( String commandString, Object... params) {
         Command command = new Command();
 
         command.setCommand(commandString);
@@ -84,8 +85,15 @@ public class Admin {
     }
 
     private static final ConcurrentHashMap<UniqueId, Command> commandsDone = new ConcurrentHashMap<>();
-    public static void commandDone(Command command) {
+    private static void commandDone(Command command) {
         commandsDone.put(command.getCommandId(),command);
     }
 
+    //used by the command handler to indicate work is complete
+    //cuases it to be removed from the map which signals to the remote client that the work is done
+    public static void completeCommand( Command command ) {
+        //replace the current command and then remove it. the update saves the result
+        adminCommandQueue.update(command.getCommandId(), command);
+        adminCommandQueue.removeCommand(command.getCommandId());
+    }
 }

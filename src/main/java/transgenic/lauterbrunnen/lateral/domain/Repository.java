@@ -89,9 +89,14 @@ public class Repository {
             } else {
                 if (subentity instanceof EntityImpl) {
                     impl2Update = (EntityImpl) subentity;
-                    if (!impl2Update.hasBeenPersisted()) {
-                        throw new PersistenceException(); //trying to update an object which is not yet in the db
+                    if (Repository.retrieve(subentity.getClass(), impl2Update.getRepositoryId())==null) {
+                        throw new PersistenceException(); //trying to update an object which is not yet in the cache
                     }
+
+//                    if (!impl2Update.hasBeenPersisted()) {
+//                        throw new PersistenceException(); //trying to update an object which is not yet in the db
+                        //20161202 this no longer makes sense to me
+//                    }
                 }
             }
 

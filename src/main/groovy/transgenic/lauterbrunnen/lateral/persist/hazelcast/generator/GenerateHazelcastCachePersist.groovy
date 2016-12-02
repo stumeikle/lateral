@@ -14,6 +14,7 @@ class GenerateHazelcastCachePersist {
 
     def generatedSourcesPath;
     def propertyFile;
+    def generateDirect;
 
     public void generate() {
         //Get the config
@@ -67,63 +68,70 @@ class GenerateHazelcastCachePersist {
             }
         }
 
-
         def dbdumpbase = generatedSourcesPath;
         def generatedDir = dbdumpbase + "/" + cachePackage.replaceAll("\\.", "/") + "/";
         def dir = new File(generatedDir);
         dir.mkdirs();
         for (File file : dir.listFiles()) file.delete();
 
-
         Map<String, String> idFields = new HashMap<>();
         Map<String, String> idFieldNames = new HashMap<>();
 
-        for (Class proto : classes) {
-            //For each class we need to know the name of the field which represents the
-            //repository id
+        if (generateDirect) {
+            for (Class proto : classes) {
+                //For each class we need to know the name of the field which represents the
+                //repository id
 
-            //Fields are from the prototype object
-            List<Field> allFields = getAllFields(proto);
-            Field idField = null;
-            String repositoryIdFieldName = "repositoryId";
-            for (Field field : allFields) {
-                Annotation[] notes = field.getAnnotations();
-                for (Annotation note : notes) {
-                    if (note.annotationType().getName().equals(RepositoryId.class.getName())) {
-                        idField = field;
-                        repositoryIdFieldName = idField.getName();
+                //Fields are from the prototype object
+                List<Field> allFields = getAllFields(proto);
+                Field idField = null;
+                String repositoryIdFieldName = "repositoryId";
+                for (Field field : allFields) {
+                    Annotation[] notes = field.getAnnotations();
+                    for (Annotation note : notes) {
+                        if (note.annotationType().getName().equals(RepositoryId.class.getName())) {
+                            idField = field;
+                            repositoryIdFieldName = idField.getName();
 
-                        String name = proto.getName().replace(entityPackage, implPackage);
+                            String name = proto.getName().replace(entityPackage, implPackage);
 
-                        //getting nuts
-                        String fn = field.getType().getTypeName();
-                        if (field.getType().isPrimitive()) {
-                            fn = swapPrimitiveForNon(field.getType());
+                            //getting nuts
+                            String fn = field.getType().getTypeName();
+                            if (field.getType().isPrimitive()) {
+                                fn = swapPrimitiveForNon(field.getType());
+                            }
+
+                            idFields.put(proto.getName(), fn);
+                            idFieldNames.put(name, repositoryIdFieldName);
                         }
-
-                        idFields.put(proto.getName(), fn);
-                        idFieldNames.put(name, repositoryIdFieldName);
                     }
                 }
-            }
 
-            if (idField == null) {
-                repositoryIdFieldName = "repositoryId";
+                if (idField == null) {
+                    repositoryIdFieldName = "repositoryId";
 
-                String name = proto.getName().replace(entityPackage, implPackage);
-                idFields.put(name, UniqueId.class.getName());
-                idFieldNames.put(name, repositoryIdFieldName);
+                    String name = proto.getName().replace(entityPackage, implPackage);
+                    idFields.put(name, UniqueId.class.getName());
+                    idFieldNames.put(name, repositoryIdFieldName);
+                }
             }
         }
 
+
         for (Class proto : classes) {
 
-            GeneratePersister gp = new GeneratePersister();
-            gp.setBasePath(dbdumpbase);
-            gp.setImplPackage(implPackage);
-            gp.setCachePackage(cachePackage);
-            gp.setEntityPackage(entityPackage);
-            gp.generate(proto);
+            if (generateDirect) {
+                GeneratePersister gp = new GeneratePersister();
+                gp.setBasePath(dbdumpbase);
+                gp.setImplPackage(implPackage);
+                gp.setCachePackage(cachePackage);
+                gp.setEntityPackage(entityPackage);
+                gp.generate(proto);
+                GeneratePersisterInterface gpi = new GeneratePersisterInterface();
+                gpi.setCachePackage(cachePackage);
+                gpi.setBasePath(dbdumpbase);
+                gpi.generate(proto);
+            }
 
             GenerateRetrieverInterface gri = new GenerateRetrieverInterface();
             gri.setCachePackage(cachePackage);
@@ -136,19 +144,16 @@ class GenerateHazelcastCachePersist {
             grr.setImplPackage(implPackage);
             grr.generate(proto);
 
-            GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
-            gr.setBasePath(dbdumpbase);
-            gr.setImplPackage(implPackage);
-            gr.setCachePackage(cachePackage);
-            gr.setEntityPackage(entityPackage);
-            gr.setIdFields(idFields);
-            gr.setProperties(properties);
-            gr.generate(proto);
-
-            GeneratePersisterInterface gpi = new GeneratePersisterInterface();
-            gpi.setCachePackage(cachePackage);
-            gpi.setBasePath(dbdumpbase);
-            gpi.generate(proto);
+            if (generateDirect) {
+                GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
+                gr.setBasePath(dbdumpbase);
+                gr.setImplPackage(implPackage);
+                gr.setCachePackage(cachePackage);
+                gr.setEntityPackage(entityPackage);
+                gr.setIdFields(idFields);
+                gr.setProperties(properties);
+                gr.generate(proto);
+            }
 
 //            GenerateMapStore gms = new GenerateMapStore();
 //            gms.setBasePath( dbdumpbase  );
@@ -159,19 +164,22 @@ class GenerateHazelcastCachePersist {
 
         }
 
-        GenerateChangeListener gcl = new GenerateChangeListener();
-        gcl.setBasePath(dbdumpbase);
-        gcl.setImplPackage(implPackage);
-        gcl.setCachePackage(cachePackage);
-        gcl.setEntityPackage(entityPackage);
-        gcl.generate(classes, idFields);
+        if (generateDirect) {
+            GenerateChangeListener gcl = new GenerateChangeListener();
+            gcl.setBasePath(dbdumpbase);
+            gcl.setImplPackage(implPackage);
+            gcl.setCachePackage(cachePackage);
+            gcl.setEntityPackage(entityPackage);
+            gcl.generate(classes, idFields);
+        }
 
         GenerateMapStoreFactory gmsf = new GenerateMapStoreFactory();
         gmsf.setBasePath(dbdumpbase);
         gmsf.setImplPackage(implPackage);
         gmsf.setCachePackage(cachePackage);
         gmsf.setEntityPackage(entityPackage);
-        gmsf.generate(classes, idFields);
+        gmsf.setGenerateDirect(generateDirect);
+        gmsf.generate(classes);
 
 
     }

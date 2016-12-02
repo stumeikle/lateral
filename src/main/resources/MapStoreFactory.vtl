@@ -63,6 +63,7 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
         return null;
     }
 
+#if ( $generateDirect )
     public MapLoader<Object, Object> writeNoRead(String s, Properties properties) {
 #foreach( $name in $allNames )
         if ("${name}".equals(s)) {
@@ -76,7 +77,13 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
 
         return null;
     }
+#else
+    public MapLoader<Object, Object> writeNoRead(String s, Properties properties) {
+       return new DummyMapStore();
+    }
+#end
 
+#if ( $generateDirect )
     public MapLoader<Object, Object> readAndWrite(String s, Properties properties) {
 #foreach( $name in $allNames )
         if ("${name}".equals(s)) {
@@ -92,5 +99,10 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
 
         return null;
     }
+#else
+    public MapLoader<Object, Object> readAndWrite(String s, Properties properties) {
+        return new DummyMapStore();
+    }
+#end
 
 }

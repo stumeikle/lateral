@@ -43,6 +43,10 @@ public class HCAdminCommandQueueImpl implements AdminCommandQueue, EntryRemovedL
         return map.replace(commandId, oldCommand, newCommand);
     }
 
+    public void update(UniqueId commandId, Command command) {
+        map.put(commandId, command);
+    }
+
     public void removeCommand( UniqueId commandId ) {
         map.remove(commandId);
     }
@@ -64,7 +68,7 @@ public class HCAdminCommandQueueImpl implements AdminCommandQueue, EntryRemovedL
         CommandCallback callback = callbackMap.get(entryEvent.getKey());
         if (callback!=null) {
             callbackMap.remove(entryEvent.getKey());
-            callback.commandDone(entryEvent.getValue());
+            callback.commandDone(entryEvent.getOldValue());
         }
     }
 }

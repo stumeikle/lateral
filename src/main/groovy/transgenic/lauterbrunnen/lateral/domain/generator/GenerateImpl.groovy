@@ -89,9 +89,9 @@ class GenerateImpl {
         output << "" << System.lineSeparator()
         output << "public class " + proto.getSimpleName() + "Impl implements " + proto.getSimpleName() + ",Serializable,EntityImpl {"<< System.lineSeparator()
 
-        output << "    private transient boolean hasBeenPersisted=false;"<< System.lineSeparator()
-        output << "    public boolean hasBeenPersisted() { return hasBeenPersisted; }"<< System.lineSeparator()
-        output << "    public void setHasBeenPersisted(boolean hasBeenPersisted) { this.hasBeenPersisted = hasBeenPersisted; }"<< System.lineSeparator()
+//        output << "    private transient boolean hasBeenPersisted=false;"<< System.lineSeparator()
+//        output << "    public boolean hasBeenPersisted() { return hasBeenPersisted; }"<< System.lineSeparator()
+//        output << "    public void setHasBeenPersisted(boolean hasBeenPersisted) { this.hasBeenPersisted = hasBeenPersisted; }"<< System.lineSeparator()
         output << "    private long updateId;" << System.lineSeparator()
         output << "    public void setUpdateId(long updateId) { this.updateId = updateId; }" << System.lineSeparator()
         output << "    public long getUpdateId() { return this.updateId; }" << System.lineSeparator()

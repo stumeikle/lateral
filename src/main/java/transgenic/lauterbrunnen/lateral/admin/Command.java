@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class Command implements Serializable, Cloneable {
 
     private String command;
-    private String[] parameter;
+    private Object[] parameter;
 
     //did have destination but i don't want this now
     //client shouldn't need to know about server
@@ -74,11 +74,11 @@ public class Command implements Serializable, Cloneable {
         this.status = status;
     }
 
-    public String[] getParameter() {
+    public Object[] getParameter() {
         return parameter;
     }
 
-    public void setParameter(String[] parameter) {
+    public void setParameter(Object[] parameter) {
         this.parameter = parameter;
     }
 
