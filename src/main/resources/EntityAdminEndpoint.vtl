@@ -42,6 +42,8 @@ public class ${entityName}AdminEndpoint {
             //create the cache key from the string
             command.setResult(${lcEntityName}Retriever.load(command.getParameter()[1]));
             Admin.completeCommand(command);
+        } else {
+            LOG.debug("Unable to own command");
         }
     }
 
@@ -53,6 +55,8 @@ public class ${entityName}AdminEndpoint {
             //this now needs to be bound to our retriever
             command.setResult(${lcEntityName}Retriever.loadAllKeys());
             Admin.completeCommand(command);
+        }else {
+                     LOG.debug("Unable to own command");
         }
     }
 }

@@ -200,7 +200,13 @@ initial cache load causing problems with dbdumper
 when the load is put into the cache the dbdumper tries to write the
 entities to db again, violating primary keys
 
-[BUG]
+[BUG] [fixed]
 has been persisted flag in impl does not appear to be used, or set properly
 remove this flag. we can just check if the object is in the cache before applying an update
 having a transitory field is anyway daft as it won't get into the cache or be distributed to the different nodes
+
+[BUG BUG]
+major issues with hazelcast maps for admin messages. lots of odd behaviour and blocking
+switching to broadcast messages. https://hazelcast.org/use-cases/messaging/
+will have to be 2 way though and tested to death. doenst really need to be broadcast as its only between hz server
+and dbdumpers

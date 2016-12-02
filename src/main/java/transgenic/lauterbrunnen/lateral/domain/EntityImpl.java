@@ -13,4 +13,6 @@ public interface EntityImpl {
 //    void setHasBeenPersisted(boolean hasBeenPersisted);
     EntityReference getReference();
     long getUpdateId();
+    boolean loadedFromStore();
+    void setLoadedFromStore(boolean loadedFromStore);
 }

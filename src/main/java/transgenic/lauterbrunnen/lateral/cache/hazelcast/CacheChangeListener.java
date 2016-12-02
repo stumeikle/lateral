@@ -17,7 +17,7 @@ import transgenic.lauterbrunnen.lateral.persist.Persister;
  * Created by stumeikle on 13/05/16.
  * can this stuff not be generated?
  */
-public class CacheChangeListener<I,T> implements EntryAddedListener<I,T>,EntryUpdatedListener<I,T>, EntryRemovedListener<I,T>
+public class CacheChangeListener<I extends EntityImpl,T> implements EntryAddedListener<I,T>,EntryUpdatedListener<I,T>, EntryRemovedListener<I,T>
 {
     private static final Log LOG = LogFactory.getLog(CacheChangeListener.class);
     private Persister persister;
@@ -28,6 +28,10 @@ public class CacheChangeListener<I,T> implements EntryAddedListener<I,T>,EntryUp
 
     @Override
     public void entryAdded(EntryEvent<I,T> event) {
+        //skip any entries which are being loaded from the store in the first place
+        EntityImpl impl = (EntityImpl)event.getValue();
+        if (impl.loadedFromStore()) return;
+
         LOG.info("Observed entity " + event.getKey() + " added");
 
         EventWrapper wrapper = new EventWrapper();

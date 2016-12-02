@@ -3,6 +3,7 @@ package transgenic.lauterbrunnen.lateral.admin.hazelcast;
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.listener.EntryRemovedListener;
+import com.sun.org.apache.xpath.internal.SourceTree;
 import transgenic.lauterbrunnen.lateral.admin.*;
 import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;
 import transgenic.lauterbrunnen.lateral.domain.UniqueId;
@@ -19,7 +20,7 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
 public class HCAdminCommandQueueImpl implements AdminCommandQueue, EntryRemovedListener<UniqueId, Command> {
 
     private HCRepositoryManager manager = inject(HCRepositoryManager.class);
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private TaskQueue executorService = new TaskQueue();
     private IMap map;
     private ConcurrentHashMap<UniqueId, CommandCallback> callbackMap = new ConcurrentHashMap<>();
 
@@ -52,7 +53,9 @@ public class HCAdminCommandQueueImpl implements AdminCommandQueue, EntryRemovedL
     }
 
     public void create(Command command) {
+        System.out.println("About to add command " + command.getCommandId());
         map.put(command.getCommandId(), command);
+        System.out.println("Added command " + command.getCommandId());
     }
 
     @Override

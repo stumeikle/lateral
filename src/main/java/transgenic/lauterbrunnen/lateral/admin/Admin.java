@@ -23,6 +23,7 @@ public class Admin {
     }
 
     public static boolean claimOwnershipOf( Command command ){
+        LOG.debug("Entering claimOwnership. Command status=" + command.getStatus());
         if ("claimed".equals(command.getStatus())) return false;
         try {
             Command proposedValue = (Command) command.clone();
@@ -30,14 +31,16 @@ public class Admin {
             proposedValue.setStatus("claimed");
             proposedValue.setLockVersion( UniqueId.generate());
 
+            LOG.debug("About to do replace");
             if (!adminCommandQueue.replace( command.getCommandId(), command, proposedValue )) {
+                LOG.debug("Replace returns false");
                 return false;
             }
+            LOG.debug("Replace ok");
+            return true;
         } catch (CloneNotSupportedException e) {
             return false;
         }
-
-        return true;
     }
 
     public static String getUniqueName() {
@@ -63,6 +66,9 @@ public class Admin {
         command.setCommandId(UniqueId.generate());
         command.setTimeCreated(System.currentTimeMillis());
 
+        LOG.debug("Sending admin commmand " + commandString + " , " +
+                (params.length>0?params[0]:"") + " with id " + command.getCommandId());
+
         //register for the callback
         adminCommandQueue.callbackWhenDone(command.getCommandId(), Admin::commandDone);
 
@@ -81,6 +87,7 @@ public class Admin {
             if (count%10==0)
                 LOG.info("Still waiting on admin command " + command.getCommand() + " ...");
         }
+        LOG.debug("Admin command complete");
         return commandsDone.remove(command.getCommandId());
     }
 
@@ -92,8 +99,12 @@ public class Admin {
     //used by the command handler to indicate work is complete
     //cuases it to be removed from the map which signals to the remote client that the work is done
     public static void completeCommand( Command command ) {
+        LOG.debug("Command id " + command.getCommandId() + " is complete");
+
         //replace the current command and then remove it. the update saves the result
         adminCommandQueue.update(command.getCommandId(), command);
+        LOG.debug("Command updated");
         adminCommandQueue.removeCommand(command.getCommandId());
+        LOG.debug("Command removed");
     }
 }

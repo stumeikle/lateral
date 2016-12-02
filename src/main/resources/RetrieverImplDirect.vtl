@@ -34,7 +34,7 @@ public class ${entityName}RetrieverImplDirect implements ${entityName}Retriever 
         if (${lcEntityName}Entity.get()!=null) {
             ${entityName}Impl ${lcEntityName}Impl = new ${entityName}Impl();
             ${entityName}EntityTransformer.transform(${lcEntityName}Impl,(${entityName}Entity)${lcEntityName}Entity.get());
-
+            ${lcEntityName}Impl.setLoadedFromStore(true);
             return ${lcEntityName}Impl;
         }
         return null;    }

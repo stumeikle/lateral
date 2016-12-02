@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.entity.generator
 
+import transgenic.lauterbrunnen.lateral.domain.Transient
 import transgenic.lauterbrunnen.lateral.domain.generator.GenerateConverterName
 
 import java.lang.reflect.Field
@@ -91,6 +92,7 @@ class GenerateEntity {
 
         for(Field field : impl.getDeclaredFields()) {
             if (field.getModifiers() & Modifier.TRANSIENT) continue;
+            if (field.getAnnotation(Transient.class)!=null) continue;
 
             String type = swapType( field.getGenericType() );
             output << "    private " << type << " " << field.getName() << ";" << System.lineSeparator()
@@ -99,6 +101,7 @@ class GenerateEntity {
         //Getters and setters
         for (Field field: impl.getDeclaredFields()) {
             if (field.getModifiers() & Modifier.TRANSIENT) continue;
+            if (field.getAnnotation(Transient.class)!=null) continue;
 
             String firstUpperFN = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
             String type = swapType(field.getGenericType());
