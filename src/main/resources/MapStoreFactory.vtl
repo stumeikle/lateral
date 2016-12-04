@@ -57,8 +57,6 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
             return new HCMapStoreRT(retriever);
         }
 #end
-		// need to add admin dummy map store in here
-        if ("AdminCommandQueue".equals(s)){ return new DummyMapStore(); }
 
         return null;
     }
@@ -72,8 +70,6 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
             return new HCMapStoreWT(persister);
         }
 #end
-		// need to add admin dummy map store in here
-        if ("AdminCommandQueue".equals(s)){ return new DummyMapStore(); }
 
         return null;
     }
@@ -94,8 +90,6 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
             return new HCMapStoreRWT(retriever,persister);
         }
 #end
-		// need to add admin dummy map store in here
-        if ("AdminCommandQueue".equals(s)){ return new DummyMapStore(); }
 
         return null;
     }

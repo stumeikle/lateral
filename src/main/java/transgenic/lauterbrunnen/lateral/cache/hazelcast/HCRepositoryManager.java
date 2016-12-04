@@ -2,6 +2,7 @@ package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ITopic;
 
 import java.util.Map;
 
@@ -10,5 +11,7 @@ import java.util.Map;
  */
 public interface HCRepositoryManager {
     void initRepositories(HazelcastInstance hazel);
+    void initTopics(HazelcastInstance hazel);
     Map<String, IMap> getImapNameMap();
+    Map<String, ITopic> getTopicNameMap();
 }

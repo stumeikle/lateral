@@ -2,11 +2,11 @@ package ${cachePackage};
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import transgenic.lauterbrunnen.lateral.admin.Admin;
 import transgenic.lauterbrunnen.lateral.admin.Command;
-import transgenic.lauterbrunnen.lateral.domain.UniqueId;
-
+import java.util.Map;
+import com.hazelcast.core.ITopic;
 import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
+import transgenic.lauterbrunnen.lateral.admin.CommandHandler;
 
 /**
  * Created by stumeikle on 01/12/16.
@@ -23,40 +23,29 @@ public class ${entityName}AdminEndpoint {
     //doesn't implement the retriever IF but uses it
     private ${entityName}Retriever ${lcEntityName}Retriever;
 
-    public ${entityName}AdminEndpoint() {
+    public ${entityName}AdminEndpoint(CommandHandler handler) {
         ${lcEntityName}Retriever = inject(${entityName}Retriever.class);
         if (${lcEntityName}Retriever==null) ${lcEntityName}Retriever = new ${entityName}RetrieverImplDirect();
 
-        Admin.registerInterest((c,p)->"loadObject".equals(c) && "${entityName}".equals(p[0]), this::handleLoadObject);
-        Admin.registerInterest((c,p)->"loadAllKeys".equals(c) && "${entityName}".equals(p[0]), this::handleLoadAllKeys);
-        //load all objects we dont expect remotely
+        handler.registerHandler("loadObject", "${entityName}", this::handleLoadObject);
+        handler.registerHandler("loadAllKeys", "${entityName}", this::handleLoadAllKeys);
     }
 
     //generated of course
-    public void handleLoadObject(Command command) {
-        if (Admin.claimOwnershipOf(command)) {
-            //do it
-            LOG.debug("Handling command " + command.getCommand() + "," + command.getParameter());
+    public Object handleLoadObject(Command command) {
+        LOG.debug("Handling command " + command.getCommand() + "," + command.getParameters());
 
-            //this now needs to be bound to our retriever
-            //create the cache key from the string
-            command.setResult(${lcEntityName}Retriever.load(command.getParameter()[1]));
-            Admin.completeCommand(command);
-        } else {
-            LOG.debug("Unable to own command");
-        }
+        //this now needs to be bound to our retriever
+        //create the cache key from the string
+        Object retval = ${lcEntityName}Retriever.load(command.getParameters()[0]);
+        return retval;
     }
 
-    public void handleLoadAllKeys(Command command) {
-        if (Admin.claimOwnershipOf(command)) {
-            //do it
-            LOG.debug("Handling command " + command.getCommand() + "," + command.getParameter());
+    public Object handleLoadAllKeys(Command command) {
+        LOG.debug("Handling command " + command.getCommand() + "," + command.getParameters());
 
-            //this now needs to be bound to our retriever
-            command.setResult(${lcEntityName}Retriever.loadAllKeys());
-            Admin.completeCommand(command);
-        }else {
-                     LOG.debug("Unable to own command");
-        }
+        //this now needs to be bound to our retriever
+        Object retval = ${lcEntityName}Retriever.loadAllKeys();
+        return retval;
     }
 }

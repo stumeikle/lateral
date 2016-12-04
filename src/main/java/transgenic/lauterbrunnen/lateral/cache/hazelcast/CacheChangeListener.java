@@ -32,7 +32,7 @@ public class CacheChangeListener<I extends EntityImpl,T> implements EntryAddedLi
         EntityImpl impl = (EntityImpl)event.getValue();
         if (impl.loadedFromStore()) return;
 
-        LOG.info("Observed entity " + event.getKey() + " added");
+        LOG.info("Observed entity type " + event.getValue().getClass().getSimpleName() + ", " + event.getKey() + " added");
 
         EventWrapper wrapper = new EventWrapper();
         wrapper.setType( EventType.CREATE );
@@ -45,7 +45,7 @@ public class CacheChangeListener<I extends EntityImpl,T> implements EntryAddedLi
     public void entryUpdated(EntryEvent<I,T> event) {
         T entity= event.getValue();
 
-        LOG.info("Observed entity " + event.getKey() + " updated. updateid=" + ((EntityImpl)entity).getUpdateId());
+        LOG.info("Observed entity type " + event.getValue().getClass().getSimpleName() + ", " + event.getKey() + " updated. updateid=" + ((EntityImpl)entity).getUpdateId());
 
         EventWrapper    wrapper = new EventWrapper();
         wrapper.setType( EventType.UPDATE );

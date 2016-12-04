@@ -1,6 +1,7 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
 import com.hazelcast.core.IMap;
+import transgenic.lauterbrunnen.lateral.admin.CommandHandler;
 
 import java.util.Map;
 
@@ -10,4 +11,5 @@ import java.util.Map;
 public interface HCCacheChangeManager {
 
     void initialise(Map<String, IMap> iMapMap);
+    void initAdminEndpoints(CommandHandler handler);
 }

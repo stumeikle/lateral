@@ -21,7 +21,7 @@ public class ${entityName}RetrieverImplRemote implements ${entityName}Retriever 
     public Object load(Object o) {
 
         //this should get it into the cache (blocks)
-        return Admin.sendCommandAndCompleteAction("loadObject", "${entityName}", o).getResult();
+        return Admin.sendCommandAndCompleteAction("loadObject", "${entityName}", o);
     }
 
     @Override
@@ -41,6 +41,6 @@ public class ${entityName}RetrieverImplRemote implements ${entityName}Retriever 
 
     @Override
     public Iterable<Object> loadAllKeys() {
-        return (Iterable<Object>)Admin.sendCommandAndCompleteAction("loadAllKeys", "${entityName}").getResult();
+        return (Iterable<Object>)Admin.sendCommandAndCompleteAction("loadAllKeys", "${entityName}");
     }
 }

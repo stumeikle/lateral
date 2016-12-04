@@ -1,5 +1,7 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast.generator
 
+import com.hazelcast.core.ITopic
+
 /**
  * Created by stumeikle on 05/06/16.
  */
@@ -33,10 +35,11 @@ class GenerateManager {
         output << "import com.hazelcast.core.HazelcastInstance;" << System.lineSeparator() +
                 "import com.hazelcast.core.IMap;" << System.lineSeparator() +
                 "import com.hazelcast.core.IdGenerator;" << System.lineSeparator() +
+                "import com.hazelcast.core.ITopic;" << System.lineSeparator() +
                 "import java.util.HashMap;" << System.lineSeparator() +
                 "import java.util.Map;" << System.lineSeparator() +
-                "import transgenic.lauterbrunnen.lateral.admin.AdminCommandQueue;" << System.lineSeparator()+
-                "import transgenic.lauterbrunnen.lateral.admin.hazelcast.HCAdminCommandQueueImpl;"<< System.lineSeparator()+
+                "import transgenic.lauterbrunnen.lateral.admin.Command;" << System.lineSeparator()+
+                "import transgenic.lauterbrunnen.lateral.admin.CommandResponse;"<< System.lineSeparator()+
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;" << System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.ApplicationDI;" << "" << System.lineSeparator()
@@ -47,6 +50,7 @@ class GenerateManager {
         output << "public class HCRepositoryManagerImpl implements HCRepositoryManager {" << System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    private static Map<String, IMap>    imapNameMap = new HashMap<>();"<< System.lineSeparator() +
+                "    private static Map<String, ITopic> topicNameMap = new HashMap<>();" <<System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    public void initRepositories(HazelcastInstance hazel) {" << System.lineSeparator() +
                 "        //We need cluster wide unique ids for every update so that we can co-ordinate the actions of the" << System.lineSeparator() +
@@ -69,17 +73,28 @@ class GenerateManager {
         }
         
         output << System.lineSeparator();
-        output << "        //Admin bus" << System.lineSeparator() +
-                "        IMap adminCommandQueue = hazel.getMap(\"AdminCommandQueue\");" << System.lineSeparator() +
-                "        imapNameMap.put(\"AdminCommandQueue\", adminCommandQueue);" << System.lineSeparator() +
-                "        HCAdminCommandQueueImpl hcAdminCommandQueueImpl = new HCAdminCommandQueueImpl();" << System.lineSeparator() +
-                "        ApplicationDI.registerImplementation(AdminCommandQueue.class, hcAdminCommandQueueImpl);" << System.lineSeparator()
-        output << System.lineSeparator();
 
         output << "    }" << System.lineSeparator()
         output << "" << System.lineSeparator()
+
+        output << "    public void initTopics(HazelcastInstance hazel) {" << System.lineSeparator()
+
+        for(Class repo: repos) {
+            String name = repo.getSimpleName().replace("Repository", "");
+            String namelc = name.substring(0,1).toLowerCase() + name.substring(1);
+            output << "        ITopic<Command> " << namelc << "Retriever = hazel.getTopic(\"" << name << "Retriever\");" << System.lineSeparator();
+            output << "        ITopic<CommandResponse> " << namelc << "RetrieverResponse = hazel.getTopic(\"" << name << "RetrieverResponse\");" << System.lineSeparator();
+            output << "        topicNameMap.put(\"" << name << "Retriever\", " << namelc << "Retriever);" << System.lineSeparator();
+            output << "        topicNameMap.put(\"" << name << "RetrieverResponse\", " << namelc << "RetrieverResponse);" << System.lineSeparator();
+            output << System.lineSeparator();
+        }
+
+        output << "    }"<< System.lineSeparator()<< System.lineSeparator()
         output << "    public Map<String, IMap> getImapNameMap() {" << System.lineSeparator()+
                   "        return imapNameMap;" << System.lineSeparator()+
+                "    }" << System.lineSeparator()
+        output << "    public Map<String, ITopic> getTopicNameMap() {" << System.lineSeparator()+
+                "        return topicNameMap;" << System.lineSeparator()+
                 "    }" << System.lineSeparator()
 
         output << "}" << System.lineSeparator()

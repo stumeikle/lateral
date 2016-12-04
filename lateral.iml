@@ -70,5 +70,6 @@
     <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.4" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:4.11" level="project" />
     <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.jgroups:jgroups:3.6.11.Final" level="project" />
   </component>
 </module>

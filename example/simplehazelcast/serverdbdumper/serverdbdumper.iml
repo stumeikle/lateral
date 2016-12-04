@@ -78,5 +78,6 @@
     <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish:javax.json:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.persistence:javax.persistence:2.1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.jgroups:jgroups:3.6.11.Final" level="project" />
   </component>
 </module>

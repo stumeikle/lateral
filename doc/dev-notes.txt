@@ -210,3 +210,13 @@ major issues with hazelcast maps for admin messages. lots of odd behaviour and b
 switching to broadcast messages. https://hazelcast.org/use-cases/messaging/
 will have to be 2 way though and tested to death. doenst really need to be broadcast as its only between hz server
 and dbdumpers
+
+20161203
+
+left in a mess. somehow the new admin bus has cross over between topics. messages going out on address (eg)
+are coming back on head.crossover fixed but still random blocking. what is up with hazelcast
+
+20161204 really struggling with this
+topic publish blocks regardless of what i do.
+maybe hazelcast can't handle publishing to topics from within a mapstore operation
+not sure but its miserable. might use an alternative broadcaster to see if that fixes the issue

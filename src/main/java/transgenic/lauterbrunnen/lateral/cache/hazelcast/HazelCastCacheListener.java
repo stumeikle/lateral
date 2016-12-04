@@ -1,6 +1,13 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
 import com.hazelcast.core.IMap;
+import transgenic.lauterbrunnen.lateral.admin.Admin;
+import transgenic.lauterbrunnen.lateral.admin.Command;
+import transgenic.lauterbrunnen.lateral.admin.CommandHandler;
+import transgenic.lauterbrunnen.lateral.admin.CommandResponse;
+import transgenic.lauterbrunnen.lateral.admin.jgroups.JGAdminCommandBus;
+import transgenic.lauterbrunnen.lateral.admin.jgroups.JGIncomingMessageQueue;
+import transgenic.lauterbrunnen.lateral.admin.jgroups.JGOutgoingMessageQueue;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
@@ -23,5 +30,14 @@ public class HazelCastCacheListener implements LateralPlugin {
         Map<String, IMap> iMapMap = manager.getImapNameMap();
         HCCacheChangeManager cacheChangeManager = inject(HCCacheChangeManager.class);
         cacheChangeManager.initialise(iMapMap);
+
+        JGAdminCommandBus adminCommandBus = new JGAdminCommandBus();
+        JGOutgoingMessageQueue<CommandResponse> outgoingMessageQueue = new JGOutgoingMessageQueue<>(adminCommandBus);
+        JGIncomingMessageQueue<Command> incomingMessageQueue = new JGIncomingMessageQueue<>(adminCommandBus);
+		CommandHandler handler = new CommandHandler(outgoingMessageQueue);
+        incomingMessageQueue.setHandler(handler);
+        Admin.setAdminCommandBus( adminCommandBus );
+
+		cacheChangeManager.initAdminEndpoints( handler );
     }
 }

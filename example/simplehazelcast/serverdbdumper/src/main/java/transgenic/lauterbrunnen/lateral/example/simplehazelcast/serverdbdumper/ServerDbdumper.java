@@ -19,7 +19,7 @@ public class ServerDbdumper {
 
         //manually catch the admin commands. this can go into the listener class
         //or it could be its own plugin
-        new EntityAdminEndpointManager();
+        //new EntityAdminEndpointManager();
 
         TransactionManager.INSTANCE.runInTransactionalContext((em)->{});
 

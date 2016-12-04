@@ -20,6 +20,7 @@ class GenerateChangeListener extends GeneratePersister{
 
         output << "import com.hazelcast.core.IMap;" << System.lineSeparator() +
                 "import " << implPackage << ".*;" << System.lineSeparator() +
+                "import transgenic.lauterbrunnen.lateral.admin.CommandHandler;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.CacheChangeListener;" << System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCCacheChangeManager;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +
@@ -44,6 +45,14 @@ class GenerateChangeListener extends GeneratePersister{
         }
         
         output << "    }" << System.lineSeparator()
+
+        output << "" << System.lineSeparator()
+        output << "    public void initAdminEndpoints( CommandHandler handler ) {"<< System.lineSeparator()
+
+        for (Class proto: protoclasses) {
+            output << "        new " << proto.getSimpleName() << "AdminEndpoint(handler);" << System.lineSeparator();
+        }
+        output << "    }" << System.lineSeparator();
         output << "}" << System.lineSeparator()
 
     }

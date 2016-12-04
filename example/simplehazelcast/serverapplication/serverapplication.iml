@@ -74,5 +74,6 @@
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http-server:2.3.22" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http:2.3.22" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-framework:2.3.22" level="project" />
+    <orderEntry type="library" name="Maven: org.jgroups:jgroups:3.6.11.Final" level="project" />
   </component>
 </module>

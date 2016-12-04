@@ -8,6 +8,13 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import transgenic.lauterbrunnen.lateral.admin.Admin;
+import transgenic.lauterbrunnen.lateral.admin.Command;
+import transgenic.lauterbrunnen.lateral.admin.CommandResponse;
+import transgenic.lauterbrunnen.lateral.admin.CommandResponseHandler;
+import transgenic.lauterbrunnen.lateral.admin.jgroups.JGAdminCommandBus;
+import transgenic.lauterbrunnen.lateral.admin.jgroups.JGIncomingMessageQueue;
+import transgenic.lauterbrunnen.lateral.admin.jgroups.JGOutgoingMessageQueue;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
@@ -59,6 +66,27 @@ public class HazelcastEmbedded implements LateralPlugin {
             }
             mapStoreConfig.setEnabled(true);
         }
+
+        //we are the server so expect to be the admin command sender
+        //later we might be a receiver too
+        JGAdminCommandBus adminCommandBus = new JGAdminCommandBus();
+        JGOutgoingMessageQueue<Command> outgoingMessageQueue = new JGOutgoingMessageQueue<>(adminCommandBus);
+        JGIncomingMessageQueue<CommandResponse> incomingMessageQueue = new JGIncomingMessageQueue<>(adminCommandBus);
+        incomingMessageQueue.setHandler(new CommandResponseHandler());
+        Admin.setAdminCommandBus( adminCommandBus ); //this is just to get the 2 queues
+
+        //the other side will be the inverse
+//        {
+//            JGAdminCommandBus adminCommandBus = new JGAdminCommandBus();
+//            JGOutgoingMessageQueue<CommandResponse> outgoingMessageQueue = new JGOutgoingMessageQueue<>(adminCommandBus);
+//            JGIncomingMessageQueue<Command> incomingMessageQueue = new JGIncomingMessageQueue<>(adminCommandBus);
+//            incomingMessageQueue.addHandler(new CommandHandler());
+//            Admin.setCommandBus( adminCommandBus );
+//
+//            initialise the admin endpoints and give them the command handler
+//        }
+        //this is more complex though because the adminendpoints...
+        //
 
         cfg.setInstanceName("lateral");
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
