@@ -7,6 +7,7 @@ import transgenic.lauterbrunnen.lateral.Lateral;
 import transgenic.lauterbrunnen.lateral.domain.Repository;
 import transgenic.lauterbrunnen.lateral.domain.UniqueId;
 import transgenic.lauterbrunnen.lateral.example.microservice.libdomain.generated.Album;
+import transgenic.lauterbrunnen.lateral.example.microservice.libdomain.generated.Track;
 
 
 /**

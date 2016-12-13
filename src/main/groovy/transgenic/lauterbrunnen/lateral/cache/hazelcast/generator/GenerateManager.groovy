@@ -51,13 +51,13 @@ class GenerateManager {
                 "" << System.lineSeparator() +
                 "    private static Map<String, IMap>    imapNameMap = new HashMap<>();"<< System.lineSeparator() +
                 "    private static Map<String, ITopic> topicNameMap = new HashMap<>();" <<System.lineSeparator() +
+                "    private static Map<String, IdGenerator> updateIdNameMap = new HashMap<>();"<<System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    public void initRepositories(HazelcastInstance hazel) {" << System.lineSeparator() +
                 "        //We need cluster wide unique ids for every update so that we can co-ordinate the actions of the" << System.lineSeparator() +
                 "        //master, slave db dumpers. both need to be able to identify an update event so they can agree" << System.lineSeparator() +
                 "        //if it has been persisted. so we can use the hazelcast idgenerator, or we could use another" << System.lineSeparator() +
-                "        //unique id. I have no idea if its faster to use 1 generator for all caches or to split it" << System.lineSeparator() +
-                "        IdGenerator idGen = hazel.getIdGenerator(\"UpdateIdGenerator\");" << System.lineSeparator()
+                "        //unique id. I have no idea if its faster to use 1 generator for all caches or to split it" << System.lineSeparator()
 
         for(Class repo: repos) {
             String name = repo.getSimpleName().replace("Repository","");
@@ -66,8 +66,10 @@ class GenerateManager {
             output << "" << System.lineSeparator()
             output << "        IMap " + namelc + "Map = hazel.getMap(\"" + name + "\");" << System.lineSeparator()
             output << "        imapNameMap.put(\"" + name + "\", " << namelc << "Map);" << System.lineSeparator()
+            output << "        IdGenerator " + namelc + "UpdateGen = hazel.getIdGenerator(\"" + name + "UpdateIdGen\");" << System.lineSeparator()
+            output << "        updateIdNameMap.put(\"" + name + "\", " + namelc + "UpdateGen);" << System.lineSeparator();
             output << "        HC" + repo.getSimpleName() + "Impl " + namelc + "RepositoryImpl = new HC" +
-                    repo.getSimpleName() + "Impl(" + namelc + "Map, idGen);" << System.lineSeparator()
+                    repo.getSimpleName() + "Impl(" + namelc + "Map, " + namelc + "UpdateGen);" << System.lineSeparator()
             output << "        ApplicationDI.registerImplementation(" + repo.getSimpleName() + ".class, " +
                     namelc + "RepositoryImpl);" << System.lineSeparator()
         }
@@ -96,6 +98,8 @@ class GenerateManager {
         output << "    public Map<String, ITopic> getTopicNameMap() {" << System.lineSeparator()+
                 "        return topicNameMap;" << System.lineSeparator()+
                 "    }" << System.lineSeparator()
+
+        output << "    public Map<String, IdGenerator> getUpdateIdNameMap() { return updateIdNameMap; }" << System.lineSeparator()
 
         output << "}" << System.lineSeparator()
     }

@@ -43,4 +43,10 @@ public class ${entityName}RetrieverImplRemote implements ${entityName}Retriever 
     public Iterable<Object> loadAllKeys() {
         return (Iterable<Object>)Admin.sendCommandAndCompleteAction("loadAllKeys", "${entityName}");
     }
+
+
+    @Override
+    public long getLastUpdateId() {
+        return (Long)Admin.sendCommandAndCompleteAction("getLastUpdateId", "${entityName}");
+    }
 }

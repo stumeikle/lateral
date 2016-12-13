@@ -181,10 +181,10 @@ Then fix the bugs above, get sequences working etc.
 
 20161130
 
-[BUG] most probably the updateId used to ensure all updates are captured in write-behind is not correctly set after
+[BUG] [FIXED] most probably the updateId used to ensure all updates are captured in write-behind is not correctly set after
 startup. i imagine it reverts to 0 and needs to be set to the next correct value
 
-[BUG] simple hazelcast example broken after the rest generation additions. [Correction -- not an issue]
+[BUG][NAI] simple hazelcast example broken after the rest generation additions. [Correction -- not an issue]
 
 [MISSING] even without file queue, dbdumper needs to be able to capture remote retrieve events and respond
 
@@ -195,7 +195,7 @@ to build the remote stuff without the local. the problem is that the 'direct' ma
 . we could leave them out and then we'd need another geneartor for the map store factory without them in.
 DO THIS NEXT. generate persisters with only remote and no entities. also make the change listener optional
 
-[BUG]
+[BUG] [fixed]
 initial cache load causing problems with dbdumper
 when the load is put into the cache the dbdumper tries to write the
 entities to db again, violating primary keys
@@ -205,7 +205,7 @@ has been persisted flag in impl does not appear to be used, or set properly
 remove this flag. we can just check if the object is in the cache before applying an update
 having a transitory field is anyway daft as it won't get into the cache or be distributed to the different nodes
 
-[BUG BUG]
+[BUG BUG] [fixed. needed to use jgroups for bus]
 major issues with hazelcast maps for admin messages. lots of odd behaviour and blocking
 switching to broadcast messages. https://hazelcast.org/use-cases/messaging/
 will have to be 2 way though and tested to death. doenst really need to be broadcast as its only between hz server
@@ -220,3 +220,39 @@ are coming back on head.crossover fixed but still random blocking. what is up wi
 topic publish blocks regardless of what i do.
 maybe hazelcast can't handle publishing to topics from within a mapstore operation
 not sure but its miserable. might use an alternative broadcaster to see if that fixes the issue
+
+
+20161212
+
+lots of thoughts around optimistic locking and sequences and what to support there.
+optimistic locking is off in lateral so far. could enable it... might be a generator properties
+could even use a blocking queue for sequs. anyway. i think the 'soft' sequences offered by hc
+don't offer much. particularly if the system is restarted often
+
+zzz . So the update id values. rubbish. or? with hc they won't sustain a restart of the system, unless
+we add in some messiness. unique ids would be better. we * could * use an int/ long with optimistic locking
+but i don't want to insist on that for every update.
+
+options:
+enforce optimistic locking on updates. i don't want to do that, some entities might be scratch
+enough that it doesn't matter.
+then we need a unique update id. can use guids but they are rather large tbh
+can use the idgenerators but then we need to persist the end state or prefix with date or somesuch.
+currently there is one idgen per repository. if update id stored i guess we could use that on map load.
+
+20161213
+
+but the reality is quite messy. the server side needs to establish the update value but the server side
+doesn't really know about the repos. also it sets the map store in the config but the hazelcast instance is
+needed if the map store is later to set the update id. really the map store should not know anything about hc
+and the hc call map store stuff should be extended to also populate the initial ids.
+Solution found using maploaderlifecyclesupport. All good.
+
+Stuff to do now:
+[a] extend retriever direct to pull in the last update id. [done]
+    [a.1] will need a new jpql and query [done]
+[b] extend the admin endpoints to be able to support this remotely also
+    which means a remote impl [done]
+    and an endpoint [done]
+
+[CHECK] do methods in map store need to be synchronized?

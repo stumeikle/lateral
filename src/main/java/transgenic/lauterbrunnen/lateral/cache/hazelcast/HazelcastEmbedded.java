@@ -6,6 +6,7 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import transgenic.lauterbrunnen.lateral.admin.Admin;
@@ -18,6 +19,7 @@ import transgenic.lauterbrunnen.lateral.admin.jgroups.JGOutgoingMessageQueue;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
+import java.util.Map;
 import java.util.Properties;
 
 import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
@@ -53,6 +55,12 @@ public class HazelcastEmbedded implements LateralPlugin {
             HCMapStoreFactory factory = inject(HCMapStoreFactory.class);
             factory.setWriteThrough(write_through);
             factory.setReadThrough(read_through);
+
+            //20161213 We need to store all idgenerators in the map store so that they can be
+            //later initialised. However. the repository manager is *not* initialised on the hc server side
+            //so we don't have access to that information here.
+            //Gets really messy
+
             mapStoreConfig.setFactoryImplementation(factory);
             if (write_through) {
                 int delayValue = 0;

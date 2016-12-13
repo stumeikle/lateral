@@ -29,6 +29,7 @@ public class ${entityName}AdminEndpoint {
 
         handler.registerHandler("loadObject", "${entityName}", this::handleLoadObject);
         handler.registerHandler("loadAllKeys", "${entityName}", this::handleLoadAllKeys);
+        handler.registerHandler("getLastUpdateId", "${entityName}", this::handleGetLastUpdateId);
     }
 
     //generated of course
@@ -46,6 +47,14 @@ public class ${entityName}AdminEndpoint {
 
         //this now needs to be bound to our retriever
         Object retval = ${lcEntityName}Retriever.loadAllKeys();
+        return retval;
+    }
+
+    public Object handleGetLastUpdateId(Command command) {
+        LOG.debug("Handling command " + command.getCommand() + "," + command.getParameters());
+
+        //this now needs to be bound to our retriever
+        Object retval = ${lcEntityName}Retriever.getLastUpdateId();
         return retval;
     }
 }

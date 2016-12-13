@@ -79,8 +79,12 @@ class GenerateEntity {
         output << "@Table(name=\"" << getColumnName(proto.getSimpleName()) << "\")" <<System.lineSeparator()
 
         //jpqls
-        output << "@NamedQuery(name=\"" << proto.getSimpleName() << "Entity.findAllIds\", query=\"SELECT " <<
-                "x." << idFieldName << " from " << proto.getSimpleName() << "Entity x\")" << System.lineSeparator();
+        output << "@NamedQueries ({" << System.lineSeparator();
+        output << "    @NamedQuery(name=\"" << proto.getSimpleName() << "Entity.findAllIds\", query=\"SELECT " <<
+                "x." << idFieldName << " from " << proto.getSimpleName() << "Entity x\")," << System.lineSeparator();
+        output << "    @NamedQuery(name=\"" << proto.getSimpleName() << "Entity.findLastUpdateId\", query =\"SELECT max(" <<
+                "x.updateId) from " << proto.getSimpleName() << "Entity x\")"<< System.lineSeparator();
+        output << "})" << System.lineSeparator();
 
         output << "public class " << proto.getSimpleName() << "Entity {" << System.lineSeparator();
         output << "" << System.lineSeparator();
