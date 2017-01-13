@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.entity.generator
 
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.Transient
 import transgenic.lauterbrunnen.lateral.domain.generator.GenerateConverterName
 
@@ -21,7 +22,12 @@ class GenerateEntity {
     private String basePath;
     private Map<String, String>  idFields = new HashMap<>();
     private Map<String, String> idFieldNames = new HashMap<>();
+    private DomainProtoManager domainProtoManager;
+    private String entityName;
 
+    public void setDomainProtoManager(DomainProtoManager domainProtoManager) {
+        this.domainProtoManager=domainProtoManager;
+    }
     public void setImplPackage( String implPackage ) {
         this.implPackage = implPackage;
     }
@@ -51,11 +57,13 @@ class GenerateEntity {
         //we're going to write the entity and the transformer here together
         //as we have all the info for the transformer here in one place too
 
-        def fn = basePath + "/"+  jpaEntityPackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + "Entity.java";
+        entityName = domainProtoManager.getEntityName(proto) + "Entity";
+
+        def fn = basePath + "/"+  jpaEntityPackage.replaceAll("\\.","/") + "/" + entityName + ".java";
         println "Writing " + fn;
         def output = new File(fn);
 
-        def transformerfn = basePath + "/"+jpaEntityPackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + "EntityTransformer.java";
+        def transformerfn = basePath + "/"+jpaEntityPackage.replaceAll("\\.","/") + "/" + entityName + "Transformer.java";
         println "Writing " + transformerfn;
         def transformer = new File(transformerfn);
         def transformTo = new StringBuilder();
@@ -76,17 +84,17 @@ class GenerateEntity {
 
         output << "" << System.lineSeparator();
         output << "@Entity" << System.lineSeparator();
-        output << "@Table(name=\"" << getColumnName(proto.getSimpleName()) << "\")" <<System.lineSeparator()
+        output << "@Table(name=\"" << getColumnName(entityName) << "\")" <<System.lineSeparator()
 
         //jpqls
         output << "@NamedQueries ({" << System.lineSeparator();
-        output << "    @NamedQuery(name=\"" << proto.getSimpleName() << "Entity.findAllIds\", query=\"SELECT " <<
-                "x." << idFieldName << " from " << proto.getSimpleName() << "Entity x\")," << System.lineSeparator();
-        output << "    @NamedQuery(name=\"" << proto.getSimpleName() << "Entity.findLastUpdateId\", query =\"SELECT max(" <<
-                "x.updateId) from " << proto.getSimpleName() << "Entity x\")"<< System.lineSeparator();
+        output << "    @NamedQuery(name=\"" << entityName << ".findAllIds\", query=\"SELECT " <<
+                "x." << idFieldName << " from " << entityName << " x\")," << System.lineSeparator();
+        output << "    @NamedQuery(name=\"" << entityName << ".findLastUpdateId\", query =\"SELECT max(" <<
+                "x.updateId) from " << entityName << " x\")"<< System.lineSeparator();
         output << "})" << System.lineSeparator();
 
-        output << "public class " << proto.getSimpleName() << "Entity {" << System.lineSeparator();
+        output << "public class " << entityName << " {" << System.lineSeparator();
         output << "" << System.lineSeparator();
 
         //copy all the fields from the impl
@@ -476,20 +484,20 @@ class GenerateEntity {
         transformer << "import transgenic.lauterbrunnen.lateral.domain.UniqueId;" << System.lineSeparator()
         transformer << "import java.util.function.Function;" << System.lineSeparator();
         transformer << ""<< System.lineSeparator();
-        transformer << "public class " << proto.getSimpleName() << "EntityTransformer {" << System.lineSeparator();
+        transformer << "public class " << entityName << "Transformer {" << System.lineSeparator();
         transformer << "" << System.lineSeparator();
 //        transformer << "    public static void transform(" << proto.getSimpleName() << "Entity entity, " <<
 //                implPackage << "." << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
     }
 
     private void writeTransformToDeclaration(def transformTo, Class proto) {
-        transformTo << "    public static void transform(" << proto.getSimpleName() << "Entity entity, " <<
+        transformTo << "    public static void transform(" << entityName << " entity, " <<
                 implPackage << "." << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
     }
 
     private void writeTransformFromDeclaration( def transformFrom, Class proto) {
         transformFrom << "    public static void transform(" << implPackage << "." << proto.getSimpleName() << "Impl impl," <<
-                proto.getSimpleName() << "Entity entity) {" << System.lineSeparator();
+                entityName << " entity) {" << System.lineSeparator();
     }
 
     private void writeTransformerTail(def transformer, def transformTo, def transformFrom) {

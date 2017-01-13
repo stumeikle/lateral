@@ -5,6 +5,7 @@ import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 
 /**
  * Created by stumeikle on 28/11/16.
@@ -13,6 +14,11 @@ class GenerateRetrieverInterface {
 
     private String cachePackage;
     private String  basePath;
+    private DomainProtoManager domainProtoManager;
+
+    void setDomainProtoManager(DomainProtoManager domainProtoManager1) {
+        this.domainProtoManager = domainProtoManager1;
+    }
 
     String getCachePackage() {
         return cachePackage

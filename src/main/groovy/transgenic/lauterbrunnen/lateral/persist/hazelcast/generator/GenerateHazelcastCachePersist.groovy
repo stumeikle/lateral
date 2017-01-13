@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.persist.hazelcast.generator
 
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.PackageScanner
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
 import transgenic.lauterbrunnen.lateral.domain.UniqueId
@@ -28,45 +29,11 @@ class GenerateHazelcastCachePersist {
             System.exit(0);
         }
 
-//and combine with the other
-//        inputStream = getClass().getClassLoader().getResourceAsStream("generate.entity.properties");
-//        Properties propertiesEntity = new Properties();
-//        try {
-//            propertiesEntity.load(inputStream);
-//            inputStream.close();
-//        } catch (Exception e) {
-//            println("Unable to load entity properties file.");
-//            System.exit(0);
-//        }
-//        properties.putAll( propertiesEntity );
-//
-//        inputStream = getClass().getClassLoader().getResourceAsStream("generate.cache.properties");
-//        Properties propertiesCache = new Properties();
-//        try {
-//            propertiesCache.load(inputStream);
-//            inputStream.close();
-//        } catch (Exception e) {
-//            println("Unable to load entity properties file.");
-//            System.exit(0);
-//        }
-//        properties.putAll( propertiesCache );
-
-        String protoPackage = properties.get("domain.proto.package");
         String implPackage = properties.get("domain.generated.package");
         String entityPackage = properties.get("entity.generated.package");
         String cachePackage = properties.get("persist.hazelcast.generated.package");
-
-//Find all classes in this package
-        List<Class> classes = PackageScanner.getClasses(protoPackage);
-
-//Skip the enums
-        Iterator<Class> iterator = classes.iterator();
-        while (iterator.hasNext()) {
-            Class c = iterator.next();
-            if (c.isEnum()) {
-                iterator.remove();
-            }
-        }
+        def domainProtoManager = new DomainProtoManager(properties);
+        def classes = domainProtoManager.getProtoClasses();
 
         def dbdumpbase = generatedSourcesPath;
         def generatedDir = dbdumpbase + "/" + cachePackage.replaceAll("\\.", "/") + "/";
@@ -122,6 +89,7 @@ class GenerateHazelcastCachePersist {
 
             if (generateDirect) {
                 GeneratePersister gp = new GeneratePersister();
+                gp.setDomainProtoManager(domainProtoManager);
                 gp.setBasePath(dbdumpbase);
                 gp.setImplPackage(implPackage);
                 gp.setCachePackage(cachePackage);
@@ -134,6 +102,7 @@ class GenerateHazelcastCachePersist {
             }
 
             GenerateRetrieverInterface gri = new GenerateRetrieverInterface();
+            gri.setDomainProtoManager(domainProtoManager);
             gri.setCachePackage(cachePackage);
             gri.setBasePath(dbdumpbase);
             gri.generate(proto);
@@ -146,6 +115,7 @@ class GenerateHazelcastCachePersist {
 
             if (generateDirect) {
                 GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
+                gr.setDomainProtoManager(domainProtoManager);
                 gr.setBasePath(dbdumpbase);
                 gr.setImplPackage(implPackage);
                 gr.setCachePackage(cachePackage);

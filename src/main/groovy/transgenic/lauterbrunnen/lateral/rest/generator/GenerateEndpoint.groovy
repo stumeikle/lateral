@@ -15,7 +15,6 @@ import java.lang.reflect.Field
  * Created by stumeikle on 11/11/16.
  */
 class GenerateEndpoint {
-    protected String prototypePackage;
     protected String outputPackage;
     protected String domainGeneratedPackage;
     protected List<Class> prototypeClasses;
@@ -24,9 +23,6 @@ class GenerateEndpoint {
     protected Properties properties;
     protected Field idField = null;
 
-    public void setPrototypePackage(String prototypePackage) {
-        this.prototypePackage = prototypePackage;
-    }
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
     }

@@ -1,6 +1,6 @@
 package transgenic.lauterbrunnen.lateral.entity.generator
 
-
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.PackageScanner
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
 import transgenic.lauterbrunnen.lateral.domain.UniqueId
@@ -27,34 +27,10 @@ class GenerateEntityTask  {
             System.exit(0);
         }
 
-//and combine with the other
-//        inputStream = getClass().getClassLoader().getResourceAsStream("generate.entity.properties");
-//        Properties propertiesEntity = new Properties();
-//        try {
-//            propertiesEntity.load(inputStream);
-//            inputStream.close();
-//        } catch (Exception e) {
-//            println("Unable to load entity properties file.");
-//            System.exit(0);
-//        }
-
-//        properties.putAll( propertiesEntity );
-
-        String entityPackage = properties.get("domain.proto.package");
         String implPackage = properties.get("domain.generated.package");
         String jpaEntityPackage = properties.get("entity.generated.package");
-
-//Find all classes in this package
-        List<Class>     classes = PackageScanner.getClasses( entityPackage );
-
-//Skip the enums
-        Iterator<Class>     iterator = classes.iterator();
-        while(iterator.hasNext()) {
-            Class c= iterator.next();
-            if (c.isEnum()) {
-                iterator.remove();
-            }
-        }
+        def domainProtoManager = new DomainProtoManager(properties);
+        def classes = domainProtoManager.getProtoClasses();
 
         Map<String, String>  idFields = new HashMap<>();
         Map<String, String> idFieldNames = new HashMap<>();
@@ -74,7 +50,7 @@ class GenerateEntityTask  {
                         idField = field;
                         repositoryIdFieldName = idField.getName();
 
-                        String name = proto.getName().replace(entityPackage, implPackage);
+                        String name = implPackage +"." + domainProtoManager.stripPackageName(proto);
                         idFields.put(name, field.getType().getTypeName());
                         idFieldNames.put(name, repositoryIdFieldName);
                     }
@@ -84,7 +60,8 @@ class GenerateEntityTask  {
             if( idField==null) {
                 repositoryIdFieldName = "repositoryId";
 
-                String name = proto.getName().replace(entityPackage, implPackage);
+                String name = implPackage +"." + domainProtoManager.stripPackageName(proto);
+//                String name = proto.getName().replace(entityPackage, implPackage);
                 idFields.put(name, UniqueId.class.getName());
                 idFieldNames.put(name, repositoryIdFieldName);
             }
@@ -98,14 +75,16 @@ class GenerateEntityTask  {
 
         for(Class proto: classes) {
 
-            String name = proto.getName().replace(entityPackage, implPackage);
+            String name = implPackage +"." + domainProtoManager.stripPackageName(proto);
             String repositoryIdFieldName = idFieldNames.get(name);
 
             //Now we need the impl class for the rest
-            String implClassName  = proto.getName().replace(entityPackage, implPackage) + "Impl";
-            Class impl = Class.forName(implClassName);
+            //String implClassName  = proto.getName().replace(entityPackage, implPackage) + "Impl";
+            String implClassName  = name + "Impl";
+            Class impl = Class.forName(implClassName)
 
             GenerateEntity ge = new GenerateEntity();
+            ge.setDomainProtoManager(domainProtoManager);
             ge.setBasePath( dbdumpbase );
             ge.setImplPackage( implPackage );
             ge.setJpaEntityPackage( jpaEntityPackage );
@@ -118,7 +97,7 @@ class GenerateEntityTask  {
 
         //Last step -- look for persistence.xml and see if we need to insert any lines describing the
         //entities
-        generatePersistenceXmlLines(classes, entityPackage, jpaEntityPackage);
+        generatePersistenceXmlLines(classes, domainProtoManager, jpaEntityPackage);
     }
 
     protected List<Field> getAllFields(Class klass) {
@@ -136,7 +115,7 @@ class GenerateEntityTask  {
     private static final String PERSISTENCE_BLOCK_START = "<!-- Generate Lateral Entities here: -->"
     private static final String PERSISTENCE_BLOCK_END   = "<!-- End of Lateral Entities -->"
 
-    protected void generatePersistenceXmlLines(List<Class> classes, String protoPackage, String entityPackage) {
+    protected void generatePersistenceXmlLines(List<Class> classes, DomainProtoManager domainProtoManager, String entityPackage) {
         if (persistenceFile==null) return;
         BufferedReader reader = new BufferedReader(new FileReader(persistenceFile));
 
@@ -174,7 +153,7 @@ class GenerateEntityTask  {
                         String prefix = line.replace(PERSISTENCE_BLOCK_START, "");
 
                         for(Class proto: classes) {
-                            String name = proto.getName().replace(protoPackage, entityPackage);
+                            String name = entityPackage +"." + domainProtoManager.stripPackageName(proto);
                             sb.append(prefix);
                             sb.append("<class>");
                             sb.append(name);

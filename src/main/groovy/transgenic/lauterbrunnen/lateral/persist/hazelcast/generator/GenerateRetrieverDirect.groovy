@@ -5,6 +5,7 @@ import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.generator.GenerateConverterName
 
 import java.lang.reflect.Type
@@ -18,11 +19,16 @@ class GenerateRetrieverDirect {
     protected String implPackage;
     protected String cachePackage;
     protected String entityPackage;
+    protected DomainProtoManager domainProtoManager;
     private Map<String, String>  idFields = new HashMap<>();
     private Properties properties;
 
     String getBasePath() {
         return basePath
+    }
+
+    void setDomainProtoManager(DomainProtoManager domainProtoManager) {
+        this.domainProtoManager = domainProtoManager;
     }
 
     void setBasePath(String basePath) {
@@ -65,11 +71,19 @@ class GenerateRetrieverDirect {
         Template t = ve.getTemplate("RetrieverImplDirect.vtl");
         VelocityContext context = new VelocityContext();
         context.put("cachePackage", cachePackage);
-        context.put("entityName", proto.getSimpleName());
+
+        String entityNameReduced = domainProtoManager.getEntityName(proto);
+        entityNameReduced = entityNameReduced.replace(/Entity$/, "");
+        context.put("entityName", entityNameReduced);
         context.put("entityPackage", entityPackage);
         context.put("domainGeneratedPackage", implPackage);
-        String lcName = proto.getSimpleName().substring(0,1).toLowerCase() + proto.getSimpleName().substring(1);
+        String lcName = entityNameReduced.substring(0,1).toLowerCase() + entityNameReduced.substring(1);
         context.put("lcEntityName", lcName);
+        context.put("implName", proto.getSimpleName() + "Impl");
+        String lcImpl = proto.getSimpleName() + "Impl";
+        lcImpl = lcImpl.substring(0,1).toLowerCase() + lcImpl.substring(1);
+        context.put("lcImplName", lcImpl);
+        context.put("protoName", proto.getSimpleName());
 
         //figure out if we need to convert the cache key to a db key
         context.put("convertCacheKeyToDbKey","key");

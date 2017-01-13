@@ -1,6 +1,6 @@
 package ${cachePackage};
 
-import ${domainGeneratedPackage}.${entityName}Impl;
+import ${domainGeneratedPackage}.${implName};
 import ${entityPackage}.${entityName}Entity;
 import ${entityPackage}.${entityName}EntityTransformer;
 import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Created by stumeikle on 28/11/16.
  * Now generated. do not edit
  */
-public class ${entityName}RetrieverImplDirect implements ${entityName}Retriever {
+public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
 
     private ThreadLocal<Object> ${lcEntityName}Entity = new ThreadLocal<>();
 
@@ -32,10 +32,10 @@ public class ${entityName}RetrieverImplDirect implements ${entityName}Retriever 
 
         //convert back to impl
         if (${lcEntityName}Entity.get()!=null) {
-            ${entityName}Impl ${lcEntityName}Impl = new ${entityName}Impl();
-            ${entityName}EntityTransformer.transform(${lcEntityName}Impl,(${entityName}Entity)${lcEntityName}Entity.get());
-            ${lcEntityName}Impl.setLoadedFromStore(true);
-            return ${lcEntityName}Impl;
+            ${implName} ${lcImplName} = new ${implName}();
+            ${entityName}EntityTransformer.transform(${lcImplName},(${entityName}Entity)${lcEntityName}Entity.get());
+            ${lcImplName}.setLoadedFromStore(true);
+            return ${lcImplName};
         }
         return null;    }
 

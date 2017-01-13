@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.persist.hazelcast.generator
 
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.PackageScanner
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
 import transgenic.lauterbrunnen.lateral.domain.UniqueId
@@ -27,22 +28,11 @@ class GenerateHazelcastAdminEndpoints {
             System.exit(0);
         }
 
-        String protoPackage = properties.get("domain.proto.package");
         String implPackage = properties.get("domain.generated.package");
         String entityPackage = properties.get("entity.generated.package");
         String cachePackage = properties.get("persist.hazelcast.generated.package");
-
-//Find all classes in this package
-        List<Class> classes = PackageScanner.getClasses(protoPackage);
-
-//Skip the enums
-        Iterator<Class> iterator = classes.iterator();
-        while (iterator.hasNext()) {
-            Class c = iterator.next();
-            if (c.isEnum()) {
-                iterator.remove();
-            }
-        }
+        def domainProtoManager = new DomainProtoManager(properties);
+        def classes = domainProtoManager.getProtoClasses();
 
         def dbdumpbase = generatedSourcesPath;
         def generatedDir = dbdumpbase + "/" + cachePackage.replaceAll("\\.", "/") + "/";

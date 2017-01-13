@@ -13,15 +13,11 @@ import java.util.function.Consumer
  */
 class GenerateImpl {
 
-    protected String prototypePackage;
     protected String outputPackage;
     protected List<Class> prototypeClasses;
     protected String basePath;
     private Map<String, Class> classMap = new HashMap<>();
 
-    public void setPrototypePackage(String prototypePackage) {
-        this.prototypePackage = prototypePackage;
-    }
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
     }

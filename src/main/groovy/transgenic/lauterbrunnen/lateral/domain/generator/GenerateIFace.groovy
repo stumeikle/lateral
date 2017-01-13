@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.domain.generator
 
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
 
 import java.lang.annotation.Annotation
@@ -9,6 +10,8 @@ import java.lang.reflect.Field
  * Created by stumeikle on 04/06/16.
  */
 class GenerateIFace extends GenerateImpl{
+
+    DomainProtoManager dpm;
 
     public void generateIFace(Class proto) {
 
@@ -22,7 +25,8 @@ class GenerateIFace extends GenerateImpl{
         output << ""<< System.lineSeparator();
 
         Class sc = proto.getSuperclass();
-        if (sc!=null && sc.getName().contains(prototypePackage)) {
+        //if (sc!=null && sc.getName().contains(prototypePackage)) {
+        if (sc!=null && dpm.containsClass(sc)) {
             output << "public interface " + proto.getSimpleName() + " extends " + sc.getSimpleName() +" {" << System.lineSeparator()
         } else {
             output << "public interface " + proto.getSimpleName() << " {" << System.lineSeparator()

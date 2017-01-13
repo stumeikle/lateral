@@ -13,7 +13,6 @@ import java.util.function.Consumer
  */
 class GenerateRestPojo {
 
-    protected String prototypePackage;
     protected String outputPackage;
     protected String domainGeneratedPackage;
     protected List<Class> prototypeClasses;
@@ -22,9 +21,6 @@ class GenerateRestPojo {
     protected Properties properties;
     protected Field idField = null;
 
-    public void setPrototypePackage(String prototypePackage) {
-        this.prototypePackage = prototypePackage;
-    }
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
     }

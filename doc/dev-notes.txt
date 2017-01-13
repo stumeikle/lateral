@@ -256,3 +256,15 @@ Stuff to do now:
     and an endpoint [done]
 
 [CHECK] do methods in map store need to be synchronized?
+
+[FEATURE] next step is to add optimistic locking optionally in domain model. and then based on that we can
+implement (finally) sequences. should optimistic locking be the default??
+
+[SEQUENCES] still on this thing. so. in order to store sequences we need a new map for storing them, and the related
+entities. fine. we could then inject a hidden class into the prototypes. fine. but refactoring needed first:
+
+[1] change the generators not to use the proto package except for step 1. (this would allow us to extend the proto
+classes on the fly). (looks like cache and domain are ok in this regard)
+
+[LIMITATION] we'd need to check if we support subpackages within the domain prototype. i think probably not.
+would need testing. perhaps will work so long as the entity names themselves are unique
