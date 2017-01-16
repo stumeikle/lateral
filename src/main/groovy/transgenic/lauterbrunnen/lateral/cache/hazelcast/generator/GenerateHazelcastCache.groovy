@@ -1,6 +1,8 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast.generator
 
+import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.PackageScanner
+import transgenic.lauterbrunnen.lateral.domain.internal._Sequence
 
 /**
  * Created by stumeikle on 14/06/16.
@@ -26,8 +28,10 @@ class GenerateHazelcastCache {
         String outputPackage = properties.get("cache.hazelcast.generated.package");
 
 //Find all classes in this package TODO fix for internals
-        List<Class>     classes = PackageScanner.getClasses( inputPackage );
+        DomainProtoManager dpm = new DomainProtoManager(properties);
+        List<Class>     classes = dpm.getProtoClasses();//PackageScanner.getClasses( inputPackage );
         List<Class>     repoClasses = new ArrayList<>();
+        boolean sequencesUsed = classes.contains(_Sequence.class);
 
         for(Class c: classes) {
             for(Class iface: c.getInterfaces()) {
@@ -50,6 +54,7 @@ class GenerateHazelcastCache {
 
 //Generate the common
         GenerateCommon gc = new GenerateCommon();
+        gc.setSequencesUsed(sequencesUsed);
         gc.setOutputPackage(outputPackage);
         gc.setBasePath( libdomainbase );
         gc.setGeneratedDomainPackage( inputPackage );

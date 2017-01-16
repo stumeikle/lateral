@@ -8,6 +8,7 @@ class GenerateCommon {
     private String outputPackage;
     private String basePath;
     private String generatedDomainPackage;
+    private boolean sequencesUsed;
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
@@ -19,6 +20,10 @@ class GenerateCommon {
 
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
+    }
+
+    public void setSequencesUsed(boolean sequencesUsed) {
+        this.sequencesUsed = sequencesUsed;
     }
 
     public void generate(List<Class> repos) {
@@ -69,7 +74,7 @@ class GenerateCommon {
                 "        }" << System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "        if (first!=null) throw first;" << System.lineSeparator() +
-                "    }" << System.lineSeparator() << System.lineSeparator() +
+                "    }" << System.lineSeparator() << System.lineSeparator();
                 
 //                "    public void updateAll(Collection<EntityImpl> updateCollection) {" << System.lineSeparator() +
 //                "        for(EntityImpl impl: updateCollection) {" << System.lineSeparator() +
@@ -77,36 +82,41 @@ class GenerateCommon {
 //                "            repo.update(impl);" << System.lineSeparator() +
 //                "        }" << System.lineSeparator() +
 //                "    }" << System.lineSeparator() +
-                "    protected long incrementSequence(String name) throws PersistenceException{" << System.lineSeparator() +
-                "        _Sequence sequence = Repository.retrieve(_Sequence.class, name);" << System.lineSeparator() +
-                "" << System.lineSeparator() +
-                "        //If there is no sequence, create a new one" << System.lineSeparator() +
-                "        if (sequence==null) {" << System.lineSeparator() +
-                "            sequence = Factory.create(_Sequence.class);" << System.lineSeparator() +
-                "            sequence.setName(name);" << System.lineSeparator() +
-                "            sequence.setValue(0);" << System.lineSeparator() +
-                "            Repository.persist(sequence);" << System.lineSeparator() +
-                "        }" << System.lineSeparator() +
-                "" << System.lineSeparator() +
-                "        int retryCount = 0;" << System.lineSeparator() +
-                "        long value=0;" << System.lineSeparator() +
-                "        do {" << System.lineSeparator() +
-                "            try {" << System.lineSeparator() +
-                "                value = sequence.getValue()+1;" << System.lineSeparator() +
-                "                sequence.setValue(value);" << System.lineSeparator() +
-                "                Repository.update(sequence);" << System.lineSeparator() +
-                "            } catch (PersistenceException e) {" << System.lineSeparator() +
-                "                if (e instanceof OptimisticLockingException) {" << System.lineSeparator() +
-                "                    //retry a few times" << System.lineSeparator() +
-                "                    retryCount++;" << System.lineSeparator() +
-                "                    if (retryCount>=3) throw e;" << System.lineSeparator() +
-                "                }" << System.lineSeparator() +
-                "                else throw e;" << System.lineSeparator() +
-                "            }" << System.lineSeparator() +
-                "        }while(retryCount>0 && retryCount<3);" << System.lineSeparator() +
-                "        return value;" << System.lineSeparator() +
-                "    }" << System.lineSeparator() +
+
+                //Add in the following function but only if the internal _Sequence class is used
+
+                if (sequencesUsed) {
+                    output << "    protected long incrementSequence(String name) throws PersistenceException{" << System.lineSeparator() +
+                            "        _Sequence sequence = Repository.retrieve(_Sequence.class, name);" << System.lineSeparator() +
+                            "" << System.lineSeparator() +
+                            "        //If there is no sequence, create a new one" << System.lineSeparator() +
+                            "        if (sequence==null) {" << System.lineSeparator() +
+                            "            sequence = Factory.create(_Sequence.class);" << System.lineSeparator() +
+                            "            sequence.setName(name);" << System.lineSeparator() +
+                            "            sequence.setValue(0);" << System.lineSeparator() +
+                            "            Repository.persist(sequence);" << System.lineSeparator() +
+                            "        }" << System.lineSeparator() +
+                            "" << System.lineSeparator() +
+                            "        int retryCount = 0;" << System.lineSeparator() +
+                            "        long value=0;" << System.lineSeparator() +
+                            "        do {" << System.lineSeparator() +
+                            "            try {" << System.lineSeparator() +
+                            "                value = sequence.getValue()+1;" << System.lineSeparator() +
+                            "                sequence.setValue(value);" << System.lineSeparator() +
+                            "                Repository.update(sequence);" << System.lineSeparator() +
+                            "            } catch (PersistenceException e) {" << System.lineSeparator() +
+                            "                if (e instanceof OptimisticLockingException) {" << System.lineSeparator() +
+                            "                    //retry a few times" << System.lineSeparator() +
+                            "                    retryCount++;" << System.lineSeparator() +
+                            "                    if (retryCount>=3) throw e;" << System.lineSeparator() +
+                            "                }" << System.lineSeparator() +
+                            "                else throw e;" << System.lineSeparator() +
+                            "            }" << System.lineSeparator() +
+                            "        }while(retryCount>0 && retryCount<3);" << System.lineSeparator() +
+                            "        return value;" << System.lineSeparator() +
+                            "    }" << System.lineSeparator()
+                }
                 
-                "}"<< System.lineSeparator();
+                output << "}"<< System.lineSeparator();
     }
 }
