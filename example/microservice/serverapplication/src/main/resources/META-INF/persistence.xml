@@ -8,7 +8,7 @@
         <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.TrackEntity</class>
         <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.ArtistEntity</class>
         <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.AlbumEntity</class>
-        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated._SequenceEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.microservice.serverapplication.entity.generated.LateralSequenceEntity</class>
         <!-- End of Lateral Entities -->
 
         <properties>

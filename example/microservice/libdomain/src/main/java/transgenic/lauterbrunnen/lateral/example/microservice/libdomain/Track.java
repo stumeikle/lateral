@@ -1,6 +1,8 @@
 package transgenic.lauterbrunnen.lateral.example.microservice.libdomain;
 
+import transgenic.lauterbrunnen.lateral.domain.OptimisticLocking;
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId;
+import transgenic.lauterbrunnen.lateral.domain.Sequence;
 
 import java.net.URL;
 
@@ -15,6 +17,7 @@ public class Track {
     double lengthInMins;
     URL media;
     @RepositoryId
+    @Sequence
     int id;
 
 }

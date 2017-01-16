@@ -1,5 +1,10 @@
 package transgenic.lauterbrunnen.lateral.domain;
 
+import transgenic.lauterbrunnen.lateral.domain.internal._Sequence;
+import transgenic.lauterbrunnen.lateral.plugin.AnnotationScanner;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +32,12 @@ public class DomainProtoManager {
         externalProtoClasses.addAll(protoClasses);
 
         //Add the internal classes. TODO some of these will only be needed in particular circumstances
-        //protoClasses.addAll(PackageScanner.getClasses(internalPackage));
+        //Could add a nice mechanism here to link annotation presense to inclusion of internal classes
+        //For now lets take the simplest path
+        protoClasses.addAll(PackageScanner.getClasses(internalPackage));
+        if (!annotationExists(externalProtoClasses, Sequence.class)) {
+            protoClasses.remove(_Sequence.class);
+        }
 
         //Skip the enums
         Iterator<Class> iterator = protoClasses.iterator();
@@ -70,5 +80,26 @@ public class DomainProtoManager {
             return proto.getSimpleName().replaceFirst("_", "Lateral");
         }
         return proto.getSimpleName();
+    }
+
+    private boolean annotationExists(List<Class> classes, Class annotationClass) {
+
+        for(Class c: classes) {
+            for(Annotation note: c.getAnnotations()) {
+                if (note.annotationType().getName().equals(annotationClass.getName())) {
+                    return true;
+                }
+            }
+
+            //check the fields
+            for(Field f: c.getDeclaredFields()) {
+                for(Annotation note: f.getAnnotations()) {
+                    if (note.annotationType().getName().equals(annotationClass.getName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

@@ -84,7 +84,7 @@ class GenerateEntity {
 
         output << "" << System.lineSeparator();
         output << "@Entity" << System.lineSeparator();
-        output << "@Table(name=\"" << getColumnName(entityName) << "\")" <<System.lineSeparator()
+        output << "@Table(name=\"" << getColumnName(domainProtoManager.getEntityName(proto)) << "\")" <<System.lineSeparator()
 
         //jpqls
         output << "@NamedQueries ({" << System.lineSeparator();

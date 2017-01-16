@@ -153,7 +153,7 @@ class GenerateEntityTask  {
                         String prefix = line.replace(PERSISTENCE_BLOCK_START, "");
 
                         for(Class proto: classes) {
-                            String name = entityPackage +"." + domainProtoManager.stripPackageName(proto);
+                            String name = entityPackage +"." + domainProtoManager.getEntityName(proto);//domainProtoManager.stripPackageName(proto);
                             sb.append(prefix);
                             sb.append("<class>");
                             sb.append(name);

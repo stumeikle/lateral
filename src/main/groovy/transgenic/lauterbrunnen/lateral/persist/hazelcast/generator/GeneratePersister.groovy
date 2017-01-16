@@ -76,6 +76,7 @@ class GeneratePersister {
         
         output << "public class " << implPersister << " implements " << proto.getSimpleName() << "Persister {" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
+                "    //This method called from hc map store for both persists AND updates :(" << System.lineSeparator() +
                 "    public void persist(Object object) {" << System.lineSeparator() +
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
                 "" << System.lineSeparator() +
@@ -83,7 +84,7 @@ class GeneratePersister {
                 "        " << entity << " " << entityLC << " = new " << entity << "();" << System.lineSeparator() +
                 "        " << entityTransformer << ".transform( " << entityLC << ", " << implLC << " );" << System.lineSeparator() +
                 "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
-                "            em.persist(" << entityLC << ");" << System.lineSeparator() +
+                "            em.merge(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
                 "    }" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator +
@@ -94,6 +95,7 @@ class GeneratePersister {
                 "        }" << System.lineSeparator +
                 "    }" << System.lineSeparator() +
                 "" << System.lineSeparator() +
+                "    //This method never called. HC map store does not differentiate between store and update"<< System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    public void update(Object object) {" << System.lineSeparator() +
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +

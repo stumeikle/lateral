@@ -9,13 +9,13 @@ public interface CRUDRepository<T,I> {
 
     //create / persist must set the flag on the impl if successful
 
-    void create(T entity);
-    void persist(T entity); //Could return a reference perhaps
+    void create(T entity)throws PersistenceException;
+    void persist(T entity)throws PersistenceException; //Could return a reference perhaps
     T retrieve(I id);
     void delete(I id);
-    void update(T entity);
+    void update(T entity) throws PersistenceException;
 
     Collection<T> retrieveAll();
-    void persistAll(Collection<EntityImpl> persistCollection);
-    void updateAll(Collection<EntityImpl> updateCollection);
+    void persistAll(Collection<EntityImpl> persistCollection)throws PersistenceException;
+    void updateAll(Collection<EntityImpl> updateCollection) throws PersistenceException;
 }

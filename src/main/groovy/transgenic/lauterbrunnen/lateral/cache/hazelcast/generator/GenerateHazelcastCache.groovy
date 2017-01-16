@@ -25,7 +25,7 @@ class GenerateHazelcastCache {
         String inputPackage = properties.get("domain.generated.package");
         String outputPackage = properties.get("cache.hazelcast.generated.package");
 
-//Find all classes in this package
+//Find all classes in this package TODO fix for internals
         List<Class>     classes = PackageScanner.getClasses( inputPackage );
         List<Class>     repoClasses = new ArrayList<>();
 
@@ -52,6 +52,7 @@ class GenerateHazelcastCache {
         GenerateCommon gc = new GenerateCommon();
         gc.setOutputPackage(outputPackage);
         gc.setBasePath( libdomainbase );
+        gc.setGeneratedDomainPackage( inputPackage );
         gc.generate(repoClasses);
 
 //Generate the repository manager
