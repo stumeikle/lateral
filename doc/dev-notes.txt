@@ -250,7 +250,7 @@ Solution found using maploaderlifecyclesupport. All good.
 
 Stuff to do now:
 [a] extend retriever direct to pull in the last update id. [done]
-    [a.1] will need a new jpql and query [done]
+    [a.1] will need a new jpql and query u[done]
 [b] extend the admin endpoints to be able to support this remotely also
     which means a remote impl [done]
     and an endpoint [done]
@@ -278,3 +278,12 @@ have changed in the db, should not have _ENTITY on the end of them
 almost done. I found a 'bug' in hazelcast though :( https://groups.google.com/forum/#!topic/hazelcast/Ji_g-DZwr7o
 map store doesn't differentiate between put and udpate
 [FIXED] worked around
+
+Things to do stu: add to github comparison between lateral and spring boot.
+different emphasis in lateral, domain is more isolated, domain objects do not need defining at the data level/entity level
+unlike spring boot lateral supports write through and write behind
+
+20170413
+what to do next? could look at the search engine stuff. maybe looking at solandra would make sense. indeed could think
+about schemaless storage of the data. maybe we shouldn't consider only rdbms. it should be in principle straight forward
+to create new persisters which write to cassandra and perhaps don't use or need the entity classes.

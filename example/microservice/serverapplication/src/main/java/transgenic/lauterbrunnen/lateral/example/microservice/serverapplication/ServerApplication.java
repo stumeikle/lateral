@@ -1,9 +1,11 @@
 package transgenic.lauterbrunnen.lateral.example.microservice.serverapplication;
 
+import jdk.nashorn.internal.runtime.regexp.JoniRegExp;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.BasicConfigurator;
 import transgenic.lauterbrunnen.lateral.Lateral;
+import transgenic.lauterbrunnen.lateral.domain.Factory;
 import transgenic.lauterbrunnen.lateral.domain.Repository;
 import transgenic.lauterbrunnen.lateral.domain.UniqueId;
 import transgenic.lauterbrunnen.lateral.example.microservice.libdomain.generated.Album;
@@ -83,6 +85,13 @@ public class ServerApplication {
 
         BasicConfigurator.configure();
         Lateral.INSTANCE.initialise();
+
+        try {
+            Album album = Factory.create(Album.class);
+            Repository.persist(album);
+        }catch (Exception e){
+            System.out.println("DEBUG");
+        }
 
     }
 }

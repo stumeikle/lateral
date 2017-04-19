@@ -1,0 +1,108 @@
+package ${outputPackage};
+
+import transgenic.lauterbrunnen.lateral.domain.PersistenceException;
+import transgenic.lauterbrunnen.lateral.domain.UniqueId;
+import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
+import ${cacheZeroGeneratedPackage}.ZCCommonRepositoryImpl;
+import ${domainGeneratedPackage}.${entity}Impl;
+import ${domainGeneratedPackage}.${entity}Repository;
+import ${entityGeneratedPackage}.${JPAentity};
+import ${entityGeneratedPackage}.${JPAentity}Transformer;
+
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * Created by stumeikle on 17/04/17.
+ * This file generated, do not edit
+ * Methods here need to propagate through to the persistent store.
+ */
+public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements ${entity}Repository {
+
+    private ThreadLocal<Object> ${lcentity}Entity = new ThreadLocal<>();
+
+    @Override
+    public void create(${entity}Impl ${lcentity}Impl) throws PersistenceException {
+        persist(${lcentity}Impl);
+    }
+
+    @Override
+    public void persist(${entity}Impl ${lcentity}Impl) throws PersistenceException {
+#if ($sequencesPresent)
+#foreach( $field in $sequenceFields )
+        ${lcentity}Impl.set${field}((int)incrementSequence("${entity}_${field}"));
+#end
+#end
+
+        ${JPAentity} ${lcentity}Entity = new ${JPAentity}();
+        ${JPAentity}Transformer.transform( ${lcentity}Entity, ${lcentity}Impl );
+        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+            em.merge(${lcentity}Entity);
+        });
+    }
+
+    @Override
+    public ${entity}Impl retrieve(${repositoryIdType} id) {
+        //convert repository key to db key if needed
+        Object      dbKey=${repositoryIdTransformation};
+        ${lcentity}Entity.set(null);
+        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+            ${lcentity}Entity.set( em.find( ${JPAentity}.class, dbKey ));
+        });
+
+        //convert back to impl
+        if (${lcentity}Entity.get()!=null) {
+            ${entity}Impl ${lcentity}Impl = new ${entity}Impl();
+            ${JPAentity}Transformer.transform(${lcentity}Impl,(${JPAentity})${lcentity}Entity.get());
+            ${lcentity}Impl.setLoadedFromStore(true);
+            return ${lcentity}Impl;
+        }
+        return null;
+    }
+
+    @Override
+    public void delete(${repositoryIdType} id) {
+        Object      dbKey=${repositoryIdTransformation};
+        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+            ${JPAentity} ${lcentity}Entity = em.find( ${JPAentity}.class, dbKey );
+            em.remove(${lcentity}Entity);
+        });
+    }
+
+    @Override
+    public void update(${entity}Impl ${lcentity}Impl) throws PersistenceException {
+
+        //FIX optimistic locking not yet handled in this case TODO
+
+        ${repositoryIdType} id = ${lcentity}Impl.getRepositoryId();
+        Object      dbKey=${repositoryIdTransformation};
+        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+            ${JPAentity} ${lcentity}Entity = em.find( ${JPAentity}.class, dbKey );
+            ${JPAentity}Transformer.transform(${lcentity}Entity, ${lcentity}Impl);
+        });
+    }
+
+    @Override
+    public Collection<${entity}Impl> retrieveAll() {
+        TransactionManager.INSTANCE.runInTransactionalContext((em)->{
+            Query query = em.createNamedQuery("${entity}Entity.findAllIds");
+            ${lcentity}Entity.set(query.getResultList());
+        });
+
+        List<${entity}Impl>    retval = new ArrayList<>();
+        List<${dbIdType}>        ids = (List<${dbIdType}>)${lcentity}Entity.get();
+        for(${dbIdType} id : ids) {
+            ${lcentity}Entity.set(null);
+            TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+                ${lcentity}Entity.set( em.find( ${JPAentity}.class, id ));
+            });
+            ${entity}Impl  impl = new ${entity}Impl();
+            ${JPAentity}Transformer.transform((${JPAentity})${lcentity}Entity.get(), impl);
+            retval.add(impl);
+        }
+
+        return retval;
+    }
+}

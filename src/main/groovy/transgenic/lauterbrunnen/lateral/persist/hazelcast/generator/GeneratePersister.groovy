@@ -109,6 +109,9 @@ class GeneratePersister {
                 "" << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    public void remove(Object object) {" << System.lineSeparator() +
+
+                //WARNING, could be we need to convert the object repository id here
+
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "" << System.lineSeparator() +

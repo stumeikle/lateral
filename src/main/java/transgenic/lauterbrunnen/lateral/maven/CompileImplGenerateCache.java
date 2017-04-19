@@ -7,6 +7,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import transgenic.lauterbrunnen.lateral.cache.hazelcast.generator.GenerateHazelcastCache;
+import transgenic.lauterbrunnen.lateral.cache.zero.generator.GenerateZeroCache;
 import transgenic.lauterbrunnen.lateral.domain.generator.GenerateDomainTask;
 
 import java.io.File;
@@ -80,6 +81,12 @@ public class CompileImplGenerateCache extends AbstractMojo {
         ghcc.setGeneratedSourcesPath(generatedSourcesPath);
         ghcc.setPropertyFile(f);
         ghcc.generate();
+
+        GenerateZeroCache gzc = new GenerateZeroCache();
+        gzc.setClassLoader(urlClassLoader);
+        gzc.setGeneratedSourcesPath(generatedSourcesPath);
+        gzc.setPropertyFile(f);
+        gzc.generate();
 
         //(4) add all the files to be compiled by maven
         project.addCompileSourceRoot(generatedSourcesPath);

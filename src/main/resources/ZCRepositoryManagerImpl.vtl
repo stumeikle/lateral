@@ -1,0 +1,22 @@
+package ${outputPackage};
+
+import transgenic.lauterbrunnen.lateral.cache.zero.ZCRepositoryManager;
+import transgenic.lauterbrunnen.lateral.di.ApplicationDI;
+import transgenic.lauterbrunnen.lateral.di.DefaultImpl;
+import ${inputPackage}.*;
+
+/**
+ * Created by stumeikle on 17/04/17.
+ * Generated code do not edit
+ */
+@DefaultImpl
+public class ZCRepositoryManagerImpl implements ZCRepositoryManager {
+
+    public void initRepositories() {
+
+#foreach( $object in $domainObjects )
+        ZC${object}RepositoryImpl ${object}RepositoryImpl = new ZC${object}RepositoryImpl();
+        ApplicationDI.registerImplementation(${object}Repository.class, ${object}RepositoryImpl);
+#end
+    }
+}

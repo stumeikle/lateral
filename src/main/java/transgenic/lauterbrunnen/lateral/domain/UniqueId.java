@@ -112,5 +112,4 @@ public class UniqueId implements Serializable{
         retval.setValue(byteArray);
         return retval;
     }
-
 }
