@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>transgenic.lauterbrunnen</groupId>
-            <artifactId>lateral</artifactId>
+            <artifactId>lateral-core</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -94,7 +94,7 @@
             </plugin>
             <plugin>
                 <groupId>transgenic.lauterbrunnen</groupId>
-                <artifactId>lateral</artifactId>
+                <artifactId>lateral-core</artifactId>
                 <version>0.1-SNAPSHOT</version>
                 <dependencies>
                     <dependency>
@@ -117,5 +117,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

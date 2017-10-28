@@ -1,0 +1,8 @@
+
+Lateral allows you to create web services and web applications very quickly and easily.
+You can sit them on the database of your choice and the webserver of your choice.
+You can automatically generate REST endpoints and integrate with a distributed cache very easily.
+You specify the domain, lateral generates the rest of the code. You choose your features with config flags at runtime.
+Your applications are easy to maintain and develop as your domain and business logic are naturally segregated.
+
+

@@ -1,0 +1,34 @@
+lateral ideas
+
+-------------
+
+
+add to the to do list:
+
+auto generate a rest api from the domain
+auto generate a solr jobby from the domain
+
+look into hdfs intergration. hadoop. could we tie this to lateral and why bother. how does it fit to the adventure game idea? how do we organise the data and search and manage? i suppose we expect the 'world' to be massive , so how would we store it. hierarchically.  hierarchically. that idea keeps resurfacing. hierarchical hashmaps. although hdfs allows computation to be local to the data its operating on , the data is not organised. we use key-value pairs and the keys are not meaningful, the keys do not relate to the features of the data. 
+
+so how do these ideas relate to lateral? in the simplest sense, cache entries have unique keys and therefore can be distributed and used in the usual hdfs sense. no problem. and yet is that what we want? not really i think. i'd rather the data was organised based on locality in the game world. changes in one place would propagate out from there etc. so we'd not have a single dimensional key. could i test this, is it anything new. i suppose the initial question is, if we use tradDbs to store the data, how does the hierarchical aspect manifest itself?
+logically we'd split the space up into parts and each part would live on a db. indeed from boucne tails 2 thoughts its more likely each part will live concurrently in sevearl dbs. caches organised by location not object type. common configuration. don't need much in memory at each node. the cache doesn't need to be too elastic. its more like 1 cache server per location
+
+
+--> looks ok. we just need many hc servers each with local replicated storage
+
+
+self organising hdfs , self organising everything would help with scalability
+
+research house. AI. advisory. but again we'd need to be driven by clients and thats boring :-)
+
+20161108 -- where's the original list? 
+the web sockets admin stuff
+the high speed serialisation etc
+add kryo serialisation (to hazelcast generator i guess)
+add FST serialisation ...
+see http://blog.hazelcast.com/kryo-serializer/
+
+20171028
+create archetypes
+separate out the DI and utils from the rest of lateral
+it might end up being a multimodule project with archetypes and the di libs
