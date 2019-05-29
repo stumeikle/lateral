@@ -40,10 +40,10 @@ public class HCMapStoreRT implements MapLoader<Object,Object>, MapLoaderLifecycl
 
     @Override
     public void init(HazelcastInstance hazelcastInstance, Properties properties, String mapName) {
-        long    nextUpdateId = retriever.getLastUpdateId() + 1;
-        //TODO fix. bad code. string suffix should live in repo manager at least
-        hazelcastInstance.getIdGenerator(mapName + "UpdateIdGen").init(nextUpdateId);
-        LOG.debug("Set next update id to " + nextUpdateId + " for map " + mapName);
+//        long    nextUpdateId = retriever.getLastUpdateId() + 1;
+//        TODO fix. bad code. string suffix should live in repo manager at least
+//        hazelcastInstance.getIdGenerator(mapName + "UpdateIdGen").init(nextUpdateId);
+//        LOG.debug("Set next update id to " + nextUpdateId + " for map " + mapName);
     }
 
     @Override

@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class CommandHandler implements MessageHandler<Command> {
 
     private Map<String, Map<String, Function<Command, Object>>> handlerMap = new HashMap<>();
-    private OutgoingMessageQueue<CommandResponse> outgoingMessageQueue;
+    private OutgoingMessageQueue<CommandResponse> outgoingMessageQueue; //This is for the response messages going back
 
     public CommandHandler(OutgoingMessageQueue<CommandResponse> outgoingMessageQueue) {
         this.outgoingMessageQueue =outgoingMessageQueue;

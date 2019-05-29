@@ -17,7 +17,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: transgenic.lauterbrunnen:lateral:0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: transgenic.lauterbrunnen:lateral-core:0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.1.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.uuid:java-uuid-generator:3.1.0" level="project" />

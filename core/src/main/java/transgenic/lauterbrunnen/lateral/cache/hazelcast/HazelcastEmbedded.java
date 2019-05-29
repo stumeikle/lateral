@@ -28,7 +28,7 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
  * Created by stumeikle on 21/06/16.
  */
 
-@LateralPluginParameters(configName = "hazelcast_embedded_server", groups = "hazelcast_server" )
+@LateralPluginParameters(configName = "hazelcast_embedded_server", groups = "cache_provider" )
 public class HazelcastEmbedded implements LateralPlugin {
 
     private static final Log LOG = LogFactory.getLog(HazelcastEmbedded.class);
@@ -75,30 +75,11 @@ public class HazelcastEmbedded implements LateralPlugin {
             mapStoreConfig.setEnabled(true);
         }
 
-        //we are the server so expect to be the admin command sender
-        //later we might be a receiver too
-        JGAdminCommandBus adminCommandBus = new JGAdminCommandBus();
-        JGOutgoingMessageQueue<Command> outgoingMessageQueue = new JGOutgoingMessageQueue<>(adminCommandBus);
-        JGIncomingMessageQueue<CommandResponse> incomingMessageQueue = new JGIncomingMessageQueue<>(adminCommandBus);
-        incomingMessageQueue.setHandler(new CommandResponseHandler());
-        Admin.setAdminCommandBus( adminCommandBus ); //this is just to get the 2 queues
-
-        //the other side will be the inverse
-//        {
-//            JGAdminCommandBus adminCommandBus = new JGAdminCommandBus();
-//            JGOutgoingMessageQueue<CommandResponse> outgoingMessageQueue = new JGOutgoingMessageQueue<>(adminCommandBus);
-//            JGIncomingMessageQueue<Command> incomingMessageQueue = new JGIncomingMessageQueue<>(adminCommandBus);
-//            incomingMessageQueue.addHandler(new CommandHandler());
-//            Admin.setCommandBus( adminCommandBus );
-//
-//            initialise the admin endpoints and give them the command handler
-//        }
-        //this is more complex though because the adminendpoints...
-        //
-
         cfg.setInstanceName("lateral");
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
-
+        HCRepositoryManager manager = inject(HCRepositoryManager.class);
+        manager.initRepositories(instance);
+        manager.initTopics(instance);
     }
 }
 

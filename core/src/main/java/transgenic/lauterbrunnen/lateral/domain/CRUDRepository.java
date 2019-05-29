@@ -1,6 +1,7 @@
 package transgenic.lauterbrunnen.lateral.domain;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by Stuart.meikle on 05/05/2016.
@@ -18,4 +19,7 @@ public interface CRUDRepository<T,I> {
     Collection<T> retrieveAll();
     void persistAll(Collection<EntityImpl> persistCollection)throws PersistenceException;
     void updateAll(Collection<EntityImpl> updateCollection) throws PersistenceException;
+
+    Collection<T> search(String predicate);
+    Collection<I> retrieveKeys();
 }

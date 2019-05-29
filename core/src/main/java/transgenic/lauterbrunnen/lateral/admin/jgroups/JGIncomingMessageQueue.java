@@ -29,7 +29,7 @@ public class JGIncomingMessageQueue<T> extends Thread implements IncomingMessage
                 //System.out.println("received msg from " + msg.getSrc() + ": " + msg.getObject());
             }
         });
-        this.setName("OutgoingMessageQ");
+        this.setName("IncomingMessageQ");
         this.setDaemon(true);
         start();
         adminCommandBus.setIncomingMessageQueue(this);

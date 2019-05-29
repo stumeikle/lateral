@@ -141,6 +141,14 @@ class GenerateHazelcastCachePersist {
             gcl.setCachePackage(cachePackage);
             gcl.setEntityPackage(entityPackage);
             gcl.generate(classes, idFields);
+
+            GenerateAdminEndpointManager gaem = new GenerateAdminEndpointManager();
+            gaem.setBasePath(dbdumpbase);
+            gaem.setImplPackage(implPackage);
+            gaem.setCachePackage(cachePackage);
+            gaem.setEntityPackage(entityPackage);
+            gaem.generate(classes, idFields);
+
         }
 
         GenerateMapStoreFactory gmsf = new GenerateMapStoreFactory();

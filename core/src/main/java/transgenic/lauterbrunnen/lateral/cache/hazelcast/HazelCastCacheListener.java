@@ -30,14 +30,5 @@ public class HazelCastCacheListener implements LateralPlugin {
         Map<String, IMap> iMapMap = manager.getImapNameMap();
         HCCacheChangeManager cacheChangeManager = inject(HCCacheChangeManager.class);
         cacheChangeManager.initialise(iMapMap);
-
-        JGAdminCommandBus adminCommandBus = new JGAdminCommandBus();
-        JGOutgoingMessageQueue<CommandResponse> outgoingMessageQueue = new JGOutgoingMessageQueue<>(adminCommandBus);
-        JGIncomingMessageQueue<Command> incomingMessageQueue = new JGIncomingMessageQueue<>(adminCommandBus);
-		CommandHandler handler = new CommandHandler(outgoingMessageQueue);
-        incomingMessageQueue.setHandler(handler);
-        Admin.setAdminCommandBus( adminCommandBus );
-
-		cacheChangeManager.initAdminEndpoints( handler );
     }
 }

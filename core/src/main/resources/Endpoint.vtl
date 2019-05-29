@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import transgenic.lauterbrunnen.lateral.domain.PersistenceException;
 import transgenic.lauterbrunnen.lateral.domain.Repository;
+import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;
 import $domainGeneratedPackage.${entityName};
 import $domainGeneratedPackage.${entityName}Impl;
 
@@ -38,8 +39,8 @@ public class ${entityName}Endpoint {
             Repository.persist(impl);
             String result = impl.getRepositoryId().toString();
             return Response.status(201).entity(result).build();
-        } catch(PersistenceException persistenceException) {
-            String result = "fail:" + persistenceException.getMessage();
+        } catch(PersistenceException $orValidationException exception) {
+            String result = "fail:" + exception.getMessage();
 
             //really we should check if its a user fail or a server fail
             return Response.status(500).entity(result).build();
@@ -58,8 +59,8 @@ public class ${entityName}Endpoint {
             Repository.persist(impl);
             String result = impl.getRepositoryId().toString();
             return Response.status(201).entity(result).build();
-        } catch(PersistenceException persistenceException) {
-            String result = "fail:" + persistenceException.getMessage();
+        } catch(PersistenceException $orValidationException exception) {
+            String result = "fail:" + exception.getMessage();
 
             //really we should check if its a user fail or a server fail
             return Response.status(500).entity(result).build();
@@ -115,7 +116,7 @@ public class ${entityName}Endpoint {
         //(2) update only the fields which are sent in by the client
         //(3) update the cache with the new values
         try {
-            ${entityName} found = Repository.retrieve(${entityName}.class, ${lcEntityName}.get${idFieldName}());
+            ${entityName} found = Repository.retrieve(${entityName}.class, $convertRestIdToRepoIdStart ${lcEntityName}.get${idFieldName}() $convertRestIdToRepoIdEnd );
             if (found!=null) {
                 if (found instanceof ${entityName}Impl) {
                     ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
@@ -128,8 +129,8 @@ public class ${entityName}Endpoint {
 
             String result = "failed to find object (" + ${lcEntityName}.get${idFieldName}() + ") to update";
             return Response.status(500).entity(result).build();
-        } catch(PersistenceException persistenceException) {
-            String result = "fail:" + persistenceException.getMessage();
+        } catch(PersistenceException $orValidationException exception) {
+            String result = "fail:" + exception.getMessage();
 
             //really we should check if its a user fail or a server fail
             return Response.status(500).entity(result).build();
@@ -146,7 +147,7 @@ public class ${entityName}Endpoint {
         //(2) update only the fields which are sent in by the client
         //(3) update the cache with the new values
         try {
-            ${entityName} found = Repository.retrieve(${entityName}.class, ${lcEntityName}.get${idFieldName}());
+            ${entityName} found = Repository.retrieve(${entityName}.class, $convertRestIdToRepoIdStart ${lcEntityName}.get${idFieldName}() $convertRestIdToRepoIdEnd );
             if (found!=null) {
                 if (found instanceof ${entityName}Impl) {
                     ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
@@ -159,8 +160,8 @@ public class ${entityName}Endpoint {
 
             String result = "failed to find object (" + ${lcEntityName}.get${idFieldName}() + ") to update";
             return Response.status(500).entity(result).build();
-        } catch(PersistenceException persistenceException) {
-            String result = "fail:" + persistenceException.getMessage();
+        } catch(PersistenceException $orValidationException exception) {
+            String result = "fail:" + exception.getMessage();
 
             //really we should check if its a user fail or a server fail
             return Response.status(500).entity(result).build();

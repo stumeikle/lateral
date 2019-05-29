@@ -32,3 +32,27 @@ see http://blog.hazelcast.com/kryo-serializer/
 create archetypes
 separate out the DI and utils from the rest of lateral
 it might end up being a multimodule project with archetypes and the di libs
+
+
+20180923
+
+integrate cassandra
+integrate elastic. perhaps autoamtically a la solandra etc
+consider how users would upgrade the db and the hazelcast objects
+containerise the apps automatically?
+consider service meshes or kubernetes etc
+follow standard rest practises for mgets etc default number of pull downs with ?start=x#end=y type stuff.
+consider etags too
+
+use it for something!
+
+20180930 (old notes)
+
+update github page to include
+
+comparison with spring boot
+
+
+the story . increasing speed / capacity.
+
+sql to jpql to nosql. to caching for speed. so why not start then with an application that sits on a caching layer. leave the coders free to write the business logic. as they are expensive resources.

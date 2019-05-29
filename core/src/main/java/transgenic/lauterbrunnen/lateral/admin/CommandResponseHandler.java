@@ -26,6 +26,7 @@ public class CommandResponseHandler implements MessageHandler<CommandResponse> {
     public Object blockUntilResponse(Object messageSent) {
 
         //wait until we get the result and then clean up and return
+        //Heh. not a reactor model
         Object lock = new Object();
         Command command = (Command)messageSent;
         responseAction.put(command.getId(), () -> {synchronized(lock){ lock.notify(); }});

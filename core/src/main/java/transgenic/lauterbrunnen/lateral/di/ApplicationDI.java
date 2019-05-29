@@ -20,6 +20,10 @@ public class ApplicationDI {
     private static Map<Class, Object>       implementations = new ConcurrentHashMap<>();
 
     public static void initialise(Properties properties) {
+        //Setup the annotation scanner
+        AnnotationScanner.INSTANCE.scan("",".ejb.", "transgenic.lauterbrunnen" );
+        AnnotationScanner.INSTANCE.scan("transgenic.lauterbrunnen",".ejb.", "transgenic.lauterbrunnen" );
+
         //look for default implementations
         List<Class> defaultImpls = AnnotationScanner.INSTANCE.get(DefaultImpl.class);
         if (defaultImpls!=null) {

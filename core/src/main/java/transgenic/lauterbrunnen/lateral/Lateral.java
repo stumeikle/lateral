@@ -20,6 +20,11 @@ public enum Lateral {
     private Properties properties;
 
     public void initialise() {
+        initialiseDI();
+        initialisePlugins();
+    }
+
+    public void initialiseDI() {
         properties = new Properties();
         InputStream in = getClass().getClassLoader().getResourceAsStream("application.properties");
         try {
@@ -30,6 +35,9 @@ public enum Lateral {
         }
 
         ApplicationDI.initialise(properties);
+    }
+
+    public void initialisePlugins() {
         try {
             LateralPluginManager.INSTANCE.initialise(properties);
         } catch (Exception ex) {

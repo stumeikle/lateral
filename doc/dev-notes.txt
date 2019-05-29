@@ -262,7 +262,6 @@ implement (finally) sequences. should optimistic locking be the default??
 --> looking to implement now. gets into transactions though. .... need to think about that
 [done]
 
-
 [SEQUENCES] still on this thing. so. in order to store sequences we need a new map for storing them, and the related
 entities. fine. we could then inject a hidden class into the prototypes. fine. but refactoring needed first:
 [done] for now
@@ -287,3 +286,192 @@ unlike spring boot lateral supports write through and write behind
 what to do next? could look at the search engine stuff. maybe looking at solandra would make sense. indeed could think
 about schemaless storage of the data. maybe we shouldn't consider only rdbms. it should be in principle straight forward
 to create new persisters which write to cassandra and perhaps don't use or need the entity classes.
+
+
+20180531
+
+Thoughts of future things to add: cassandra, solandra or similar, containerisation, what config model do we support?
+Easy upgrade paths for db and hazelcast. schema changes etc.
+
+20180909
+
+Make the jar files executable.
+
+20181118
+
+Starting to get to the limits of generate-everything and lots-of-plugins. It becomes quite hard to do normal tasks
+such as add in validations and so on. Everything needs to be propagated everywhere. Should we just use
+generation to get things moving initially, rather than at every step of the way?
+
+Options for validation:
+add annotations to the domainLibrary classes. maybe reuse the existing entity validations
+add annotations to the repository classes and stop the generation
+add annotations to the entity classes and stop the generation there
+add annotations, somehow, at the hazelcast level and stop the generation there
+(or code).
+
+change the domainLibrary to use classes which do the validation. would that even work given the framework?
+perhaps lateral v1 has had it's day?
+
+Experimenting with new types to encapsulate the validation.
+It's a bit of a pain in the balls. IE need to swap types for the entities and then the rest loading fails.
+SO maybe this isn't the way to go. maybe validations based on annotations are the way. special types are a pain
+in the balls
+
+Ok, it is possible to have a validated object type. its a little bit fiddly, you need changes to generate.properties
+and changes to the class itself to support hashCode and Serialised and fromString etc. but then it does work.
+not sure about the imports in the generated code though maybe that's a BUG
+
+the other way to do this would be to use primitive types in the domain and put validation else where. but..
+that's hard too.
+
+[IMPROVEMENT] improve the generation mechanism so that the imports work for short named types used in the converter.
+
+-> Update on the validated types. Doesn't work so well. Hazelcast search predicates etc rely on the type being mor
+e basic. and that makes sense. we can't compare entries in the db if they are non primitive. So perhaps it
+makes more sense to have primitive types and then validate elsewhere.
+
+-------------------
+[BUG] the put rest endpoints, if the respitory Id is a unique id, these attempt to retrieve using a string
+instead of a uuid, which fails.
+
+IE the Rest container uses a String to store the repository id and we can't just pass this into the Repository retrieve. We need to convert it back to a Unique ID first.
+
+20190526-- Fixed
+-------------------
+
+
+20190527
+
+Db dumpers. Not sure where we got to with this. It doesn't look to me today like the dbdumpers could run actve-active.
+However, it would be straightforward enough to use a distributed queue with hazelcast and therefore store all changes
+to the distributed store with the results being read and transferred to db then by n db dumper instances. should be fine
+. we could even persist the store, but ... that's kind of the whole point of the dumper in the first place.
+
+I'm curious about the performance of lateral. Untested as yet. Did I ever start to use Kryo?
+
+[ISSUE] if I play with a broadcast bus setup I see that the application cannot be started until the dbdumper is running.
+Is that an issue? It's blocking sending admin commands to get the latest updateId and hanging.
+
+[BUG] seeing lots of cast problems in DB dumper when running with the example application. Something has changed since
+I last run it up. (Lots of cast problems from Command to CommandResponse or vice-versa). It may just be responding to
+it's own outgoing command response messages. but repeated pings to the application kills it.
+
+20190528
+
+Admin bus errors on db dumper. It all looks a bit of a mess in terms of how it's set up to be honest. Rationalising ...
+How do we sort out the admin bus in the microservice case? That's unclear to me?
+
+I think we wrongly differentiate between hazelcast embedded and server, muddled from the older misunderstanding still.
+
+So in the microservice case, we use HCMapStoreRWT for example to set up the hazelcast map store. And that in turn sets
+retrievers and persisters which operate on the direct local db so the admin bus is not needed at all.
+Geez, supporting all this stuff really needs a tonne of test cases.
+
+Ok, then in the broadcast bus case. Essentially each app, whether embedded or not, is the command sender side of the admin
+bus. [FIX] the hazelcast server instance. So is that what we have?
+
+Well the embedded hazelcast does create the needed queues and install a handler for the responses. I guess that kind of
+makes sense. What happens on the dbdumper side? We have a chicken and egg thing. The dbdumper tries to connect to an
+external hazelcast instance which doesn't exist.
+    -> Really the choice of embedded or server based should be separate from the choice of command sender or command responder.
+    [FIX]
+
+Even the cache change listener is really a separate thing from an admin bus responder.
+
+So, we have, plugins:
+HazelcastEmbeddedPlugin -- the embedded hc connector
+HazelcastPlugin -- the hc server connector
+HazelcastCacheListenerPlugin -- really this is what listens to and perists changes heard in the cache. it is essentially
+the db dumper. HazelcastCacheChangePersisterPlugin
+
+AdminCommandSenders will block until the AdminCommandResponders respond. That's probably not idea but there u are.
+Not too clear to me why this is outwith hazelcast but there were notes above about that.
+
+AdminCommandSender and AdminCommandResponder are completely separate from the cache implementation.
+We could of course have multiple active responders. We'll have to figure out how we manage that. Team Titans hehe
+
+... except they're not. We register the admin ... gosh so darn sophisticated.
+
+HC Cache Change Manager registers all the domain classes with admin endpoints so that when we receive an admin command
+relating to each entity we can respond to it. We can even retrieve the data locally or remotely. (Circular dependencies
+might ensue). Though looks like we just use local.
+
+So the cache change manager sets up the command handler to respond to incoming admin commands.
+That seems wrong, why is it in the cache change manager ...
+the cache change manager really sets up the cache changer persistence.
+So it's true we could separate the cache change persistence from the admin bus responder.
+even though in this case they are bound to the db peristence function
+
+Going to be fiddly due to the generation.
+Steps?
+(1) remove the admin command bits from the plugins
+    -> kind of can't do this because the cache change plugin is bound to the admin responder for now .
+(2) put them in new plugins
+(3) rename the old plugins
+
+that should be enough to get db dumper working again
+then
+(4) rename the hccachechangemanager and split out the admin endpoint initialisation
+(4.5) remove the endpoint initialisation from the generated cache change manager
+(5) update all the generators and the archetypes
+
+
+Implementation notes: we might want to go even further. Basically we should be able to set an admin responder in any
+app that could respond to any particular admin command. like thread dump, do this, do that. Fine.
+So the admin commands we install to respond to cache initialisation, are very specific commands .
+
+^^ need more thought. where do these commands originate ? in the remote retriever etc. so the retrieve says, the db is
+remote, i'll send an admin command to retrieve the object or keys. fine. this is good, it's really ADMIN. Perhaps if
+we want individual apps to have commands we can call these non-admin. but that's for later.
+For now admin command responder is the one that will respond to these messages.
+ (1), (2) complete.
+
+Next task -- test the dbdumper with manually changed config and the application.
+started this but null pointers on the sender side . TODO
+
+[BUG] as part of the hazelcast embedded start up we initialise the mapstore. The mapstore makes a jgroups broadcast
+call to the dbdumper to retrieve parameters such as last update Id. somehow this is causing a timeout in the hazelcast
+initialisation code. So i've no idea how this worked in the past.
+
+This means the HCMapStoreRT and other classes should not call retriever in the initialisation method. :( boohttps://uk.search.yahoo.com/yhs/search;_ylt=AwrIS.gIcu5clBUA3xN3Bwx.?p=roof+window&fr2=sb-top&hspart=ddc&hsimp=yhs-linuxmint&type=__alt__ddc_linuxmint_com`
+The retriever will need to be called later in the update cycle. But of course before the application itself properly
+starts. What a drag. We could move this to the repository manager perhaps. So this is growing arms and legs.
+
+[BUG] do we have topics littered in there that we no longer use? I think they had the same problem tbh that the broadcast
+bus is having now. Could be, so perhaps if we can resolve this we can revert back to using topics.
+WHAT A PALAVA
+
+Ok, i'll comment out the retrieval during the map store init and see if that fixes start up TEMPORARY
+-> Yes that works fine. So I need to kick off the process after the hazelcast initialisation.
+
+Getting too confusing for me.
+
+Bug QUESTION. The only place the cache and the update ids can come from is the db dumper. so why not just let it populate
+the cache once and for all? I suppose the answer is that different clients might need different content so why not let
+them pull it as they need to. < I would hope hazelcast won't ask multiple times for the same context in the map store
+impls >
+
+It seems a pretty shit design from hazelcast that the mapstore initialisation operates in this way.
+
+Could we just ditch the map store altogether? Just use the dumper to persist and let the app send commands to the
+dumper to populate the caches in the first place?
+
+That would be fine. The only problems here are my crazy attachment to doing everything in one framework.
+
+Needs to be a lot simpler.
+Requirements
+(1) there is sometimes a need to capture all updates and reflect these to the db. even if that happens slower than real time
+(2) there is sometimes a need to restore from the db. clients might not know what they need (eg all orders) but should
+be able to filter out what they don't need.
+(3) ideally we can support micro services as well as broadcast buses.
+
+Think we need to do some experiments
+
+EG 2 hc embedded apps. 1 db dumper thing. let the db dumper and apps start at different times. then load the context from
+the dbdumper side. do the apps see the objects being loaded? what about the update id? that's kind of more significant
+how will the apps know if the update id has been set?
+
+In this case we'd not need an admin bus
+and the mapstore would only perhaps be relevant for the micro service case.
+

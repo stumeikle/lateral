@@ -7,7 +7,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -24,16 +27,22 @@ public enum AnnotationScanner {
 
     INSTANCE;
 
+    private static final Class[] parameters = new Class[]{URL.class};
+    private static final Class[] acpParameters = new Class[]{String.class};
     private final Log LOG = LogFactory.getLog(AnnotationScanner.class);
     private final Map<Class, List<Class>> annotatedClassMap;
-    private volatile boolean scanComplete = false;
 
     private AnnotationScanner() {
         annotatedClassMap = new ConcurrentHashMap<>();
+    }
+
+    public void scan(String packageName) {
+        scan(packageName, null, "transgenic.lauterbrunnen");
+    }
+
+    public void scan(String packageName, String filter, String notefilter) {
         try {
-            getClasses("",".ejb.", "transgenic.lauterbrunnen" );//transgenic.lauterbrunnen", ".ejb.");
-            getClasses("transgenic.lauterbrunnen",".ejb.", "transgenic.lauterbrunnen" );
-            scanComplete = true;
+            getClasses(packageName,filter,notefilter);
         } catch (IOException e) {
             LOG.error("Exception thrown when scanning for annotations");
         }
@@ -44,7 +53,6 @@ public enum AnnotationScanner {
     }
 
     private void getClasses(String packageName, String filter, String noteFilter) throws IOException {
-        if (scanComplete) return;
 
         //attempt to add in the jars we need to the system classpath
         //my note. getClass().getProtectionDomain().getCodeSource().getLocation()
@@ -83,10 +91,47 @@ public enum AnnotationScanner {
                     list.add(c);
                 }
             } catch (Throwable e) {
-                LOG.error("Unable to load class: " + cn, e);
+                LOG.trace("Unable to load class: " + cn, e);
             }
         }
     }
+
+    //Here be dragons ...!
+    //Add a new URL to the <current> class loader (important)
+    //This works in IDE but not in Jetty, which is clever enough to block addURL()
+    public void addURL(URL u) throws IOException {
+        URLClassLoader sysloader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+
+        if (!sysloader.getClass().getName().contains("jetty")) {
+            Class sysclass = URLClassLoader.class;
+
+            try {
+                Method method = sysclass.getDeclaredMethod("addURL", parameters);
+                method.setAccessible(true);
+                method.invoke(sysloader, new Object[]{u});
+            } catch (Throwable t) {
+                t.printStackTrace();
+                throw new IOException("Error, could not add URL to system classloader");
+            }//end try catch
+        }
+        else {
+            //we are in a jetty context
+            //we don't really want to depend on jetty jars here though
+            //I suppose we are binding to a specific Jetty version here
+            try {
+                Method method = sysloader.getClass().getDeclaredMethod("addClassPath", acpParameters);
+                method.invoke(sysloader, new Object[]{u.toString()});
+            } catch (NoSuchMethodException e) {
+                System.out.println("Unhandled exception caught "+ e.getMessage());
+            } catch (IllegalAccessException e) {
+                System.out.println("Unhandled exception caught"+ e.getMessage());
+            } catch (InvocationTargetException e) {
+                System.out.println("Unhandled exception caught"+ e.getMessage());
+            }
+        }
+
+    }//end method
+
 
     private List<String> findClasses(String directory, String packageName, String filter)  {
 
@@ -133,7 +178,7 @@ public enum AnnotationScanner {
             } else if (file.getName().endsWith(".class")) {
                 String name = null;
                 name = packageName + '.' + file.getName().substring(0, file.getName().length() - 6);
-                if (!name.contains(filter))
+                if (filter==null || !name.contains(filter))
                     classes.add(name);
             }
         }

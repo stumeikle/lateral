@@ -7,6 +7,7 @@ import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.OptimisticLocking
+import transgenic.lauterbrunnen.lateral.domain.validation.Validate
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.Field
@@ -50,13 +51,14 @@ class GenerateRepositoryImpl {
             if(note.annotationType().getName().equals(OptimisticLocking.class.getName())) optimisticLocking=true;
         }
         boolean sequencesPresent=false;
+        boolean validationPresent=false;
         List<String> sequenceFields = new ArrayList<>();
         for(Field f: implClass.getDeclaredFields()) {
             boolean found=false;
             for(Annotation note: f.getAnnotations()) {
                 //println "Checking annotation " + note.annotationType().getName();
                 if (note.annotationType().getName().equals(transgenic.lauterbrunnen.lateral.domain.Sequence.class.getName())) {
-                    found=true;break;
+                    found=true; break;
                 }
             }
             if (found) {
@@ -64,6 +66,15 @@ class GenerateRepositoryImpl {
                 String fieldName = f.getName();
                 fieldName = fieldName.substring(0,1).toUpperCase() + fieldName.substring(1);
                 sequenceFields.add(fieldName);
+            }
+        }
+
+        for(Field field: proto.getDeclaredFields()) {
+            Annotation[] notes = field.getAnnotations();
+            for(Annotation note: notes) {
+                if (note.annotationType().getName().equals(Validate.class.getName())) {
+                    validationPresent=true;break;
+                }
             }
         }
 
@@ -86,6 +97,7 @@ class GenerateRepositoryImpl {
         context.put("dbIdType", dbIdType);
         context.put("sequencesPresent", sequencesPresent);
         context.put("sequenceFields", sequenceFields);
+        context.put("throwValidationException", validationPresent ? "throws ValidationException": "");
 
         String lcentity = proto.getSimpleName();
         lcentity = lcentity.substring(0,1).toLowerCase()+lcentity.substring(1);

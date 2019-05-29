@@ -15,7 +15,7 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
 /**
  * Created by stumeikle on 13/05/16.
  */
-@LateralPluginParameters(configName = "hazelcast_cache", groups = "hazelcast_client, cache_provider" )
+@LateralPluginParameters(configName = "hazelcast_cache", groups = "cache_provider" )
 public class HazelcastPlugin implements LateralPlugin {
 
     private static final Log LOG = LogFactory.getLog(HazelcastPlugin.class);

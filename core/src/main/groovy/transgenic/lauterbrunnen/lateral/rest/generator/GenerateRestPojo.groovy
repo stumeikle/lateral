@@ -1,6 +1,7 @@
 package transgenic.lauterbrunnen.lateral.rest.generator
 
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
+import transgenic.lauterbrunnen.lateral.domain.validation.Validate
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.Field
@@ -64,6 +65,7 @@ class GenerateRestPojo {
         output << "" << System.lineSeparator();
         output << "import transgenic.lauterbrunnen.lateral.domain.Factory;" << System.lineSeparator();
         output << "import transgenic.lauterbrunnen.lateral.domain.UniqueId;" << System.lineSeparator();
+        output << "import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;" << System.lineSeparator();
         output << "import " << domainGeneratedPackage << ".*;" << System.lineSeparator();
         output << "import java.util.stream.Collectors;" << System.lineSeparator();
         output << "" << System.lineSeparator()
@@ -75,12 +77,18 @@ class GenerateRestPojo {
         //copied from GenerateImpl, if i'm honest :-)
         List<Field> directProtoFields = new ArrayList<>();
         List<Field> collectionFields = new ArrayList<>();
+        boolean anyFieldNeedsValidating = false;
         for (Field field : allFields) {
 
             Annotation[] notes = field.getAnnotations();
             for (Annotation note : notes) {
                 if (note.annotationType().getName().equals(RepositoryId.class.getName())) {
                     idField = field;
+                }
+
+//                println "Checking annotation " + note.annotationType().getName() + " of proto " + proto.getName();
+                if (note.annotationType().getName().equals(Validate.class.getName())) {
+                    anyFieldNeedsValidating = true;
                 }
             }
 
@@ -143,7 +151,7 @@ class GenerateRestPojo {
         //generate the getters and setters
         generateGettersAndSetters(output, proto, allFields);
 
-        generateCreateUpdateImpl(output, proto, allFields);
+        generateCreateUpdateImpl(output, proto, allFields, anyFieldNeedsValidating);
 
         generateCreateFromEntity(output, proto, allFields);
 
@@ -207,10 +215,12 @@ class GenerateRestPojo {
         }
     }
 
-    protected void generateCreateUpdateImpl(def output, Class proto, List<Field> allFields) {
+    protected void generateCreateUpdateImpl(def output, Class proto, List<Field> allFields, boolean anyFieldNeedsValidation) {
+
+        String tve = anyFieldNeedsValidation ? "throws ValidationException" : "";
 
         output << ""<< System.lineSeparator();
-        output << "    public " << proto.getSimpleName() << "Impl createImpl() {" << System.lineSeparator();
+        output << "    public " << proto.getSimpleName() << "Impl createImpl() " << tve << "{" << System.lineSeparator();
         output << ""<< System.lineSeparator();
         output << "        " << proto.getSimpleName() << "Impl retval = (" << proto.getSimpleName() <<
                 "Impl) Factory.create( " << proto.getSimpleName() << ".class );" << System.lineSeparator();
@@ -248,7 +258,7 @@ class GenerateRestPojo {
         output << "    }" << System.lineSeparator();
 
         output << ""<< System.lineSeparator();
-        output << "    public " << proto.getSimpleName() << "Impl updateImpl( " << proto.getSimpleName() << "Impl basis ) {" << System.lineSeparator();
+        output << "    public " << proto.getSimpleName() << "Impl updateImpl( " << proto.getSimpleName() << "Impl basis ) " << tve << "{" << System.lineSeparator();
         output << ""<< System.lineSeparator();
         output << "        " << proto.getSimpleName() << "Impl retval = basis;" << System.lineSeparator();
         for (Field field : allFields) {
@@ -328,7 +338,8 @@ class GenerateRestPojo {
             //Fix the booleans
             if (field.getType().getTypeName().equalsIgnoreCase("Boolean")) {
                 setFn = setFn.replaceFirst("^is", "");
-                getFn = field.getName();
+                if (field.getName().startsWith("is"))
+                    getFn = field.getName();
             }
 
             String typename= field.getType().getTypeName();

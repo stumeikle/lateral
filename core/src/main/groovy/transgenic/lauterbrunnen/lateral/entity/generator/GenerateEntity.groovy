@@ -3,7 +3,9 @@ package transgenic.lauterbrunnen.lateral.entity.generator
 import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.Transient
 import transgenic.lauterbrunnen.lateral.domain.generator.GenerateConverterName
+import transgenic.lauterbrunnen.lateral.domain.validation.Validate
 
+import java.lang.annotation.Annotation
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
@@ -331,7 +333,8 @@ class GenerateEntity {
         String fufn = "get" + firstUpperFN;
         if (field.getType().getTypeName().equalsIgnoreCase("Boolean"))
         {
-            fufn = field.getName();
+            if (field.getName().startsWith("is"))
+                fufn = field.getName();
         }
 
         String fieldName = "impl." + fufn + "()";
@@ -482,6 +485,7 @@ class GenerateEntity {
         transformer << ""<< System.lineSeparator();
         transformer << "import java.util.stream.Collectors;" << System.lineSeparator()
         transformer << "import transgenic.lauterbrunnen.lateral.domain.UniqueId;" << System.lineSeparator()
+        transformer << "import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;" << System.lineSeparator()
         transformer << "import java.util.function.Function;" << System.lineSeparator();
         transformer << ""<< System.lineSeparator();
         transformer << "public class " << entityName << "Transformer {" << System.lineSeparator();
@@ -496,9 +500,24 @@ class GenerateEntity {
     }
 
     private void writeTransformFromDeclaration( def transformFrom, Class proto) {
+        String validationException = containsValidatedField(proto) ? " throws ValidationException" : "";
+
         transformFrom << "    public static void transform(" << implPackage << "." << proto.getSimpleName() << "Impl impl," <<
-                entityName << " entity) {" << System.lineSeparator();
+                entityName << " entity)" << validationException << " {" << System.lineSeparator();
     }
+
+    private boolean containsValidatedField(Class proto) {
+        for(Field field: proto.getDeclaredFields()) {
+            Annotation[] notes = field.getAnnotations();
+            for (Annotation note: notes) {
+                if (note.annotationType().getName().equals(Validate.class.getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     private void writeTransformerTail(def transformer, def transformTo, def transformFrom) {
         transformer << transformTo << System.lineSeparator() << "    }" << System.lineSeparator() << System.lineSeparator();

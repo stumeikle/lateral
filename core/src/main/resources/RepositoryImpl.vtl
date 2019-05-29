@@ -4,9 +4,11 @@ package ${outputPackage};
 
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IdGenerator;
+import com.hazelcast.query.SqlPredicate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import ${inputPackage}.${protoName}Impl;
 import ${inputPackage}.${protoName}Repository;
 import transgenic.lauterbrunnen.lateral.domain.PersistenceException;
@@ -72,5 +74,16 @@ public class HC${protoName}RepositoryImpl extends HCCommonRepositoryImpl impleme
             all.add((${protoName}Impl)cache.get(id));
         }
         return all;
+    }
+
+    @Override
+    public Collection<${protoName}Impl> search(String predicate) {
+        Collection<${protoName}Impl> results = cache.values( new SqlPredicate( predicate) );
+        return results;
+    }
+
+    @Override
+    public Collection<${repoIdType}> retrieveKeys() {
+        return cache.keySet();
     }
 }

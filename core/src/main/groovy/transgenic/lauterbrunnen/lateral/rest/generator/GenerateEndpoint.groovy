@@ -7,6 +7,7 @@ import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
 import transgenic.lauterbrunnen.lateral.domain.UniqueId
+import transgenic.lauterbrunnen.lateral.domain.validation.Validate
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.Field
@@ -53,14 +54,18 @@ class GenerateEndpoint {
         VelocityContext context = new VelocityContext();
 
         setIdField(proto);
-        if (idField!=null) {
+        if (idField!=null) { //Ie the default repository id type -- UniqueId
             context.put("repoIdType", idField.getType().getName());
             context.put("idFieldName", capitalizeFirst(idField.getName()));
+            context.put("convertRestIdToRepoIdStart", "");
+            context.put("convertRestIdToRepoIdEnd", "");
+
         } else {
             context.put("idFieldName", "RepositoryId");
             context.put("repoIdType", UniqueId.class.getName());
+            context.put("convertRestIdToRepoIdStart", UniqueId.class.getName()+ ".fromString(");
+            context.put("convertRestIdToRepoIdEnd", ")");
         }
-
 
         context.put("domainGeneratedPackage", domainGeneratedPackage);
         context.put("restGeneratedPackage", outputPackage);
@@ -78,7 +83,6 @@ class GenerateEndpoint {
             context.put("lcEntityNamePlural", proto.getSimpleName().toLowerCase() +"s");
         }
         context.put("lcEntityName", proto.getSimpleName().toLowerCase());
-
         context.put("entityName", proto.getSimpleName());
 
         boolean json = true;
@@ -95,6 +99,9 @@ class GenerateEndpoint {
         pojo_version = pojo_version.replaceAll("\\.", "_");
 
         context.put("entityVersion", pojo_version);
+
+        String orValidationException = containsValidatedField(proto) ? "| ValidationException" : "";
+        context.put("orValidationException", orValidationException);
 
         StringWriter writer = new StringWriter();
         t.merge(context,writer);
@@ -125,6 +132,18 @@ class GenerateEndpoint {
                 }
             }
         }
+    }
+
+    private boolean containsValidatedField(Class proto) {
+        for(Field field: proto.getDeclaredFields()) {
+            Annotation[] notes = field.getAnnotations();
+            for (Annotation note: notes) {
+                if (note.annotationType().getName().equals(Validate.class.getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected List<Field> getAllFields(Class klass) {

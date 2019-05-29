@@ -204,7 +204,6 @@ public class Repository {
     }
 
     public static <T> T retrieve(Class<? extends T> clazz, Object id) {
-
         CRUDRepository repo = Factory.getRepositoryForClass(clazz);
         return (T) repo.retrieve(id);
     }
@@ -214,6 +213,18 @@ public class Repository {
         //this next could also live in the individual caches. consider
         CRUDRepository repo = Factory.getRepositoryForClass(clazz);
         repo.delete(id);
+    }
+
+    //Search methods perhaps. Prototype 20181118
+    public static <T> Collection<T> search(Class<? extends T> clazz, String predicate){
+        CRUDRepository repo = Factory.getRepositoryForClass(clazz);
+        return repo.search(predicate);
+    }
+
+    //TODO probably should put a limit on the max number of keys here
+    public static <I> Collection<I> retrieveKeys(Class<?> repositoryClass) {
+        CRUDRepository repo = Factory.getRepositoryForClass(repositoryClass);
+        return repo.retrieveKeys();
     }
 
 }

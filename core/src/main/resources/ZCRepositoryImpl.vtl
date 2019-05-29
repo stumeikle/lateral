@@ -1,6 +1,7 @@
 package ${outputPackage};
 
 import transgenic.lauterbrunnen.lateral.domain.PersistenceException;
+import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;
 import transgenic.lauterbrunnen.lateral.domain.UniqueId;
 import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
 import ${cacheZeroGeneratedPackage}.ZCCommonRepositoryImpl;
@@ -44,7 +45,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
     }
 
     @Override
-    public ${entity}Impl retrieve(${repositoryIdType} id) {
+    public ${entity}Impl retrieve(${repositoryIdType} id) ${throwValidationException}{
         //convert repository key to db key if needed
         Object      dbKey=${repositoryIdTransformation};
         ${lcentity}Entity.set(null);
@@ -104,5 +105,15 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
         }
 
         return retval;
+    }
+
+    @Override
+    public Collection<${entity}Impl> search(String predicate) {
+        return null; //for now, haven't consider how we'd do this
+    }
+
+    @Override
+    public Collection<${repositoryIdType}> retrieveKeys() {
+        return null; //for now, haven't consider how we'd do this
     }
 }
