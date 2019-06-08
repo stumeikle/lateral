@@ -47,12 +47,14 @@ class GenerateChangeListener extends GeneratePersister{
         output << "    }" << System.lineSeparator()
 
         output << "" << System.lineSeparator()
-        output << "    public void initAdminEndpoints( CommandHandler handler ) {"<< System.lineSeparator()
 
-        for (Class proto: protoclasses) {
-            output << "        new " << proto.getSimpleName() << "AdminEndpoint(handler);" << System.lineSeparator();
-        }
-        output << "    }" << System.lineSeparator();
+        //Admin bus removed 20190601
+//        output << "    public void initAdminEndpoints( CommandHandler handler ) {"<< System.lineSeparator()
+//
+//        for (Class proto: protoclasses) {
+//            output << "        new " << proto.getSimpleName() << "AdminEndpoint(handler);" << System.lineSeparator();
+//        }
+//        output << "    }" << System.lineSeparator();
         output << "}" << System.lineSeparator()
 
     }

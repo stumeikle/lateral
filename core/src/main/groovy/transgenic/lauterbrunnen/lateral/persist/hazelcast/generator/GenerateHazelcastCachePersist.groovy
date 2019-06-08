@@ -107,11 +107,12 @@ class GenerateHazelcastCachePersist {
             gri.setBasePath(dbdumpbase);
             gri.generate(proto);
 
-            GenerateRetrieverRemote grr = new GenerateRetrieverRemote();
-            grr.setCachePackage(cachePackage);
-            grr.setBasePath(dbdumpbase);
-            grr.setImplPackage(implPackage);
-            grr.generate(proto);
+            //Deprecated
+//            GenerateRetrieverRemote grr = new GenerateRetrieverRemote();
+//            grr.setCachePackage(cachePackage);
+//            grr.setBasePath(dbdumpbase);
+//            grr.setImplPackage(implPackage);
+//            grr.generate(proto);
 
             if (generateDirect) {
                 GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
@@ -141,13 +142,6 @@ class GenerateHazelcastCachePersist {
             gcl.setCachePackage(cachePackage);
             gcl.setEntityPackage(entityPackage);
             gcl.generate(classes, idFields);
-
-            GenerateAdminEndpointManager gaem = new GenerateAdminEndpointManager();
-            gaem.setBasePath(dbdumpbase);
-            gaem.setImplPackage(implPackage);
-            gaem.setCachePackage(cachePackage);
-            gaem.setEntityPackage(entityPackage);
-            gaem.generate(classes, idFields);
 
         }
 

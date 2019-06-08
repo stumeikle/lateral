@@ -37,6 +37,6 @@ public class HazelcastPlugin implements LateralPlugin {
         //retrieve the repository manager
         HCRepositoryManager manager = inject(HCRepositoryManager.class);
         manager.initRepositories(hazel);
-        manager.initTopics(hazel);
+
     }
 }

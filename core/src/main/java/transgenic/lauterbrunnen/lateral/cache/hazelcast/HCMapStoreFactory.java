@@ -7,5 +7,6 @@ import com.hazelcast.core.MapStoreFactory;
  */
 public interface HCMapStoreFactory extends MapStoreFactory<Object, Object> {
     void setWriteThrough(boolean writeThrough);
+    void setWriteBehind(boolean writeBehind);
     void setReadThrough(boolean readThrough);
 }

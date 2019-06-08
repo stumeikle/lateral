@@ -12,8 +12,6 @@ import java.util.Map;
  */
 public interface HCRepositoryManager {
     void initRepositories(HazelcastInstance hazel);
-    void initTopics(HazelcastInstance hazel);
     Map<String, IMap> getImapNameMap();
-    Map<String, ITopic> getTopicNameMap();
     Map<String, IdGenerator> getUpdateIdNameMap();
 }

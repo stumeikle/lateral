@@ -18,45 +18,12 @@ import java.util.Properties;
 public class ServerApplication {
 
     private static final Log LOG = LogFactory.getLog(ServerApplication.class);
-    private HttpServer server = null;
-    private final Properties properties;
-    private static ResourceConfig resourceConfig=null;
 
     public ServerApplication() {
         BasicConfigurator.configure();
         Lateral.INSTANCE.initialise();
-
-        //get the properties from lateral
-        properties = Lateral.INSTANCE.getProperties();
-
-        startup();
     }
 
-    public static void setResourceConfig(ResourceConfig resourceConfig) {
-        ServerApplication.resourceConfig= resourceConfig;
-    }
-
-    private void startup() {
-        int port =  Integer.parseInt(properties.getProperty("http.server.port"));
-        URI uri =  UriBuilder.fromUri("http://localhost/").port(port).build();
-        try {
-            LOG.info("Starting server...");
-            server = GrizzlyHttpServerFactory.createHttpServer(uri, resourceConfig);
-            LOG.info("started");
-            LOG.info("Press any key to stop the server...");
-            System.in.read();
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-    }
-
-    private void shutdown() {
-        LOG.info("Shutting down...");
-        if (server!=null) {
-            server.stop();
-        }
-        System.exit(0);
-    }
 
     public static void main(String[] args) {
         new ServerApplication();

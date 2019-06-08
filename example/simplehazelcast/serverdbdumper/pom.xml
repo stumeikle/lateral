@@ -73,7 +73,7 @@
                         <goals>
                             <goal>generateEntities</goal>
                             <goal>generatePersisters</goal>
-                            <goal>generateAdminEndpoints</goal>
+                            <!--<goal>generateAdminEndpoints</goal>-->
                         </goals>
                     </execution>
                 </executions>

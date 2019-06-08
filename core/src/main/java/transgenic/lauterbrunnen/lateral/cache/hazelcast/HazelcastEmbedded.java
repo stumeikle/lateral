@@ -49,11 +49,13 @@ public class HazelcastEmbedded implements LateralPlugin {
 
         boolean write_through = "true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_through.enabled"));
         boolean read_through  = "true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.read_through.enabled"));
-        if (write_through || read_through){
+        boolean write_behind  = "true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_behind.enabled"));
+
+        if (write_through || read_through || write_behind){
             MapConfig mapConfig = cfg.getMapConfig("*");
             MapStoreConfig mapStoreConfig = mapConfig.getMapStoreConfig();
             HCMapStoreFactory factory = inject(HCMapStoreFactory.class);
-            factory.setWriteThrough(write_through);
+            factory.setWriteThrough(write_through|write_behind);
             factory.setReadThrough(read_through);
 
             //20161213 We need to store all idgenerators in the map store so that they can be
@@ -62,8 +64,8 @@ public class HazelcastEmbedded implements LateralPlugin {
             //Gets really messy
 
             mapStoreConfig.setFactoryImplementation(factory);
-            if (write_through) {
-                int delayValue = 0;
+            if (write_through || write_behind) {
+                int delayValue = write_through ? 0 : 60; //set a default for write behind
                 String delay = properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_delay_secs");
                 if (delay!=null) {
                     try{
@@ -79,7 +81,7 @@ public class HazelcastEmbedded implements LateralPlugin {
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
         HCRepositoryManager manager = inject(HCRepositoryManager.class);
         manager.initRepositories(instance);
-        manager.initTopics(instance);
+
     }
 }
 

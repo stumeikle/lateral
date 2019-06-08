@@ -28,16 +28,6 @@ public class DomainProtoManager {
         entityPackage = (String) properties.get("domain.proto.package");
         protoClasses = new ArrayList<>();
         protoClasses.addAll(PackageScanner.getClasses(entityPackage));
-        externalProtoClasses = new ArrayList<>();
-        externalProtoClasses.addAll(protoClasses);
-
-        //Add the internal classes. TODO some of these will only be needed in particular circumstances
-        //Could add a nice mechanism here to link annotation presense to inclusion of internal classes
-        //For now lets take the simplest path
-        protoClasses.addAll(PackageScanner.getClasses(internalPackage));
-        if (!annotationExists(externalProtoClasses, Sequence.class)) {
-            protoClasses.remove(_Sequence.class);
-        }
 
         //Skip the enums
         Iterator<Class> iterator = protoClasses.iterator();
@@ -48,6 +38,16 @@ public class DomainProtoManager {
             }
         }
 
+        externalProtoClasses = new ArrayList<>();
+        externalProtoClasses.addAll(protoClasses);
+
+        //Add the internal classes. TODO some of these will only be needed in particular circumstances
+        //Could add a nice mechanism here to link annotation presense to inclusion of internal classes
+        //For now lets take the simplest path
+        protoClasses.addAll(PackageScanner.getClasses(internalPackage));
+        if (!annotationExists(externalProtoClasses, Sequence.class)) {
+            protoClasses.remove(_Sequence.class);
+        }
     }
 
     public List<Class> getProtoClasses() {

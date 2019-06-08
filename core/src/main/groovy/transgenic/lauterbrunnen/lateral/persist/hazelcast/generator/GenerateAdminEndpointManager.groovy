@@ -33,6 +33,7 @@ class GenerateAdminEndpointManager extends GeneratePersister {
         }
         context.put("entityNames", entityNames);
 
+        context.put("cachePackage", this.cachePackage);
         StringWriter writer = new StringWriter();
         t.merge(context,writer);
         def output = new File(fn);

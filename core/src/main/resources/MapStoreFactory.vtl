@@ -33,6 +33,12 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
         if (writeThrough) index+=2;
     }
 
+    //write through, write behind differ only in the configurable write delay
+    @Override
+    public void setWriteBehind(boolean writeBehind) {
+        if (writeBehind) index+=2;
+    }
+
     @Override
     public void setReadThrough(boolean readThrough) {
         if (readThrough) index++;
@@ -42,18 +48,14 @@ public class HCMapStoreFactoryImpl implements HCMapStoreFactory{
         return new DummyMapStore();
     }
 
-    //Expectation is ...
-    // readNoWrite means write-behind, remote dbdumper in use
-    // and
-    // readAndWrite means no remote dbdumper, both operations go to a direct store
-    //
-
-    public MapLoader<Object, Object> readNoWrite(String s, Properties properties) {
+    //Read through means fulfill cache misses from an external store, implement mapload
+    //Write though or Write behind means write cache changes to the external store
+        public MapLoader<Object, Object> readNoWrite(String s, Properties properties) {
 
 #foreach( $name in $allNames )
         if ("${name}".equals(s)) {
             ${name}Retriever retriever = inject(${name}Retriever.class);
-            if (retriever==null) retriever = new ${name}RetrieverImplRemote();
+            if (retriever==null) retriever = new ${name}RetrieverImplDirect();
             return new HCMapStoreRT(retriever);
         }
 #end

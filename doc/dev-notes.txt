@@ -475,3 +475,183 @@ how will the apps know if the update id has been set?
 In this case we'd not need an admin bus
 and the mapstore would only perhaps be relevant for the micro service case.
 
+
+20190530
+
+Think need to backtrack a little and be clearer about everything.
+
+(1) the bus and the store are quite different and will generally be handled by different apps. its only the microservice write through where they'll more likely be the same service
+(2) its nice if update ids continue where they left off but not critical. hazelcast allocates 10000 block chunks so we will have gaps in the sequence numbers.
+(3) the bus controller can be responsible for the loading of the bus (for now. perhaps we delegate that to another process later)
+(4) the bus controller ... there's no point in it initialising the id generator. because it'll never use it and it'll lock up 10000 entries. but it could pass it out to the apps.
+(5) the apps shouldn't use the repositories until the bus controller is up and ready.
+
+Ideally we won't use an admin bus. But we might have an admin map in the hazelcast space.
+
+OPEN ITEM: how do we handle a cache miss. Does this automatically cause a 'load' on the buscontroller side? i need to check this. Answer --> yes it does, however it's not great. If I have an app which has an embedded hc instance and i have another app which also has an embedded hc instance and the latter is a map store instance ( a db dumper ) . hc expects to be able to distribute loads across the two. even if the first app does not have a map store defined, hc will assume it's able to load some of the entries.
+
+--> major shite really. that means the hazelcast instances need to be homogeneous. either they all load or none load. that means I can't distribute jobs to different applications. that is quite bad. I guess that's why i had such a fancy pants implementation before. all nodes delegated to one app for loading and storing.
+
+Pretty yucky. what's the simplest solution? 
+First let's see if i just switch my app to be a client and run 2 bus controllers as the backend.
+
+-> actually seems broken. even with 2 servers and 1 client some get's are not getting processed. 
+
+WOW BUG in hazelcast 3.6.2. Works ok in 3.11.1. Let's go back to the previous 2x embedded ...
+Ops, no it is broken. It works with 1 embedded server and 1 client but not 2 embedded servers. 
+That's terrible hazelcast.
+
+BARF so. initialisation of the stores occurs when getMap is called. so that needs to be called after all the nodes are
+up and running. if it happens before that point things can fail. i suppose 1 node expects another to handle the store but the other is not away. that's pretty darn flaky if you ask me. It means if the cluster goes down all the apps need to be stopped before they can be restarted. 
+
+Ok. cluster restart looks ok. I think then just the first time we need to ensure the whole bus is up first.
+
+Really no node should be able to call getMap until the cluster is fully up.
+THIS NEEDS ENFORCING, BUT I'M NOT SURE HOW WE'D DO IT
+
+Ok, so I think we need to choose a few operational modes to support here, we don't need to support everything.
+What could those be?
+(1) a microservice with embedded hazelcast that might write through to a db. might come in multiple instances
+(2) a bus architecture with apps which are hazelcast clients plus a couple of bus controllers. Those controllers might write through. they might also use cassandra for speed
+	what's the cassandra speed limit? looks like 10-100s of k per second with even a modest cluster.
+	probably cassandra is adequate
+(3) very high speed bus in which apps are hazelcast clients. we have 2 bus controllers but these do not persist. rather persistance is provided by dbdumpers with queues and loading is provided by another app. 
+
+Think that's fine. we probably don't need (3) really. even (2) with write-behind would be pretty darn slick. 
+So let's support (1) and (2) . For (1) we'll need to be able to connect to 2 hazelcast systems at the same time really. So i'd better test that. For (3) i'm not sure about loading we might need a service to provide that.
+
+In general though it should be all very much simpler. Vastly so. I'll put service discovery into hazelcast also.
+
+Git tagged today as v20190530. 
+
+[TASK1] So. Let's start with the microservice. Ditch the admin bus and whittle down what's left.
+We don't need any remote map store methods. 
+[TASK2] make sure that the zero cache still works
+
+[TASK3] then move on to the broadcast bus
+
+
+[TASK1 -- update] first thing then. If we have a microservice. that implies embedded hazelcast. (this is what i'm calling a micoservice for these purposes, a self contained service with db). embedded tends to mean that we initiatlise the repos when the plugin is instantiated. but we can't really do that with a mapstore because the mapstore will be initialised when the first app starts and that means there might be gaps in what's stored. so this won't work. (using the mapstore to load cache miss entries won't work). 
+
+==> need to check this with busplay 
+IE 2x embedded. with mapstore loader, what happens
+
+--> it does fail. if not all nodes are up before the first imap is called then we see failures. 
+
+I need to report the bug. that's really poor. 
+Done. What to do then? Mapstore for the microservice will only work if all instances hold off calling imap.get until all nodes are up. However we call imap get as part of the repository initialisation so it will be hard and awkward to hold off on this until all nodes are active. 
+
+Update --> provided all the methods in MapLoader are correctly implemented this works. 
+
+So let's continue on the assumption that (a) hazelcast will fix the bug and (b) in the short term we'll have to ensure all possible keys are loaded. 
+
+
+NOTE: read-through as defined by hazelcast isn't really read-through. IE a change made to the db won't be reflected in the cache on the next read. So we have as options:
+
+default - no mapstores
+read-thru - map store with load functionality
+write-thru - map store with store functionliaty and 0 delay on writes
+write-behind - map store with store functionality and configured delay on writes
+
+or better -
+no load or store
+load and no store == read-thru
+load and store    == write-thru and write-behind
+
+Ok, so getting there now. Will remove the topic handling also. 
+
+[TASK] sort out property names
+
+[BUGS] microservice is not updating update id when changes occur and it is creating garbage in the repo. --> whoops. one thing the admin bit did was to scan for the latest update id in the db and set it. we still need to do this.......
+this used to happen in the cache listener / dbdumper but we're not using that now. Or rather -- this was initialised in the HCMapStorexx classes. We've since removed these calls to ensure that no app calls imap.get before all are initialised. 
+Now, if we are saying all works fine provided getAllKeys does return all keys, I can reinstate this code.  [FIXED]
+
+Ok, seems to work for now. Will be better if HC fix their bug though so we don't have to load all the keys on each start up
+
+
+[BUG] PUT methods appear to allow updating of the repository id which surely should be disallowed
+
+(1) is working fine then. Now for (2). 
+
+
+20190603 PERFORMANCE WOES -----------------------------------------
+
+Test's done today indicate hazelcast is very slow. Sending request response messages across hazelcast was seen to be pants. maybe at rates of 2.5k/second for a very very simple pojo down to 1k/ second with a hazelcast cluster. v poor i think and not what i want. deserialisation was enormously costly. not clear why. serialised objects also ludicrously huge.
+
+so. either need to figure out good serialisation. or ... add a separate event bus.
+
+IE we'd do ...
+(1) incoming API call.
+(2) create transaction object on the hc bus.
+(3) send an event 'object created' state = NEW
+(4) the apps would receive this and vie for control. 
+(5) one would say i'll take it.
+(6) then that one can load it, process it, update it
+(7) then a new event would be generated -- object updated. state = COMPLETED
+
+and so on.
+It means each instance doesn't need to listen on the hazelcast bus.
+That means each instance doesn't need to deserialise each object from each event.
+So h/c then used for slow object transfer and fast bus for negotiations. 
+all persistent stuff would need to be stored on the h/c 
+
+ok.
+
+ACTION -- ok, i should try topics first in hazelcast. let me try that. 
+ACTION -- me to test speed of request - responses via jgroups. 
+	i seem to be able to get 2k req response per second with jgroups. I'm amazed how slow it is.
+	kk, up to 15k/ second if i send a byte array and skip serialization. so can i do that with hazelcast?
+	could try and send a byte buffer instead. presumably that'd skip serialisation
+	-> using byte buffers with hazelcast is no faster. so that seems quite poor. i think i'll leave it for now and could
+	consider other ehache+jgroups based options in future. comments on the web suggest hazelcast ok, pity the reality doesn't
+	appear to match
+ACTION -- consider -- why bother with hazelcast? why not just persist directly to cassandra? I think that would be possibly faster anyway. 
+
+Starting to wonder about the whole distributed processing idea tbd.
+Would chain saw not be better?
+
+Might want to investigate ignite also for use with lateral
+
+Hazelcaset topics are very fast though. tbh i don't see the benefits of hazelcast otherwise for this type of application.
+We could use topics to broadcast, have local caches, and a bus controller to ensure consistency. that'd be v fast.
+So maybe jcache plus topics or ehcache plus topics.
+
+Or ... i think we could do a nice one with each app containing a local cache (non hazelcast).
+sending commands via topics to a pair of bus controllers
+the buscontrollers using hazelcast so they can run active active
+the relevant bus controller responding to the app
+then updating the object and storing it in hazelcast (actually updating in memory then sending the event then storing)
+and letting hazelcast subsequently persist it. 
+
+That would be beautiful and superfast. So we'd have high speed broadcast bus + hazelcast for storage plus cassandra for long term storage. sex on legs. only the initial load would be involved. searches could also be run on the bus controllers.
+generally fantastico. i don't know why hazelcast client doesn't do this to start with.
+
+ref. this is me
+hazel.getCluster().getLocalMember();
+
+and this is the member a given object is stored at
+hazel.getPartitionService().getPartition(key).getOwner().getAddress();
+
+Can i use hazelcast near cache to store the caches? maybe that's clever. it'd mean we can have a lot of objects in the bus. they'd not all need to be stored in the app caches and if the app requested something that was missing we could pull it from the cluster automatically.
+Maybe. Pulling entries over is slow ... or is it ? maybe it's only writing which is slow in hazelcast.
+What happens with near cache if the instance is a client ? does that mean the near cache is local, i suppose it must.
+
+kind of ironic that we're heading back towards somethink like the original admin bus 
+
+Oh, bugs bugs. Enums causing problems with REST generation
+
+AIM -- get the simplehazelcast example working. sort out the archetype. test microservice and simplehazelcast archetypes
+AIM -- then explore cassandra as a back end
+
+and then after than prototype a high speed bus
+
+20190608 -- ok, updated the archetypes, simplified the code. no more admin bus. all good
+
+
+
+
+
+
+
+
+

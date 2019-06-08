@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>${rootArtifactId}.dbdumper</artifactId>
+    <artifactId>${rootArtifactId}.serverhazelcast</artifactId>
 
     <dependencies>
         <dependency>
@@ -73,7 +73,6 @@
                         <goals>
                             <goal>generateEntities</goal>
                             <goal>generatePersisters</goal>
-                            <goal>generateAdminEndpoints</goal>
                         </goals>
                     </execution>
                 </executions>

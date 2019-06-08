@@ -1,4 +1,4 @@
-package ${package}.dbdumper;
+package ${package}.serverhazelcast;
 
 import org.apache.log4j.BasicConfigurator;
 import transgenic.lauterbrunnen.lateral.Lateral;
@@ -9,9 +9,9 @@ import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
 /**
  * Created by stumeikle on 21/06/16.
  */
-public class Dbdumper {
+public class ServerHazelcast {
 
-    public Dbdumper() {
+    public ServerHazelcast() {
 
         BasicConfigurator.configure();
         Lateral.INSTANCE.initialise();
@@ -25,6 +25,6 @@ public class Dbdumper {
     }
 
     public static void main(String[] args) {
-        new Dbdumper();
+        new ServerHazelcast();
     }
 }

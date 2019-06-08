@@ -11,5 +11,4 @@ import java.util.Map;
 public interface HCCacheChangeManager {
 
     void initialise(Map<String, IMap> iMapMap);
-    void initAdminEndpoints(CommandHandler handler);
 }

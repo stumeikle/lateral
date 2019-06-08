@@ -13,8 +13,9 @@ import java.io.File;
 
 /**
  * Created by stumeikle on 01/12/16.
+ * Deprecated
  */
-@Mojo(name="generateAdminEndpoints")
+//@Mojo(name="generateAdminEndpoints")
 public class GenerateAdminEndpoints extends AbstractMojo {
     @Parameter( property="generatePersisters.srcpath", defaultValue = "src/main/java")
     protected String srcPath;

@@ -8,6 +8,7 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 
 /**
  * Created by stumeikle on 01/12/16.
+ * Deprecated
  */
 class GenerateHCAdminEndpoint {
     String basePath;

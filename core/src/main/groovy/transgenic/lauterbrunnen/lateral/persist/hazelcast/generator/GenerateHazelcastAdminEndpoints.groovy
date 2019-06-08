@@ -10,6 +10,7 @@ import java.lang.reflect.Field
 
 /**
  * Created by stumeikle on 01/12/16.
+ * Deprecated
  */
 class GenerateHazelcastAdminEndpoints {
     def generatedSourcesPath;
@@ -91,6 +92,13 @@ class GenerateHazelcastAdminEndpoints {
             ghcae.setImplPackage(implPackage);
             ghcae.generate(proto);
         }
+
+        GenerateAdminEndpointManager gaem = new GenerateAdminEndpointManager();
+        gaem.setBasePath(dbdumpbase);
+        gaem.setImplPackage(implPackage);
+        gaem.setCachePackage(cachePackage);
+        gaem.setEntityPackage(entityPackage);
+        gaem.generate(classes, idFields);
 
     }
 
