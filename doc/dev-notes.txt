@@ -647,11 +647,18 @@ and then after than prototype a high speed bus
 
 20190608 -- ok, updated the archetypes, simplified the code. no more admin bus. all good
 
+Next step cassandra i think
 
 
+[BUG] in microserver archtetype. pom references adminendpoints still
+[FEATURE] lateral getting bloated with all possible libs that could be used in applications. i don't like that really. even if we need them to compile the code, we only need them to run the code if those particular options are used. Change the compile and build dependencies to fix this? or find another way
 
+20190612
 
+Part way through kundera orm 4 cassandra implementation. It's making me think about how these objects will map to cassandra entities. maybe
+not so well. we'll need to do the joins and stuff ourselves. need to think about that. 
 
+In the meantime i'm less convinced by kundera. looks undermature and i'm put off by the attitude of the responders to the bugs online. 
 
 
 

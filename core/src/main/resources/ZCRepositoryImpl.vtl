@@ -14,6 +14,7 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
 
 /**
  * Created by stumeikle on 17/04/17.
@@ -22,6 +23,7 @@ import java.util.List;
  */
 public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements ${entity}Repository {
 
+    private TransactionManager  transactionManager = inject(TransactionManager.class);
     private ThreadLocal<Object> ${lcentity}Entity = new ThreadLocal<>();
 
     @Override
@@ -39,7 +41,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
 
         ${JPAentity} ${lcentity}Entity = new ${JPAentity}();
         ${JPAentity}Transformer.transform( ${lcentity}Entity, ${lcentity}Impl );
-        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+        transactionManager.runInTransactionalContext(em -> {
             em.merge(${lcentity}Entity);
         });
     }
@@ -49,7 +51,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
         //convert repository key to db key if needed
         Object      dbKey=${repositoryIdTransformation};
         ${lcentity}Entity.set(null);
-        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+        transactionManager.runInTransactionalContext(em -> {
             ${lcentity}Entity.set( em.find( ${JPAentity}.class, dbKey ));
         });
 
@@ -66,7 +68,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
     @Override
     public void delete(${repositoryIdType} id) {
         Object      dbKey=${repositoryIdTransformation};
-        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+        transactionManager.runInTransactionalContext(em -> {
             ${JPAentity} ${lcentity}Entity = em.find( ${JPAentity}.class, dbKey );
             em.remove(${lcentity}Entity);
         });
@@ -79,7 +81,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
 
         ${repositoryIdType} id = ${lcentity}Impl.getRepositoryId();
         Object      dbKey=${repositoryIdTransformation};
-        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+        transactionManager.runInTransactionalContext(em -> {
             ${JPAentity} ${lcentity}Entity = em.find( ${JPAentity}.class, dbKey );
             ${JPAentity}Transformer.transform(${lcentity}Entity, ${lcentity}Impl);
         });
@@ -87,7 +89,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
 
     @Override
     public Collection<${entity}Impl> retrieveAll() {
-        TransactionManager.INSTANCE.runInTransactionalContext((em)->{
+        transactionManager.runInTransactionalContext((em)->{
             Query query = em.createNamedQuery("${entity}Entity.findAllIds");
             ${lcentity}Entity.set(query.getResultList());
         });
@@ -96,7 +98,7 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
         List<${dbIdType}>        ids = (List<${dbIdType}>)${lcentity}Entity.get();
         for(${dbIdType} id : ids) {
             ${lcentity}Entity.set(null);
-            TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+            transactionManager.runInTransactionalContext(em -> {
                 ${lcentity}Entity.set( em.find( ${JPAentity}.class, id ));
             });
             ${entity}Impl  impl = new ${entity}Impl();

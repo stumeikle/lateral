@@ -38,8 +38,8 @@ class GenerateManager {
                 "import com.hazelcast.core.ITopic;" << System.lineSeparator() +
                 "import java.util.HashMap;" << System.lineSeparator() +
                 "import java.util.Map;" << System.lineSeparator() +
-                "import transgenic.lauterbrunnen.lateral.admin.Command;" << System.lineSeparator()+
-                "import transgenic.lauterbrunnen.lateral.admin.CommandResponse;"<< System.lineSeparator()+
+//                "import transgenic.lauterbrunnen.lateral.admin.Command;" << System.lineSeparator()+
+//                "import transgenic.lauterbrunnen.lateral.admin.CommandResponse;"<< System.lineSeparator()+
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;" << System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.ApplicationDI;" << "" << System.lineSeparator()

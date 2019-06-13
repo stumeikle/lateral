@@ -40,6 +40,8 @@ public class ApplicationDI {
         //di.class.for.HCMapStoreFactory=transgenic.lauterbrunnen.lateral.persist.hazelcast.generated.HCReadWriteThroughFactoryImpl
         //Do this by iterating through the properties. This ensures the config is respected if
         //no default is specified
+
+        //TODO -- me this is odd and seems to ignore the class name in the property key
         for(Object propertyKey: properties.keySet()) {
             String pk = (String) propertyKey;
             if (!pk.startsWith("di.class.for.")) continue;

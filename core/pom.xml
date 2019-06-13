@@ -159,12 +159,18 @@
             <version>4.11</version>
         </dependency>
 
-        <!-- jgroups, for admin bus -->
+        <!-- cassandra entity writing -->
         <dependency>
-            <groupId>org.jgroups</groupId>
-            <artifactId>jgroups</artifactId>
-            <version>3.6.11.Final</version>
+            <groupId>com.impetus.kundera.core</groupId>
+            <artifactId>kundera-core</artifactId>
+            <version>3.13</version>
         </dependency>
+        <dependency>
+            <groupId>com.impetus.kundera.client</groupId>
+            <artifactId>kundera-cassandra</artifactId>
+            <version>3.13</version>
+        </dependency>
+
     </dependencies>
 
 </project>

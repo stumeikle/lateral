@@ -65,7 +65,8 @@ class GeneratePersister {
         output << "import transgenic.lauterbrunnen.lateral.persist.Persister;" << System.lineSeparator()+
                   "import transgenic.lauterbrunnen.lateral.persist.TransactionManager;"<< System.lineSeparator()
         output << "import java.util.Collection;" << System.lineSeparator +
-                "import java.util.Map;" << System.lineSeparator
+                "import java.util.Map;" << System.lineSeparator +
+                "import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;"  << System.lineSeparator;
         output << "" << System.lineSeparator();
         
         String implPersister = proto.getSimpleName() + "PersisterImplDirect";
@@ -75,6 +76,7 @@ class GeneratePersister {
         String entityLC = entity.substring(0,1).toLowerCase() + entity.substring(1);
         
         output << "public class " << implPersister << " implements " << proto.getSimpleName() << "Persister {" << System.lineSeparator() +
+                "    private TransactionManager transactionManager=inject(TransactionManager.class);" << System.lineSeparator() << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    //This method called from hc map store for both persists AND updates :(" << System.lineSeparator() +
                 "    public void persist(Object object) {" << System.lineSeparator() +
@@ -83,7 +85,7 @@ class GeneratePersister {
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "        " << entity << " " << entityLC << " = new " << entity << "();" << System.lineSeparator() +
                 "        " << entityTransformer << ".transform( " << entityLC << ", " << implLC << " );" << System.lineSeparator() +
-                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
+                "        transactionManager.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            em.merge(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
                 "    }" << System.lineSeparator() +
@@ -101,7 +103,7 @@ class GeneratePersister {
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "" << System.lineSeparator() +
-                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
+                "        transactionManager.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, " << implLC << ".getRepositoryId() );" << System.lineSeparator() +
                 "            " << entityTransformer << ".transform(" << entityLC << ", " << implLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
@@ -115,13 +117,13 @@ class GeneratePersister {
                 "        if (!(object instanceof " << impl << ")) return;" << System.lineSeparator() +
                 "        " << impl << " " << implLC << " = (" << impl << ")object;" << System.lineSeparator() +
                 "" << System.lineSeparator() +
-                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator() +
+                "        transactionManager.runInTransactionalContext(em -> {" << System.lineSeparator() +
                 "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, " << implLC << ".getRepositoryId() );" << System.lineSeparator() +
                 "            em.remove(" << entityLC << ");" << System.lineSeparator() +
                 "        });" << System.lineSeparator() +
                 "    }"<< System.lineSeparator()<< System.lineSeparator() +
                 "    private void removeByKey(Object key) {" << System.lineSeparator +
-                "        TransactionManager.INSTANCE.runInTransactionalContext(em -> {" << System.lineSeparator +
+                "        transactionManager.runInTransactionalContext(em -> {" << System.lineSeparator +
                 "            " << entity << " " << entityLC << " = em.find( " << entity << ".class, key );" << System.lineSeparator +
                 "            em.remove(" << entityLC << ");" << System.lineSeparator +
                 "        });" << System.lineSeparator +

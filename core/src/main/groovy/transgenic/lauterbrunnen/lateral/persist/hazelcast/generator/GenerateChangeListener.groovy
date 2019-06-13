@@ -20,7 +20,7 @@ class GenerateChangeListener extends GeneratePersister{
 
         output << "import com.hazelcast.core.IMap;" << System.lineSeparator() +
                 "import " << implPackage << ".*;" << System.lineSeparator() +
-                "import transgenic.lauterbrunnen.lateral.admin.CommandHandler;"<< System.lineSeparator() +
+//                "import transgenic.lauterbrunnen.lateral.admin.CommandHandler;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.CacheChangeListener;" << System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCCacheChangeManager;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +

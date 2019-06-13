@@ -1,6 +1,5 @@
 package transgenic.lauterbrunnen.lateral.domain;
 
-import transgenic.lauterbrunnen.lateral.admin.Admin;
 
 import java.util.*;
 

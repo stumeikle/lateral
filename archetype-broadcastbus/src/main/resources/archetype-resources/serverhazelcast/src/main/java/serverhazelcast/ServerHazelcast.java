@@ -2,8 +2,6 @@ package ${package}.serverhazelcast;
 
 import org.apache.log4j.BasicConfigurator;
 import transgenic.lauterbrunnen.lateral.Lateral;
-import transgenic.lauterbrunnen.lateral.admin.Admin;
-import transgenic.lauterbrunnen.lateral.admin.Command;
 import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
 
 /**

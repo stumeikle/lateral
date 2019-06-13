@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
+import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
 
 /**
  * Created by stumeikle on 28/11/16.
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  */
 public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
 
+    private TransactionManager  transactionManager = inject(TransactionManager.class);
     private ThreadLocal<Object> ${lcEntityName}Entity = new ThreadLocal<>();
 
     @Override
@@ -26,7 +28,7 @@ public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
         //convert repository key to db key if needed
         Object      dbKey=${convertCacheKeyToDbKey};
         ${lcEntityName}Entity.set(null);
-        TransactionManager.INSTANCE.runInTransactionalContext(em -> {
+        transactionManager.runInTransactionalContext(em -> {
             ${lcEntityName}Entity.set( em.find( ${entityName}Entity.class, dbKey ));
         });
 
@@ -60,7 +62,7 @@ public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
 		//need to add
 		//@NamedQuery(name="TrackEntity.findAllIds", query="SELECT track.id FROM TrackEntity track")
 		//To entities
-        TransactionManager.INSTANCE.runInTransactionalContext((em)->{
+        transactionManager.runInTransactionalContext((em)->{
             Query query = em.createNamedQuery("${entityName}Entity.findAllIds");
             ${lcEntityName}Entity.set(query.getResultList());
         });
@@ -73,7 +75,7 @@ public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
     public long getLastUpdateId() {
         long retval = 0;
 
-        TransactionManager.INSTANCE.runInTransactionalContext((em)->{
+        transactionManager.runInTransactionalContext((em)->{
             Query query = em.createNamedQuery("${entityName}Entity.findLastUpdateId");
             ${lcEntityName}Entity.set(query.getSingleResult());
         });

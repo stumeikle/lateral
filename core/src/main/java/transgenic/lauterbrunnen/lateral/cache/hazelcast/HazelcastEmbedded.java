@@ -9,13 +9,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import transgenic.lauterbrunnen.lateral.admin.Admin;
-import transgenic.lauterbrunnen.lateral.admin.Command;
-import transgenic.lauterbrunnen.lateral.admin.CommandResponse;
-import transgenic.lauterbrunnen.lateral.admin.CommandResponseHandler;
-import transgenic.lauterbrunnen.lateral.admin.jgroups.JGAdminCommandBus;
-import transgenic.lauterbrunnen.lateral.admin.jgroups.JGIncomingMessageQueue;
-import transgenic.lauterbrunnen.lateral.admin.jgroups.JGOutgoingMessageQueue;
+
 import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
