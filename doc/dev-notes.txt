@@ -660,5 +660,13 @@ not so well. we'll need to do the joins and stuff ourselves. need to think about
 
 In the meantime i'm less convinced by kundera. looks undermature and i'm put off by the attitude of the responders to the bugs online. 
 
+20190613
+
+Ok. Well cassandra of course has no joins, but does support maps and lists. in our ORM approach in lateral we anyway break these structures by repository id. so that should be well suited to cassandra storage. IE we transform as with the RDBMS approach and store references in the entities. persist these to cassandra and so on, resolve on usage after loading. 
+
+So we'll need a new set of persisters for cassandra, which will then call the generated transformers and then will store those objects to cassandra without using the transaction manager. this is probably a few days work, realistically. [TASK]
+
+[TASK] -- i should also probably capture the topic based broadcast bus in a working prototype too.
+
 
 

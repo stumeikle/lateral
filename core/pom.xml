@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>28.0-jre</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.uuid</groupId>
@@ -157,18 +157,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
-        </dependency>
-
-        <!-- cassandra entity writing -->
-        <dependency>
-            <groupId>com.impetus.kundera.core</groupId>
-            <artifactId>kundera-core</artifactId>
-            <version>3.13</version>
-        </dependency>
-        <dependency>
-            <groupId>com.impetus.kundera.client</groupId>
-            <artifactId>kundera-cassandra</artifactId>
-            <version>3.13</version>
         </dependency>
 
     </dependencies>
