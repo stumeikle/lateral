@@ -17,11 +17,19 @@ public class TransactionManagerImpl implements TransactionManager {
     private static final Log LOG = LogFactory.getLog(TransactionManagerImpl.class);
 
     private final EntityManagerFactory factory = Persistence.createEntityManagerFactory("pu");
-    private final EntityManager em = factory.createEntityManager();
+//    private final EntityManager em = factory.createEntityManager();
+
+    //!! I would like to create 1 entity manager for several transactions but
+    //!! this fails. I get loads of transaction not active failures
+    //!! help requested. HELP
+
+    //Stack Overflow:
+    //https://stackoverflow.com/questions/10762974/should-jpa-entity-manager-be-closed
+    //suggests performance hit is minimal
 
     public void runInTransactionalContext(TransactionManager.Runnable runnable) {
 
-//        EntityManager em = factory.createEntityManager();
+        EntityManager em = factory.createEntityManager();
         try {
             if (!em.getTransaction().isActive())
                 em.getTransaction().begin();
@@ -33,12 +41,12 @@ public class TransactionManagerImpl implements TransactionManager {
             LOG.error(ex);
             em.getTransaction().rollback();
         }
-//        finally {
-//            em.close();
-//        }
+        finally {
+            em.close();
+        }
     }
 
-    protected void finalize() {
-        em.close();
-    }
+//    protected void finalize() {
+//        em.close();
+//    }
 }

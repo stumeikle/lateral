@@ -110,7 +110,6 @@
                             <goal>generateEntities</goal>
                             <goal>generatePersisters</goal>
                             <goal>generateRestPojos</goal>
-                            <goal>generateAdminEndpoints</goal>
                         </goals>
                     </execution>
                 </executions>

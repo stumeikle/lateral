@@ -669,4 +669,137 @@ So we'll need a new set of persisters for cassandra, which will then call the ge
 [TASK] -- i should also probably capture the topic based broadcast bus in a working prototype too.
 
 
+20190712
+
+[BUG] or, less than ideal anyway. RepositoryId UniqueIds are represented as strings in the REST structures. But if i add a UniqueId then that comes out
+as a unique Id. So it's inconsistent. Choose one or the other. Btw, I kind of like what jersey does with the UniqueId, it's a shorter representation
+
+
+20190712
+
+New features wanted:
+-- a guave cache or similar on zero cache. i'd like in memory caching for the read-only case at least
+-- it'd be nice to be able to configure which imaps a client connects to. (does that make sense for hazelcast clients?)
+   so that we don't have every service connecting to everything
+-- it needs to be easy to configure which data isn't persisted to the db. (maybe that is in there already with the
+   _sequence and others)
+-- we need to be able to connect to multiple hc buses at the same time. eg: i have a config service which has it's own
+   libdomain and db , but it needs to connect to a service discover hazelcast bus.
+
+
+20190714
+
+We need a mechanism in Lateral for multiple instances of a service to share the handling of work. A la team topaz as it
+were in the past. I could use hazelcast with one bus per set of services but i reject that as too complex. Instead
+let's investigate if we could use the (to be created) service Discovery bus for this purpose. Once we know the topology
+of the service (number of instances) it's easy enough for each instance to take some of the flow. That's no bother.
+What is a bother is ensuring that all tasks are done once only when new service instances join the cluster or (harder)
+when an instance leaves the cluster.
+
+Let's investigate.
+
+We're going to need a simple way for an application to be part of multiple elastic cachces / domains in any case.
+This in the end looks like meaning we'll need to support multiple repository managers at the same time.
+
+Which doesn't look impossible but tricky. We'll need a new FactoryContract implementation which will serve the classes
+from multiple domains.
+Then ...
+We'll need to initialise multiple HCRepositoryManagerImpl.
+
+I wonder what the easiest way to do this is. We almost can do it out of the box.
+Which is to say ... if the Application DI knew about contexts then it could vary it's behaviour depending on whether
+we were in context 1 or context 2. And we could define those contexts based on the libdomain package name.
+
+(It is supposed to be CDI after all)
+
+Very curious. If we can get it for almost free then so much the better.
+Probably very hard though, we'd need to proceed with utmost caution.
+We need a way to establish which context we are in. That could be down to the package name of the calling class.
+Then depending on the context we would vary the ApplicationDI inject responses.
+
+Hmm, though there are cases where this would not work. Eg Factory, it has 1 default implemention but we'd need two.
+
+It would almost be easier if we could run 2 apps. Or, is it just the singletons which are getting in the way here?
+I don't want to open pandora's box here. My thoughts lead me to byte code injection and context boundaries and blurg.
+I still want to keep it simple.
+
+Perhaps there are just a few singleton classes we need to bridge across the various contexts?
+
+Might only be factory that needs bridging. Not finding other static final vars.
+
+For factory we'd need an overarching implementation. (Which might mean we want no name conflicts across domains)
+Lateral plugins would need the context set before they were instantiated.
+
+Seems a bit too ropey to me. And yet it shouldn't be. Really. We should be able to separate these in principle.
+AnnotationScanner and LateralPluginManager are also singletons. Plus lateral itself of course.
+
+Might get really really funky.
+eg ApplictionDI being a facade which could have multiple implementation -- one to use in single context and one to use
+in multiple context. That means we might need 1xapplication di per domain plus 1 for the common framework.
+
+Quite a pity. In topaz connecting to multiple busses was a cinch.
+
+It's just the use of statics here that is causing the problems.
+
+Even if we do set it up so we can essentially run multiple laterals in one JVM we'll need, what?
+libdomain1, libdomain2 etc.
+
+it's almost like creating our own class loader
+
+I suppose really we should ditch all singletons, all statics, and use n x appliction di to instantiate everything.
+Lateral Core by and large doesn't use inject. Just in the plugins and for the factory method.
+
+** how much do users use inject ? if it only occurs in generated code, it'd be easy enough to add parameters to
+Not much I think. Though there's nothing stopping them doing so.
+
+We might just need 1 or 2 very clear helper statics
+Factory
+Repository
+Lateral
+
+If multiple contexts are defined you'd have to either specify the context on inject, or, specify it programmatically.
+I think i'd prefer not to have bridging for factory tbh.
+
+Factory     factory1 = inject( Factory.class, Domain1Context );
+Repository  repository1 = inject( Repository.class, Domain1Context );
+
+MyDomain1Object o1 = factory1.create( MyDomain1Object.class );
+
+I think that's better, clearer.
+So we'd only need inject as a helper really.
+
+Might be possible but it's stretching it a bit.
+
+I'm assuming some basic stuff here, like we -can- connect to multiple hazelcast clusters from one application.
+Not sure if that's true or not.
+
+If I changed Factory and Respository like above, could I not just change all the generated code to specify the context
+explicitly? Maybe we could get all the generated code to inject explicitly, including the plugins.
+Also , for the server side, perhaps the maven generators can check for the existence of multiple ...
+ah tricky with persistence. They'd all be stored in the same db anyway. blurg.
+
+need to think the use cases:
+(1) an app with its own domain , own db. which also uses (eg service discovery) on another hazelcast bus
+(2) a server with 2 domains on the same hazelcast bus (eg transactional oltp and service discovery). both might be
+stored in the same db. maybe. or in multiple dbs. Maybe that's fine, we'd just need multiple persistence units in the
+persistence.xml file. we'd probably need multiple generate-xxx.property files
+
+So. possible i think. Not too messy. But a lot of work.
+
+And all that before we can start to think about service discovery.
+Maybe-i-am-trying-to-solve-the-wrong-problem
+
+We could at least say 1 server (cluster) per domain to begin with.
+
+20190915
+
+Well, to roll it back a bit. I can add service discovery as internal classes to lateral within the users domain.
+That would allow multiple instances to co-ordinate their activities. I don't need a re-write of lateral for that.
+Step 1 would be allowing applications to not connect to all the maps on the bus.
+Will be quite tricky to co-ordinate well across nodes if there are nodes failing etc.
+team topaz!
+
+
+
+
 
