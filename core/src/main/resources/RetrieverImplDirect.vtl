@@ -1,9 +1,12 @@
 package ${cachePackage};
 
 import ${domainGeneratedPackage}.${implName};
+import ${domainGeneratedPackage}.${diContext}Context;
 import ${entityPackage}.${entityName}Entity;
 import ${entityPackage}.${entityName}EntityTransformer;
 import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
+import transgenic.lauterbrunnen.lateral.di.DefaultImpl;
+import transgenic.lauterbrunnen.lateral.di.DIContext;
 ${importCacheKey}
 
 import javax.persistence.Query;
@@ -12,15 +15,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
-import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
 
 /**
  * Created by stumeikle on 28/11/16.
  * Now generated. do not edit
  */
+@DefaultImpl
+@DIContext(${diContext}Context.class)
 public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
 
-    private TransactionManager  transactionManager = inject(TransactionManager.class);
+    private TransactionManager  transactionManager = inject(TransactionManager.class, ${diContext}Context.class);
     private ThreadLocal<Object> ${lcEntityName}Entity = new ThreadLocal<>();
 
     @Override

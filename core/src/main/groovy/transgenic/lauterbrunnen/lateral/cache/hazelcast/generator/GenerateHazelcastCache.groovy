@@ -14,6 +14,7 @@ class GenerateHazelcastCache {
     def     classLoader;
 
     public void generate() {
+
         Properties properties = new Properties();
         try {
             InputStream inputStream = new FileInputStream(propertyFile);
@@ -26,6 +27,7 @@ class GenerateHazelcastCache {
 
         String inputPackage = properties.get("domain.generated.package");
         String outputPackage = properties.get("cache.hazelcast.generated.package");
+        String diContext = properties.get("lateral.di.context");
 
 //Find all classes in this package TODO fix for internals
         DomainProtoManager dpm = new DomainProtoManager(properties);
@@ -35,6 +37,8 @@ class GenerateHazelcastCache {
         boolean sequencesUsed = classes.contains(_Sequence.class);
 
         for(Class c: generatedClasses) {
+//            println("Checking class " + c);
+
             for(Class iface: c.getInterfaces()) {
                 if (iface.getSimpleName().equals("CRUDRepository")) {
                     repoClasses.add(c);
@@ -58,6 +62,7 @@ class GenerateHazelcastCache {
         gc.setOutputPackage(outputPackage);
         gc.setBasePath( libdomainbase );
         gc.setGeneratedDomainPackage( inputPackage );
+        gc.setDiContext(diContext);
         gc.generate(repoClasses);
 
 //Generate the repository manager
@@ -65,6 +70,7 @@ class GenerateHazelcastCache {
         gm.setInputPackage(inputPackage);
         gm.setOutputPackage(outputPackage);
         gm.setBasePath( libdomainbase );
+        gm.setDiContext(diContext);
         gm.generate(repoClasses);
 
 //Generate each of the repository impls
@@ -74,6 +80,7 @@ class GenerateHazelcastCache {
             gr.setInputPackage(inputPackage);
             gr.setOutputPackage(outputPackage);
             gr.setBasePath( libdomainbase );
+            gr.setDiContext(diContext);
             gr.generate(repo);
         }
     }

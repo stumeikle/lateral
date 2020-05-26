@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+
+    <persistence-unit name="Shipping" transaction-type="RESOURCE_LOCAL">
+
+        <!-- Generate Lateral Entities for Shipping here: -->
+        <class>transgenic.lauterbrunnen.lateral.example.multidomain.shipping.entity.generated.ShippingContainerEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.multidomain.shipping.entity.generated.DeliveryFirmEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.multidomain.shipping.entity.generated.ShipmentEntity</class>
+        <class>transgenic.lauterbrunnen.lateral.example.multidomain.shipping.entity.generated.AddressEntity</class>
+        <!-- End of Lateral Entities for Shipping -->
+
+        <!-- derby embedded driver -->
+        <properties>
+            <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver" />
+            <property name="javax.persistence.jdbc.url"
+                      value="jdbc:derby://localhost:1527/shipping;create=true" />
+            <property name="javax.persistence.jdbc.user" value="test" />
+            <property name="javax.persistence.jdbc.password" value="test" />
+
+            <property name="eclipselink.ddl-generation" value="create-tables" />
+            <property name="eclipselink.ddl-generation.output-mode" value="database" />
+        </properties>
+
+    </persistence-unit>
+</persistence>

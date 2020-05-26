@@ -26,6 +26,7 @@ class GenerateMapStoreFactory extends GeneratePersister {
         context.put("cachePackage", cachePackage);
         context.put("implPackage",  implPackage);
         context.put("generateDirect", generateDirect);
+        context.put("diContext", diContext);
         Vector<String>      v = new Vector<>();
         for(Class c: protoclasses) {
             v.add(c.getSimpleName());

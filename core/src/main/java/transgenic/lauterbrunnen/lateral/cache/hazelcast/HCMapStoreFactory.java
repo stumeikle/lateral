@@ -1,6 +1,6 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
-import com.hazelcast.core.MapStoreFactory;
+import com.hazelcast.map.MapStoreFactory;
 
 /**
  * Created by stumeikle on 03/11/16.

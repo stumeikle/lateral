@@ -16,6 +16,7 @@ class GenerateHazelcastCachePersist {
     def generatedSourcesPath;
     def propertyFile;
     def generateDirect;
+    def diContext;
 
     public void generate() {
         //Get the config
@@ -32,6 +33,7 @@ class GenerateHazelcastCachePersist {
         String implPackage = properties.get("domain.generated.package");
         String entityPackage = properties.get("entity.generated.package");
         String cachePackage = properties.get("persist.hazelcast.generated.package");
+        diContext = properties.get("lateral.di.context");
         def domainProtoManager = new DomainProtoManager(properties);
         def classes = domainProtoManager.getProtoClasses();
 
@@ -94,10 +96,12 @@ class GenerateHazelcastCachePersist {
                 gp.setImplPackage(implPackage);
                 gp.setCachePackage(cachePackage);
                 gp.setEntityPackage(entityPackage);
+                gp.setDiContext(diContext);
                 gp.generate(proto);
                 GeneratePersisterInterface gpi = new GeneratePersisterInterface();
                 gpi.setCachePackage(cachePackage);
                 gpi.setBasePath(dbdumpbase);
+                gpi.setDiContext(diContext);
                 gpi.generate(proto);
             }
 
@@ -105,6 +109,7 @@ class GenerateHazelcastCachePersist {
             gri.setDomainProtoManager(domainProtoManager);
             gri.setCachePackage(cachePackage);
             gri.setBasePath(dbdumpbase);
+            gri.setDiContext(diContext);
             gri.generate(proto);
 
             //Deprecated
@@ -123,6 +128,7 @@ class GenerateHazelcastCachePersist {
                 gr.setEntityPackage(entityPackage);
                 gr.setIdFields(idFields);
                 gr.setProperties(properties);
+                gr.setDiContext(diContext);
                 gr.generate(proto);
             }
 
@@ -141,6 +147,7 @@ class GenerateHazelcastCachePersist {
             gcl.setImplPackage(implPackage);
             gcl.setCachePackage(cachePackage);
             gcl.setEntityPackage(entityPackage);
+            gcl.setDiContext(diContext);
             gcl.generate(classes, idFields);
 
         }
@@ -151,6 +158,7 @@ class GenerateHazelcastCachePersist {
         gmsf.setCachePackage(cachePackage);
         gmsf.setEntityPackage(entityPackage);
         gmsf.setGenerateDirect(generateDirect);
+        gmsf.setDiContext(diContext);
         gmsf.generate(classes);
 
 

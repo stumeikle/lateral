@@ -22,6 +22,7 @@ class GenerateRetrieverDirect {
     protected DomainProtoManager domainProtoManager;
     private Map<String, String>  idFields = new HashMap<>();
     private Properties properties;
+    private String diContext;
 
     String getBasePath() {
         return basePath
@@ -33,6 +34,10 @@ class GenerateRetrieverDirect {
 
     void setBasePath(String basePath) {
         this.basePath = basePath
+    }
+
+    void setDiContext(String diContext){
+        this.diContext=diContext;
     }
 
     String getImplPackage() {
@@ -84,6 +89,7 @@ class GenerateRetrieverDirect {
         lcImpl = lcImpl.substring(0,1).toLowerCase() + lcImpl.substring(1);
         context.put("lcImplName", lcImpl);
         context.put("protoName", proto.getSimpleName());
+        context.put("diContext", diContext);
 
         //figure out if we need to convert the cache key to a db key
         context.put("convertCacheKeyToDbKey","key");

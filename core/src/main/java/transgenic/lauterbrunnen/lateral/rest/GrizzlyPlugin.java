@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import transgenic.lauterbrunnen.lateral.di.LateralDIContext;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
@@ -11,12 +12,14 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.Properties;
 
-import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
 
 /**
  * Created by stumeikle on 10/11/16.
  * Start up a grizzly web server
  * nothing fancy
+ *
+ * TODO -- this could now pull in all the resource configs from all contexts, if needed
  */
 @LateralPluginParameters(configName = "grizzly_server", groups = "web_server" )
 public class GrizzlyPlugin implements LateralPlugin {
@@ -26,7 +29,7 @@ public class GrizzlyPlugin implements LateralPlugin {
     private HttpServer server = null;
     private PluggableResourceConfig restConfig=null;
 
-    public void initialise(Properties properties) {
+    public void initialise(Properties properties, Class<? extends LateralDIContext> defaultContext) {
 
         this.properties = properties;
 

@@ -26,6 +26,7 @@ class GenerateZeroCache {
 
         String inputPackage = properties.get("domain.generated.package");
         String outputPackage = properties.get("cache.zero.generated.package");
+        String diContext = properties.get("lateral.di.context");
 
 //Find all classes in this package TODO fix for internals
         DomainProtoManager dpm = new DomainProtoManager(properties);
@@ -59,6 +60,7 @@ class GenerateZeroCache {
         gc.setInputPackage(inputPackage);
         gc.setBasePath(libdomainbase);
         gc.setGeneratedDomainPackage(inputPackage);
+        gc.setDiContext(diContext);
         gc.generate(repoClasses);
     }
 }

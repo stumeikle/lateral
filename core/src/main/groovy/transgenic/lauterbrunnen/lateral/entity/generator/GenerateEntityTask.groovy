@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.entity.generator
 
+import com.google.common.reflect.ClassPath
 import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.PackageScanner
 import transgenic.lauterbrunnen.lateral.domain.RepositoryId
@@ -16,6 +17,7 @@ class GenerateEntityTask  {
     def generatedSourcesPath;
     def propertyFile;
     def persistenceFile;
+    def diContext;
 
     public void generate() {
         Properties properties = new Properties();
@@ -29,8 +31,11 @@ class GenerateEntityTask  {
 
         String implPackage = properties.get("domain.generated.package");
         String jpaEntityPackage = properties.get("entity.generated.package");
+        diContext = properties.get("lateral.di.context");
         def domainProtoManager = new DomainProtoManager(properties);
         def classes = domainProtoManager.getProtoClasses();
+
+        println("Found " + classes.size() + " proto classes");
 
         Map<String, String>  idFields = new HashMap<>();
         Map<String, String> idFieldNames = new HashMap<>();
@@ -73,6 +78,7 @@ class GenerateEntityTask  {
         dir.mkdirs();
         for(File file: dir.listFiles()) file.delete();
 
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         for(Class proto: classes) {
 
             String name = implPackage +"." + domainProtoManager.stripPackageName(proto);
@@ -81,7 +87,13 @@ class GenerateEntityTask  {
             //Now we need the impl class for the rest
             //String implClassName  = proto.getName().replace(entityPackage, implPackage) + "Impl";
             String implClassName  = name + "Impl";
-            Class impl = Class.forName(implClassName)
+            Class impl = null;
+
+            try {
+                impl = loader.loadClass(implClassName,true);//Class.forName(implClassName)
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
 
             GenerateEntity ge = new GenerateEntity();
             ge.setDomainProtoManager(domainProtoManager);
@@ -92,6 +104,7 @@ class GenerateEntityTask  {
             ge.setIdFields(idFields);
             ge.setIdFieldName(repositoryIdFieldName);
             ge.setIdFieldNames(idFieldNames);
+            ge.setDiContext(diContext);
             ge.generate(proto, impl);
         }
 
@@ -112,20 +125,22 @@ class GenerateEntityTask  {
         return retval;
     }
 
-    private static final String PERSISTENCE_BLOCK_START = "<!-- Generate Lateral Entities here: -->"
-    private static final String PERSISTENCE_BLOCK_END   = "<!-- End of Lateral Entities -->"
+    private static final String PERSISTENCE_BLOCK_START = "<!-- Generate Lateral Entities for @@ here: -->"
+    private static final String PERSISTENCE_BLOCK_END   = "<!-- End of Lateral Entities for @@ -->"
 
     protected void generatePersistenceXmlLines(List<Class> classes, DomainProtoManager domainProtoManager, String entityPackage) {
         if (persistenceFile==null) return;
         BufferedReader reader = new BufferedReader(new FileReader(persistenceFile));
 
+        String start = PERSISTENCE_BLOCK_START.replace("@@", diContext);
+        String end = PERSISTENCE_BLOCK_END.replace("@@", diContext);
         String line="";
         boolean startFound = false, endFound = false;
         while(line !=null ) {
             line = reader.readLine();
             if (line!=null) {
-                if (line.contains(PERSISTENCE_BLOCK_START)) startFound = true;
-                if (line.contains(PERSISTENCE_BLOCK_END)) endFound = true;
+                if (line.contains(start)) startFound = true;
+                if (line.contains(end)) endFound = true;
             }
         }
 
@@ -145,12 +160,12 @@ class GenerateEntityTask  {
                         sb.append(line);
                         sb.append(System.lineSeparator());
                     } else {
-                        if (line.contains(PERSISTENCE_BLOCK_END)) {
+                        if (line.contains(end)) {
                             skipToEnd=false;
                         }
                     }
-                    if (line.contains(PERSISTENCE_BLOCK_START)) {
-                        String prefix = line.replace(PERSISTENCE_BLOCK_START, "");
+                    if (line.contains(start)) {
+                        String prefix = line.replace(start, "");
 
                         for(Class proto: classes) {
                             String name = entityPackage +"." + domainProtoManager.getEntityName(proto);//domainProtoManager.stripPackageName(proto);
@@ -161,7 +176,7 @@ class GenerateEntityTask  {
                             sb.append(System.lineSeparator());
                         }
                         sb.append(prefix);
-                        sb.append(PERSISTENCE_BLOCK_END);
+                        sb.append(end);
                         sb.append(System.lineSeparator());
 
                         skipToEnd = endFound;

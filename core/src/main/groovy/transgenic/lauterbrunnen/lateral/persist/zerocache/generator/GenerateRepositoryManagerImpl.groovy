@@ -14,6 +14,7 @@ class GenerateRepositoryManagerImpl {
     def inputPackage;
     String outputPackage;
     def basePath;
+    def diContext;
 
     def generate(def protos) {
         VelocityEngine ve = new VelocityEngine();
@@ -24,6 +25,7 @@ class GenerateRepositoryManagerImpl {
         VelocityContext context = new VelocityContext();
         context.put("inputPackage", inputPackage);
         context.put("outputPackage", outputPackage);
+        context.put("diContext", diContext);
 
         List<String>    classes = new ArrayList<>();
         for(Class proto: protos) {

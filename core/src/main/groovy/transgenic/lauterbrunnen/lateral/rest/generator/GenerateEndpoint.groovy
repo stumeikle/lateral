@@ -23,7 +23,11 @@ class GenerateEndpoint {
     private Map<String, Class> classMap = new HashMap<>();
     protected Properties properties;
     protected Field idField = null;
+    protected String diContext;
 
+    public void setDiContext(String diContext) {
+        this.diContext = diContext;
+    }
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
     }
@@ -69,6 +73,7 @@ class GenerateEndpoint {
 
         context.put("domainGeneratedPackage", domainGeneratedPackage);
         context.put("restGeneratedPackage", outputPackage);
+        context.put("diContext", diContext);
 
         //
         String restPath = properties.get("rest.path");

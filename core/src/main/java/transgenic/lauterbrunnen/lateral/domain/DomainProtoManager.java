@@ -29,7 +29,7 @@ public class DomainProtoManager {
         protoClasses = new ArrayList<>();
         protoClasses.addAll(PackageScanner.getClasses(entityPackage));
 
-        //Skip the enums
+       //Skip the enums
         Iterator<Class> iterator = protoClasses.iterator();
         while (iterator.hasNext()) {
             Class c = iterator.next();

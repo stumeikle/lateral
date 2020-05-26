@@ -21,6 +21,7 @@ class GenerateImpl {
     protected List<Class> prototypeClasses;
     protected String basePath;
     private Map<String, Class> classMap = new HashMap<>();
+    protected String diContext=null;
 
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
@@ -33,6 +34,9 @@ class GenerateImpl {
     }
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+    public void setDiContext(String diContext) {
+        this.diContext = diContext;
     }
 
     private String swapTypeName(String name) {

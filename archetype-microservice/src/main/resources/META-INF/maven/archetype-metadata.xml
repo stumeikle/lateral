@@ -4,29 +4,13 @@
             <defaultValue>${groupId}.${artifactId}</defaultValue>
         </requiredProperty>
     </requiredProperties>
-    <modules>
-        <module id="libdomain" dir="libdomain" name="libdomain">
-            <fileSets>
-                <fileSet filtered="true" packaged="true" encoding="UTF-8">
-                    <directory>src/main/java</directory>
-                </fileSet>
-                <fileSet filtered="true" encoding="UTF-8">
-                    <directory>src/main/resources</directory>
-                </fileSet>
-            </fileSets>
-        </module>
-        <module id="server" dir="server" name="server">
-            <fileSets>
-                <fileSet filtered="true" packaged="true" encoding="UTF-8">
-                    <directory>src/main/java</directory>
-                </fileSet>
-                <fileSet filtered="true" encoding="UTF-8">
-                    <directory>src/main/resources</directory>
-                </fileSet>
-                <fileSet filtered="true" packaged="true" encoding="UTF-8">
-                    <directory>src/test/java</directory>
-                </fileSet>
-            </fileSets>
-        </module>
-    </modules>
+
+    <fileSets>
+        <fileSet filtered="true" packaged="true" encoding="UTF-8">
+            <directory>src/main/java</directory>
+        </fileSet>
+        <fileSet filtered="true" encoding="UTF-8">
+            <directory>src/main/resources</directory>
+        </fileSet>
+    </fileSets>
 </archetype-descriptor>

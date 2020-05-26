@@ -6,34 +6,35 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IdGenerator;
+import com.hazelcast.flakeidgen.FlakeIdGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import transgenic.lauterbrunnen.lateral.di.LateralDIContext;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPlugin;
 import transgenic.lauterbrunnen.lateral.plugin.LateralPluginParameters;
 
 import java.util.Map;
 import java.util.Properties;
 
-import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
 
 /**
  * Created by stumeikle on 21/06/16.
  */
 
-@LateralPluginParameters(configName = "hazelcast_embedded_server", groups = "cache_provider" )
+@LateralPluginParameters(configName = "hazelcast_embedded_server", groups = "cache_provider", oneInstancePerDIContext = true )
 public class HazelcastEmbedded implements LateralPlugin {
 
     private static final Log LOG = LogFactory.getLog(HazelcastEmbedded.class);
 
-    public void initialise(Properties properties) {
+    public void initialise(Properties properties, Class<? extends LateralDIContext> context) {
 
         LOG.info("Initialising hazelcast embedded server plugin...");
 
         //Server side we have more options to change default behaviour:
         //check for specified config
-        String cp_fn = properties.getProperty("lateral_plugin.hazelcast_embedded_server.cp_config");
+        String cp_fn = properties.getProperty("lateral_plugin.hazelcast_embedded_server.config_file");
         Config cfg = null;
         if (cp_fn!=null) {
             cfg= new ClasspathXmlConfig(cp_fn);
@@ -46,9 +47,16 @@ public class HazelcastEmbedded implements LateralPlugin {
         boolean write_behind  = "true".equalsIgnoreCase(properties.getProperty("lateral_plugin.hazelcast_embedded_server.write_behind.enabled"));
 
         if (write_through || read_through || write_behind){
-            MapConfig mapConfig = cfg.getMapConfig("*");
-            MapStoreConfig mapStoreConfig = mapConfig.getMapStoreConfig();
-            HCMapStoreFactory factory = inject(HCMapStoreFactory.class);
+            String contextPrefix = context.getSimpleName().replaceAll("Context$","") + "_";
+
+            MapConfig mapCfg = new MapConfig();
+            mapCfg.setName(contextPrefix +"*");
+            cfg.addMapConfig(mapCfg);
+
+            MapConfig mapConfig = cfg.getMapConfig(contextPrefix +"*");
+            MapStoreConfig mapStoreConfig = new MapStoreConfig();
+            mapConfig.setMapStoreConfig(mapStoreConfig);
+            HCMapStoreFactory factory = inject(HCMapStoreFactory.class, context);
             factory.setWriteThrough(write_through|write_behind);
             factory.setReadThrough(read_through);
 
@@ -71,11 +79,12 @@ public class HazelcastEmbedded implements LateralPlugin {
             mapStoreConfig.setEnabled(true);
         }
 
-        cfg.setInstanceName("lateral");
+        cfg.setInstanceName(context.getName());
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
-        HCRepositoryManager manager = inject(HCRepositoryManager.class);
+        HCRepositoryManager manager = inject(HCRepositoryManager.class, context);
         manager.initRepositories(instance);
 
     }
+
 }
 

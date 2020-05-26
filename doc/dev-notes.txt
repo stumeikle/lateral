@@ -800,6 +800,154 @@ Will be quite tricky to co-ordinate well across nodes if there are nodes failing
 team topaz!
 
 
+20190730
+
+Big changes ongoing to support multiple domains in lateral. This is meaning -- new DependencyInjection, removal of a
+lot of the singleton classes in favour of instances accessible through a Lateral singleton class. (ie just 1 place we
+have singletons).
+
+Plugins need reworking now. Some will be instantiated per context and some can be across all contexts.
+I'll make this a lateralplugin parameter
+
+My note:
+
+Update grizzly to operate cross-context
+Update all the generators to specify the context and create the context class.
+Update the entity generation to specify different persistence units per context, or add to generate.properties.
+
+Convert factory, repository etc to be non - singletons and put helpers perhaps
+
+20190812
+
+Repository and Factory then.
+Repository references Factory , well. hmm. Factory get Repository for class could span multiple domains. Fully qualified
+classes are unlikely to conflict across domains. Though the current factory class is a stupid wrapper and anyway defers
+to a domain specific default factory implementation.
+
+So. we could have a domain specific repository which references a domain specific factor
+
+RepositoryDomainA { FactoryIF f = inject(FactoryIF.class, DomainA.class); f.getRepositoryForClas(xxx) }
+
+which is basically fine. We'll need to generate the repository and factory per domain. But we generate a factory class
+per domain already so that's fine.
+
+The only challenge then is the convenience statics and maybe they're not really such a big deal anyway.
+
+Copying the originals to doc/lateral-bu for now.
+
+Renaming Factory Contract ... hang on ...yes. Renaming Factory Contract to Factory and this becomes the interface.
+
+Done. Creating a repository interface... ok doke.
+
+Can we use the existing DefaultFactory as the Factory implementation? --> looks pretty much like it. Updating
+generator for DefaultFactory to include the context.
+
+kk, repo is slightly confusing. The class-specific generated repos implement 'crudrepository' interface.
+Thats a typed interface and there are many of them.
+
+Repository and it's implementation are slightly different and control access to all of these. Repository uses the
+CRUDRepository interface but doesn't need to implement it. We'll probably need better naming at some point.
+
+Starting to create the DefaultRepository and generator ...
+[TODO] kk, template created. Now need the generator ... tomorrow. [DONE?]
+[TODO] add generator to create the LateralDIContext class, like in <buscontroller>
+
+Then should be ready to test on an example domain.
+
+20190817 [TROUBLE]
+
+circular dependency now in first run of new domain. ie new lateral v2 core with simple microservice libdomain.
+HCRepoManager needs to register the repository implemenetations.
+But in order to create each it needs to inject Factory implementation
+and DefaultFactoryImplementation in turn needs to inject all the Repos.
+
+So, it dunt work. I think the HCRepoManager needs to be able to create the repo impls without triggering the injects.
+OR factory shouldn't be bound to the repositories.
+
+Perhaps HCRepoManager can register the class instead of the implementation. Hmm
+--> no, can't do that as it needs constructor parameters. Sheet.
+
+So, I could move the getRepositoryForClass into DefaultRepository from DefaultFactory. that would make sense.
+
+But still HCRepositoryManager would need to register the repository implementations
+and each impl needs to inject the Repository which in turn has references to all the repositories.
+In some ways the only problem is that we do the injection in the constructor of (as now) DefaultFactoryImpl
+instead of later.
+
+All of the repository implementations come from HCRepositoryManager, so this class could trigger the default
+factory implementation to initiatlise once all the repositories are created. That would work fine.
+
+steps [1] move get repo for class from Factory to Repository. (think about renaming repository)
+[2] move repo registration from constructor to initialisation method
+[3] call initiatlisation method in HCRepositoryManager.
+
+[1] and [2] are DONE
+[3] also, though modified.
+
+HazelcastPlugin and ZerocachePlugin use inject without the context. fix this.
+ZCRepositoryManager appears to have disappeared. And the impls too. ?
+
+20190823
+
+Need to repeat the exercise now with the entities and application level stuff.
+Obvious things that need to change:
+(*) the transactionmanager impl will need to be generated per-context and the persistent context name will need to be
+provided and made overridable in configuration
+(*) we'll need to be able to specify multiple domain.generated (or similar) in the generate.properties. It will need to
+be possible to generate entities across several domains if needed.That might get messy. could use separate files.
+(*) nice to have -- the rest and grizzly will support cross domain working if needed
+(*) all the generated files will need to be updated to include the context of course.
+(*) persistence.xml might need to support multiple PUs also
+(*) answer the question -- what if i want to use a single hazelcast cache for multiple domains ? [DONE] -- looks perfectly
+possible to start 2x hazelcast embedded instances in the same application on the same ports.
+
+Steps
+(1) build out the multiple run generation. parse the single or multiple generate-.properties. barf if the contexts are
+not defined in these. Update all the generators to pass in the context.[IN PROGRESS . generateEntities all updated]
+(2) create a transaction manager class per context.
+
+Probably sort out the persistence.xml files after that.
 
 
+
+
+20190901
+
+All building ok now. I need a lot of examples to test with:
+(1) multiple domains, with 1 hazelcast cache, 1 db, rest and grizzly which span both domains
+(2) multiple domains with multiple hazelcast and multiple dbs.
+
+etc
+
+Oh first -- TASK == sort out the transaction manager. we'll need one per context now
+
+20190902 --> ok, done
+
+
+20190912
+
+Spotting a bug in the storage and setting of sequence ids.
+Kind of a bummer. Really the factory needs to use the repository when doing a create in order to set any sequence ids
+properly. otherwise, uninitialised ids can sometimes not be persisted correctly to the db.
+I don't want that link between factor and repository but i think its still what needs to be done. Perhaps at some point
+we'll just combine the factory and repository and that'll be that.
+
+For now i need to update the generators and move code around a bit.
+
+the problem occurred when i had a class with a sequence id and then i persisted it as part of a larger object.
+because it was persisted after the parent class, the parent class reference to the class (via a list) just contained
+a null id. so we'd either need to set the ids before persisting or we'd need to sort the persisting classes into
+order and persist them in that order to ensure ids were always set before references were stored.
+
+It means moving some code out of the hazelcast cache generation and into the generic domain stuff which i'm slightly
+uneasy about. Though the update sequence code is identical in the different cache impls anyway.
+
+20190916
+
+Looking good. The broadcastbus archetype needs updating but the simple microservice is fine.
+
+20200214
+
+Need to remind myself where we got to with all this. I'm thinking more i need to re-review Kubernetes, do we really need
+to support multiple domains in a single application or are there other ways around this?
 

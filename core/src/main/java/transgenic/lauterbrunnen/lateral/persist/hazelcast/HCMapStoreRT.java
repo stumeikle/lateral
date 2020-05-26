@@ -1,8 +1,8 @@
 package transgenic.lauterbrunnen.lateral.persist.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MapLoader;
-import com.hazelcast.core.MapLoaderLifecycleSupport;
+import com.hazelcast.map.MapLoader;
+import com.hazelcast.map.MapLoaderLifecycleSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import transgenic.lauterbrunnen.lateral.persist.Retriever;
@@ -40,9 +40,11 @@ public class HCMapStoreRT implements MapLoader<Object,Object>, MapLoaderLifecycl
 
     @Override
     public void init(HazelcastInstance hazelcastInstance, Properties properties, String mapName) {
-        long    nextUpdateId = retriever.getLastUpdateId() + 1;
-        hazelcastInstance.getIdGenerator(mapName + "UpdateIdGen").init(nextUpdateId);
-        LOG.debug("Set next update id to " + nextUpdateId + " for map " + mapName);
+
+        //With hazelcast 4 this is not possible or really needed
+//        long    nextUpdateId = retriever.getLastUpdateId() + 1;
+//        hazelcastInstance.getFlakeIdGenerator(mapName + "UpdateIdGen").init(nextUpdateId);
+//        LOG.debug("Set next update id to " + nextUpdateId + " for map " + mapName);
     }
 
     @Override

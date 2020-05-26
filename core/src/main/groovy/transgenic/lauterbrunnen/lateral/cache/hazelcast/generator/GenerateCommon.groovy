@@ -8,10 +8,15 @@ class GenerateCommon {
     private String outputPackage;
     private String basePath;
     private String generatedDomainPackage;
+    private String diContext;
     private boolean sequencesUsed;
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+
+    public void setDiContext(String diContext) {
+        this.diContext = diContext;
     }
 
     public void setGeneratedDomainPackage(String generatedDomainPackage) {
@@ -37,18 +42,21 @@ class GenerateCommon {
         output << ""<< System.lineSeparator();
 
         output << "import transgenic.lauterbrunnen.lateral.domain.*;" << System.lineSeparator()
+        output << "import static transgenic.lauterbrunnen.lateral.Lateral.inject;"<< System.lineSeparator()
         output << "import " << generatedDomainPackage << ".*;"<< System.lineSeparator()
         output << "import java.util.Collection;" << System.lineSeparator()
         output << ""<< System.lineSeparator();
         
         output << "public class HCCommonRepositoryImpl {" << System.lineSeparator() +
                 "" << System.lineSeparator() +
+                "    private Factory factory = inject(Factory.class, " + diContext + "Context.class);"<< System.lineSeparator() +
+                "    private Repository repository = inject(Repository.class, " + diContext + "Context.class);"<< System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    public void persistAll(Collection<EntityImpl> persistCollection)  throws PersistenceException{" << System.lineSeparator() +
                 "        //Nothing clever for now" << System.lineSeparator() +
                 "        //Entities here could be a variety of types" << System.lineSeparator() +
                 "        for(EntityImpl impl: persistCollection) {" << System.lineSeparator() +
-                "            CRUDRepository repo = Factory.getRepositoryForClass(impl.getClass());" << System.lineSeparator() +
+                "            CRUDRepository repo = repository.getRepositoryForClass(impl.getClass());" << System.lineSeparator() +
                 "            repo.persist(impl);" << System.lineSeparator() +
                 "        }" << System.lineSeparator() +
                 "    }" << System.lineSeparator() +
@@ -58,7 +66,7 @@ class GenerateCommon {
                 "        OptimisticLockingException first = null, last = null;" << System.lineSeparator() +
                 "" << System.lineSeparator() + 
                 "        for(EntityImpl impl: updateCollection) {" << System.lineSeparator() +
-                "            CRUDRepository repo = Factory.getRepositoryForClass(impl.getClass());" << System.lineSeparator() +
+                "            CRUDRepository repo = repository.getRepositoryForClass(impl.getClass());" << System.lineSeparator() +
                 "            try {" << System.lineSeparator() +
                 "                repo.update(impl);" << System.lineSeparator() +
                 "            } catch(OptimisticLockingException ole) {" << System.lineSeparator() +
@@ -87,14 +95,14 @@ class GenerateCommon {
 
                 if (sequencesUsed) {
                     output << "    protected long incrementSequence(String name) throws PersistenceException{" << System.lineSeparator() +
-                            "        _Sequence sequence = Repository.retrieve(_Sequence.class, name);" << System.lineSeparator() +
+                            "        _Sequence sequence = repository.retrieve(_Sequence.class, name);" << System.lineSeparator() +
                             "" << System.lineSeparator() +
                             "        //If there is no sequence, create a new one" << System.lineSeparator() +
                             "        if (sequence==null) {" << System.lineSeparator() +
-                            "            sequence = Factory.create(_Sequence.class);" << System.lineSeparator() +
+                            "            sequence = factory.create(_Sequence.class);" << System.lineSeparator() +
                             "            sequence.setName(name);" << System.lineSeparator() +
                             "            sequence.setValue(0);" << System.lineSeparator() +
-                            "            Repository.persist(sequence);" << System.lineSeparator() +
+                            "            repository.persist(sequence);" << System.lineSeparator() +
                             "        }" << System.lineSeparator() +
                             "" << System.lineSeparator() +
                             "        int retryCount = 0;" << System.lineSeparator() +
@@ -103,7 +111,7 @@ class GenerateCommon {
                             "            try {" << System.lineSeparator() +
                             "                value = sequence.getValue()+1;" << System.lineSeparator() +
                             "                sequence.setValue(value);" << System.lineSeparator() +
-                            "                Repository.update(sequence);" << System.lineSeparator() +
+                            "                repository.update(sequence);" << System.lineSeparator() +
                             "            } catch (PersistenceException e) {" << System.lineSeparator() +
                             "                if (e instanceof OptimisticLockingException) {" << System.lineSeparator() +
                             "                    //retry a few times" << System.lineSeparator() +

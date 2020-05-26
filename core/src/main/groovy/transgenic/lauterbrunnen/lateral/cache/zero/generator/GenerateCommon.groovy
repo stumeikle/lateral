@@ -15,10 +15,15 @@ class GenerateCommon {
     private String inputPackage;
     private String basePath;
     private String generatedDomainPackage;
+    private String diContext;
     private boolean sequencesUsed;
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+
+    public void setDiContext(String diContext){
+        this.diContext = diContext;
     }
 
     public void setGeneratedDomainPackage(String generatedDomainPackage) {
@@ -48,6 +53,7 @@ class GenerateCommon {
         context.put("inputPackage", inputPackage);
         context.put("outputPackage", outputPackage);
         context.put("sequencesUsed", sequencesUsed);
+        context.put("diContext", diContext);
 
         StringWriter writer = new StringWriter();
         t.merge(context,writer);

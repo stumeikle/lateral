@@ -1,6 +1,6 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast.generator
 
-import com.hazelcast.core.ITopic
+//import com.hazelcast.core.ITopic
 
 /**
  * Created by stumeikle on 05/06/16.
@@ -9,9 +9,14 @@ class GenerateManager {
     protected String outputPackage;
     protected String inputPackage;
     protected String basePath;
+    protected String diContext;
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+
+    public void setDiContext(String diContext) {
+        this.diContext = diContext;
     }
 
     public void setOutputPackage(String outputPackage) {
@@ -33,25 +38,27 @@ class GenerateManager {
         output << ""<< System.lineSeparator();
 
         output << "import com.hazelcast.core.HazelcastInstance;" << System.lineSeparator() +
-                "import com.hazelcast.core.IMap;" << System.lineSeparator() +
-                "import com.hazelcast.core.IdGenerator;" << System.lineSeparator() +
-                "import com.hazelcast.core.ITopic;" << System.lineSeparator() +
+                "import com.hazelcast.map.IMap;" << System.lineSeparator() +
+                "import com.hazelcast.flakeidgen.FlakeIdGenerator;" << System.lineSeparator() +
+//                "import com.hazelcast.core.ITopic;" << System.lineSeparator() +
                 "import java.util.HashMap;" << System.lineSeparator() +
                 "import java.util.Map;" << System.lineSeparator() +
 //                "import transgenic.lauterbrunnen.lateral.admin.Command;" << System.lineSeparator()+
 //                "import transgenic.lauterbrunnen.lateral.admin.CommandResponse;"<< System.lineSeparator()+
+                "import transgenic.lauterbrunnen.lateral.Lateral;"<< System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;"<< System.lineSeparator() +
-                "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;" << System.lineSeparator() +
-                "import transgenic.lauterbrunnen.lateral.di.ApplicationDI;" << "" << System.lineSeparator()
+                "import transgenic.lauterbrunnen.lateral.di.DIContext;" <<System.lineSeparator() +
+                "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;" << System.lineSeparator()
         output << "import " + inputPackage + ".*;" << System.lineSeparator()
 
         output << "" << System.lineSeparator()
         output << "@DefaultImpl" << System.lineSeparator()
+        output << "@DIContext(" + diContext + "Context.class)" << System.lineSeparator()
         output << "public class HCRepositoryManagerImpl implements HCRepositoryManager {" << System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    private static Map<String, IMap>    imapNameMap = new HashMap<>();"<< System.lineSeparator() +
 //                "    private static Map<String, ITopic> topicNameMap = new HashMap<>();" <<System.lineSeparator() +
-                "    private static Map<String, IdGenerator> updateIdNameMap = new HashMap<>();"<<System.lineSeparator() +
+                "    private static Map<String, FlakeIdGenerator> updateIdNameMap = new HashMap<>();"<<System.lineSeparator() +
                 "" << System.lineSeparator() +
                 "    public void initRepositories(HazelcastInstance hazel) {" << System.lineSeparator() +
                 "        //We need cluster wide unique ids for every update so that we can co-ordinate the actions of the" << System.lineSeparator() +
@@ -64,14 +71,18 @@ class GenerateManager {
             String namelc = name.substring(0,1).toLowerCase() + name.substring(1);
 
             output << "" << System.lineSeparator()
-            output << "        IMap " + namelc + "Map = hazel.getMap(\"" + name + "\");" << System.lineSeparator()
+            output << "        IMap " + namelc + "Map = hazel.getMap(\"" + diContext +"_"+ name + "\");" << System.lineSeparator()
             output << "        imapNameMap.put(\"" + name + "\", " << namelc << "Map);" << System.lineSeparator()
-            output << "        IdGenerator " + namelc + "UpdateGen = hazel.getIdGenerator(\"" + name + "UpdateIdGen\");" << System.lineSeparator()
+            output << "        FlakeIdGenerator " + namelc + "UpdateGen = hazel.getFlakeIdGenerator(\""+ diContext +"_" + name + "UpdateIdGen\");" << System.lineSeparator()
             output << "        updateIdNameMap.put(\"" + name + "\", " + namelc + "UpdateGen);" << System.lineSeparator();
             output << "        HC" + repo.getSimpleName() + "Impl " + namelc + "RepositoryImpl = new HC" +
                     repo.getSimpleName() + "Impl(" + namelc + "Map, " + namelc + "UpdateGen);" << System.lineSeparator()
-            output << "        ApplicationDI.registerImplementation(" + repo.getSimpleName() + ".class, " +
+            output << "        Lateral.INSTANCE.registerImplementation(" + repo.getSimpleName() + ".class, " +
+                    diContext + "Context.class," +
                     namelc + "RepositoryImpl);" << System.lineSeparator()
+            output << "        DefaultRepositoryImpl.getClass2RepoMap().put( " + name + ".class, " + repo.getSimpleName() + ".class );" << System.lineSeparator()
+            output << "        DefaultRepositoryImpl.getClass2RepoMap().put( " + name + "Impl.class, " + repo.getSimpleName() + ".class );" << System.lineSeparator()
+
         }
         
         output << System.lineSeparator();
@@ -100,7 +111,7 @@ class GenerateManager {
 //                "        return topicNameMap;" << System.lineSeparator()+
 //                "    }" << System.lineSeparator()
 
-        output << "    public Map<String, IdGenerator> getUpdateIdNameMap() { return updateIdNameMap; }" << System.lineSeparator()
+        output << "    public Map<String, FlakeIdGenerator> getUpdateIdNameMap() { return updateIdNameMap; }" << System.lineSeparator()
 
         output << "}" << System.lineSeparator()
     }

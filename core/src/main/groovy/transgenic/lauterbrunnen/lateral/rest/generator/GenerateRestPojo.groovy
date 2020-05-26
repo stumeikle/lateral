@@ -21,6 +21,12 @@ class GenerateRestPojo {
     private Map<String, Class> classMap = new HashMap<>();
     protected Properties properties;
     protected Field idField = null;
+    protected String diContext;
+
+
+    public void setDiContext(String diContext) {
+        this.diContext = diContext;
+    }
 
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
@@ -66,6 +72,7 @@ class GenerateRestPojo {
         output << "import transgenic.lauterbrunnen.lateral.domain.Factory;" << System.lineSeparator();
         output << "import transgenic.lauterbrunnen.lateral.domain.UniqueId;" << System.lineSeparator();
         output << "import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;" << System.lineSeparator();
+        output << "import static transgenic.lauterbrunnen.lateral.Lateral.inject;" << System.lineSeparator();
         output << "import " << domainGeneratedPackage << ".*;" << System.lineSeparator();
         output << "import java.util.stream.Collectors;" << System.lineSeparator();
         output << "" << System.lineSeparator()
@@ -222,8 +229,9 @@ class GenerateRestPojo {
         output << ""<< System.lineSeparator();
         output << "    public " << proto.getSimpleName() << "Impl createImpl() " << tve << "{" << System.lineSeparator();
         output << ""<< System.lineSeparator();
+        output << "        Factory factory = inject(Factory.class, " + diContext + "Context.class);" << System.lineSeparator()
         output << "        " << proto.getSimpleName() << "Impl retval = (" << proto.getSimpleName() <<
-                "Impl) Factory.create( " << proto.getSimpleName() << ".class );" << System.lineSeparator();
+                "Impl) factory.create( " << proto.getSimpleName() << ".class );" << System.lineSeparator();
 
         for (Field field : allFields) {
             String setFn = field.getName();

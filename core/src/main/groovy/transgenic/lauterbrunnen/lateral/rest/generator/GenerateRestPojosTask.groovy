@@ -27,6 +27,7 @@ class GenerateRestPojosTask {
 
         String domainGeneratedPackage = properties.get("domain.generated.package");
         String outputPackage = properties.get("rest.generated.package");
+        String diContext = properties.get("lateral.di.context");
         def domainProtoManager = new DomainProtoManager(properties);
         def classes = domainProtoManager.getProtoClassesNoInternals();
 
@@ -45,6 +46,7 @@ class GenerateRestPojosTask {
             grp.setOutputPackage(outputPackage);
             grp.setPrototypeClasses(classes);
             grp.setProperties(properties);
+            grp.setDiContext(diContext);
             grp.generate(proto);
 
             //generate the endpoint
@@ -54,6 +56,7 @@ class GenerateRestPojosTask {
             ge.setOutputPackage(outputPackage);
             ge.setPrototypeClasses(classes);
             ge.setProperties(properties);
+            ge.setDiContext(diContext);
             ge.generate(proto);
 
         }
@@ -61,6 +64,8 @@ class GenerateRestPojosTask {
         GenerateRestResource gr = new GenerateRestResource();
         gr.setBasePath(srcbase);
         gr.setOutputPackage(outputPackage);
+        gr.setDiContext(diContext);
+        gr.setDomainGeneratedPackage(domainGeneratedPackage);
         gr.generate(classes);
     }
 }

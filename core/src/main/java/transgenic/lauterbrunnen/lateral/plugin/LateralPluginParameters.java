@@ -15,5 +15,6 @@ public @interface LateralPluginParameters {
     boolean enabledByDefault() default false;
     String configName() default "";
     String groups() default "";
+    boolean oneInstancePerDIContext() default false;
 }
 

@@ -14,7 +14,8 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
+import ${domainGeneratedPackage}.${diContext}Context;
 
 /**
  * Created by stumeikle on 17/04/17.
@@ -23,7 +24,7 @@ import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;
  */
 public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements ${entity}Repository {
 
-    private TransactionManager  transactionManager = inject(TransactionManager.class);
+    private TransactionManager  transactionManager = inject(TransactionManager.class, ${diContext}Context.class );
     private ThreadLocal<Object> ${lcentity}Entity = new ThreadLocal<>();
 
     @Override

@@ -12,27 +12,22 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileSystems;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Created by Stuart.meikle on 05/05/2016.
+ * Created by stumeikle on 28/07/19.
+ * This is a direct copy but without the singleton stuff
  */
-public enum AnnotationScanner {
-
-    INSTANCE;
-
-    private static final Class[] parameters = new Class[]{URL.class};
-    private static final Class[] acpParameters = new Class[]{String.class};
+public class AnnotationScanner {
+    private final Class[] parameters = new Class[]{URL.class};
+    private final Class[] acpParameters = new Class[]{String.class};
     private final Log LOG = LogFactory.getLog(AnnotationScanner.class);
-    private final Map<Class, List<Class>> annotatedClassMap;
+    private final Map<Class, Set<Class>> annotatedClassMap;
 
-    private AnnotationScanner() {
+    public AnnotationScanner() {
         annotatedClassMap = new ConcurrentHashMap<>();
     }
 
@@ -48,7 +43,7 @@ public enum AnnotationScanner {
         }
     }
 
-    public List<Class> get(Class note) {
+    public Set<Class> get(Class note) {
         return annotatedClassMap.get(note);
     }
 
@@ -82,13 +77,13 @@ public enum AnnotationScanner {
                 for( Annotation note: c.getAnnotations()) {
                     if (!(note.annotationType().getName().contains(noteFilter))) continue;
 
-                    List<Class>  list = annotatedClassMap.get(note.annotationType());
-                    if (list==null) {
-                        list = new ArrayList<Class>();
-                        annotatedClassMap.put(note.annotationType(), list);
+                    Set<Class>  set = annotatedClassMap.get(note.annotationType());
+                    if (set==null) {
+                        set = new HashSet<>();
+                        annotatedClassMap.put(note.annotationType(), set);
                     }
 
-                    list.add(c);
+                    set.add(c);
                 }
             } catch (Throwable e) {
                 LOG.trace("Unable to load class: " + cn, e);

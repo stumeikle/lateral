@@ -17,6 +17,7 @@ class GenerateZeroCachePersist {
     def propertyFile;
     def generateDirect;
     def classLoader;
+    def diContext;
 
     public void generate() {
         //Get the config
@@ -35,6 +36,7 @@ class GenerateZeroCachePersist {
         String entityPackage = properties.get("entity.generated.package");
         String outputPackage = properties.get("persist.zerocache.generated.package");
         String cachePackage  = properties.get("cache.zero.generated.package");
+        diContext = properties.get("lateral.di.context");
         def domainProtoManager = new DomainProtoManager(properties);
         def classes = domainProtoManager.getProtoClasses();
 
@@ -97,6 +99,7 @@ class GenerateZeroCachePersist {
             gri.basePath = dbdumpbase;
             gri.domainProtoManager = dpm;
             gri.setClassLoader(classLoader);
+            gri.setDiContext(diContext);
 
             //GenerateConverterName
             String name = proto.getName().replace(entityPackage, implPackage);
@@ -172,6 +175,7 @@ class GenerateZeroCachePersist {
         grmi.inputPackage = implPackage;
         grmi.outputPackage = outputPackage;
         grmi.basePath = dbdumpbase;
+        grmi.diContext = diContext;
         grmi.generate(classes);
 
 

@@ -1,6 +1,6 @@
 package transgenic.lauterbrunnen.lateral.cache.hazelcast;
 
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 
 import java.util.Map;
 

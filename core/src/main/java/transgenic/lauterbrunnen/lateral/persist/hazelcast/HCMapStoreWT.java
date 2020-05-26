@@ -1,6 +1,6 @@
 package transgenic.lauterbrunnen.lateral.persist.hazelcast;
 
-import com.hazelcast.core.MapStore;
+import com.hazelcast.map.MapStore;
 import transgenic.lauterbrunnen.lateral.persist.Persister;
 import transgenic.lauterbrunnen.lateral.persist.Retriever;
 

@@ -25,6 +25,7 @@ class GenerateRepositoryImpl {
     def idTransformer;
     def basePath;
     def dbIdType;
+    def diContext;
     DomainProtoManager domainProtoManager;
     private ClassLoader classLoader;
 
@@ -37,11 +38,12 @@ class GenerateRepositoryImpl {
         //check the annotations on the class for optimistic locking
         boolean optimisticLocking = false;
         //Class implClass = classLoader.loadClass(proto.getName()+"Impl");
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Class implClass = null;
 
         try
         {
-            implClass = Class.forName(domainGeneratedPackage + "." + proto.getSimpleName()+"Impl");
+            implClass = loader.loadClass(domainGeneratedPackage + "." + proto.getSimpleName()+"Impl");//Class.forName(domainGeneratedPackage + "." + proto.getSimpleName()+"Impl");
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -98,6 +100,7 @@ class GenerateRepositoryImpl {
         context.put("sequencesPresent", sequencesPresent);
         context.put("sequenceFields", sequenceFields);
         context.put("throwValidationException", validationPresent ? "throws ValidationException": "");
+        context.put("diContext", diContext);
 
         String lcentity = proto.getSimpleName();
         lcentity = lcentity.substring(0,1).toLowerCase()+lcentity.substring(1);

@@ -1,0 +1,55 @@
+20190719
+
+Lateral design notes for context DI. IE binding 1 application to multiple domains.
+
+Is it actually a problem, I am wondering?
+
+REQUIREMENT: with a single domain everything should pretty-much work as it does now.
+
+What will fail?
+[FAIL] Transaction manager will need multiple instances, as there may be different persistence contexts per domain.
+[FAIL] plug-ins like hazel cast will need multiple instances and configs so that they can connect to the multiple caches
+[FAIL] server side plug ins like grizzly might need to bridge both domains, not sure what we do about that.
+
+[FAIL] we'll have multiple defined default impls of common interfaces
+eg
+@DefaultImpl
+public class HCRepositoryManagerImpl implements HCRepositoryManager
+
+1x per domain. This particular one is only called from the plug-ins, so that'd be a minor fix.
+
+the other case is Factory. The static Factory injects FactoryContext and we'll have 1 default impl of that per domain also.
+So any time where a domain-specific class provides a default impl to an interface defined outside of its context we'll have a problem. 
+
+We could solve this by saying -- whenever you use DI to get an impl from an interface, if there are multiple possibilities then you will need to specify the context. And we'll need to change the Factory static class too.
+
+Now repository calls essentially, DI. getImplFor(FactoryContract.class) and there might be multiple answers depending on the context. But repository doesn't know about contexts as it is in the common lateral core. Which is a mess.
+
+We could of course have multiple copies, one per context. and then instantiate the correct factory.
+That'd be fine. probably. and maybe have a static wrapper
+
+Repository 		repo= inject(Repository.class, MyDomainContext.class).
+
+repo.persist(MyDomainObject) {
+	
+	mydomainrepo -> mydomainfactory. all fine
+	
+}
+
+so then repository would become an interface not a class with implementations in each domain.
+
+
+So far ok.
+How do I know then which domain a @DefaultImpl is associated with? and is that the only time I need to care about this?
+How will I tag the context in the code, or otherwise establish the context?
+
+I don't know.
+I am tempted now to create a new project with 2 domains and see where we get to, unwinding the problems as we go.
+I think we'll need a context class per domain. we'll need to refer to that in some default impl classes
+(those that use interfaces external to the context). 
+
+i'll have to worry about plug ins and config files. but maybe that'll be all.
+
+
+
+

@@ -22,6 +22,7 @@ class GenerateEntity {
     private Properties properties;
     private String idFieldName;
     private String basePath;
+    private String diContext;
     private Map<String, String>  idFields = new HashMap<>();
     private Map<String, String> idFieldNames = new HashMap<>();
     private DomainProtoManager domainProtoManager;
@@ -50,6 +51,9 @@ class GenerateEntity {
     }
     public void setBasePath(String basePath) {
         this.basePath=basePath;
+    }
+    public void setDiContext(String diContext) {
+        this.diContext= diContext;
     }
 
     private Set<GenerateConverterName>  converterNames;

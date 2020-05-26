@@ -12,6 +12,7 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 class GeneratePersisterInterface {
     private String cachePackage;
     private String  basePath;
+    private String diContext;
 
     String getCachePackage() {
         return cachePackage
@@ -25,6 +26,10 @@ class GeneratePersisterInterface {
         this.basePath = basePath;
     }
 
+    void setDiContext(String diContext) {
+        this.diContext = diContext;
+    }
+
     void generate(Class proto) {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -34,6 +39,7 @@ class GeneratePersisterInterface {
         VelocityContext context = new VelocityContext();
         context.put("cachePackage", cachePackage);
         context.put("name", proto.getSimpleName());
+        context.put("diContext", diContext);
 
         StringWriter writer = new StringWriter();
         t.merge(context,writer);

@@ -7,6 +7,8 @@ import transgenic.lauterbrunnen.lateral.domain.Repository;
 import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;
 import $domainGeneratedPackage.${entityName};
 import $domainGeneratedPackage.${entityName}Impl;
+import $domainGeneratedPackage.${diContext}Context;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -22,6 +24,7 @@ import javax.ws.rs.core.Response;
 public class ${entityName}Endpoint {
 
     private static final Log LOG = LogFactory.getLog(${entityName}Endpoint.class);
+    private Repository repository = inject(Repository.class, ${diContext}Context.class);
 
     //------------------------------------------
     //
@@ -36,7 +39,7 @@ public class ${entityName}Endpoint {
         //persist the object
         try {
             ${entityName}Impl impl = ${lcEntityName}.createImpl();
-            Repository.persist(impl);
+            repository.persist(impl);
             String result = impl.getRepositoryId().toString();
             return Response.status(201).entity(result).build();
         } catch(PersistenceException $orValidationException exception) {
@@ -56,7 +59,7 @@ public class ${entityName}Endpoint {
         //persist the object
         try {
             ${entityName}Impl impl = ${lcEntityName}.createImpl();
-            Repository.persist(impl);
+            repository.persist(impl);
             String result = impl.getRepositoryId().toString();
             return Response.status(201).entity(result).build();
         } catch(PersistenceException $orValidationException exception) {
@@ -79,7 +82,7 @@ public class ${entityName}Endpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ${entityName}_$entityVersion retrieve${entityName}ByIdJSON(@PathParam("id") ${repoIdType} repositoryId) {
-        ${entityName} retval = Repository.retrieve(${entityName}.class, repositoryId);
+        ${entityName} retval = repository.retrieve(${entityName}.class, repositoryId);
 
         if (retval!=null) return ${entityName}_${entityVersion}.createFrom${entityName}(retval);
 
@@ -93,7 +96,7 @@ public class ${entityName}Endpoint {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     public ${entityName}_$entityVersion retrieve${entityName}ByIdXML(@PathParam("id") ${repoIdType} repositoryId) {
-        ${entityName} retval = Repository.retrieve(${entityName}.class, repositoryId);
+        ${entityName} retval = repository.retrieve(${entityName}.class, repositoryId);
 
         if (retval!=null) return ${entityName}_${entityVersion}.createFrom${entityName}(retval);
 
@@ -116,12 +119,12 @@ public class ${entityName}Endpoint {
         //(2) update only the fields which are sent in by the client
         //(3) update the cache with the new values
         try {
-            ${entityName} found = Repository.retrieve(${entityName}.class, $convertRestIdToRepoIdStart ${lcEntityName}.get${idFieldName}() $convertRestIdToRepoIdEnd );
+            ${entityName} found = repository.retrieve(${entityName}.class, $convertRestIdToRepoIdStart ${lcEntityName}.get${idFieldName}() $convertRestIdToRepoIdEnd );
             if (found!=null) {
                 if (found instanceof ${entityName}Impl) {
                     ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
                     ${lcEntityName}.updateImpl(${entityName}Impl);
-                    Repository.update(${entityName}Impl);
+                    repository.update(${entityName}Impl);
                     String result = "success";
                     return Response.status(201).entity(result).build();
                 }
@@ -147,12 +150,12 @@ public class ${entityName}Endpoint {
         //(2) update only the fields which are sent in by the client
         //(3) update the cache with the new values
         try {
-            ${entityName} found = Repository.retrieve(${entityName}.class, $convertRestIdToRepoIdStart ${lcEntityName}.get${idFieldName}() $convertRestIdToRepoIdEnd );
+            ${entityName} found = repository.retrieve(${entityName}.class, $convertRestIdToRepoIdStart ${lcEntityName}.get${idFieldName}() $convertRestIdToRepoIdEnd );
             if (found!=null) {
                 if (found instanceof ${entityName}Impl) {
                     ${entityName}Impl ${entityName}Impl = (${entityName}Impl)found;
                     ${lcEntityName}.updateImpl(${entityName}Impl);
-                    Repository.update(${entityName}Impl);
+                    repository.update(${entityName}Impl);
                     String result = "success";
                     return Response.status(201).entity(result).build();
                 }
@@ -179,7 +182,7 @@ public class ${entityName}Endpoint {
     public Response delete${entityName}(@PathParam("id") String repositoryId) {
 
         //why no exceptions here?
-        Repository.delete(${entityName}.class, repositoryId);
+        repository.delete(${entityName}.class, repositoryId);
         String result ="success";
         return Response.status(202).entity(result).build();
     }

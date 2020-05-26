@@ -6,6 +6,8 @@ import java.lang.reflect.Field
 
 /**
  * Created by stumeikle on 04/06/16.
+ *
+ * 20190812 This generator generates the class-specific repository, not the over-arching controlling repository
  */
 class GenerateRepo extends GenerateRef{
 

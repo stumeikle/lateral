@@ -12,6 +12,7 @@ class GeneratePersister {
     protected String cachePackage;
     protected String entityPackage;
     protected DomainProtoManager domainProtoManager;
+    protected String diContext;
 
     String getBasePath() {
         return basePath
@@ -31,6 +32,10 @@ class GeneratePersister {
 
     void setImplPackage(String implPackage) {
         this.implPackage = implPackage
+    }
+
+    void setDiContext(String diContext){
+        this.diContext = diContext;
     }
 
     String getCachePackage() {
@@ -64,9 +69,11 @@ class GeneratePersister {
         output << "import " << entityPackage << "." << entityName << "Transformer;" << System.lineSeparator()
         output << "import transgenic.lauterbrunnen.lateral.persist.Persister;" << System.lineSeparator()+
                   "import transgenic.lauterbrunnen.lateral.persist.TransactionManager;"<< System.lineSeparator()
+        output << "import transgenic.lauterbrunnen.lateral.di.DefaultImpl;" << System.lineSeparator()
+        output << "import transgenic.lauterbrunnen.lateral.di.DIContext;" << System.lineSeparator()
         output << "import java.util.Collection;" << System.lineSeparator +
                 "import java.util.Map;" << System.lineSeparator +
-                "import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;"  << System.lineSeparator;
+                "import static transgenic.lauterbrunnen.lateral.Lateral.inject;"  << System.lineSeparator;
         output << "" << System.lineSeparator();
         
         String implPersister = proto.getSimpleName() + "PersisterImplDirect";
@@ -74,9 +81,10 @@ class GeneratePersister {
 
         String implLC = impl.substring(0,1).toLowerCase() + impl.substring(1);
         String entityLC = entity.substring(0,1).toLowerCase() + entity.substring(1);
-        
+        output << "@DefaultImpl" << System.lineSeparator();
+        output << "@DIContext(" << diContext << "Context.class)" << System.lineSeparator();
         output << "public class " << implPersister << " implements " << proto.getSimpleName() << "Persister {" << System.lineSeparator() +
-                "    private TransactionManager transactionManager=inject(TransactionManager.class);" << System.lineSeparator() << System.lineSeparator() +
+                "    private TransactionManager transactionManager=inject(TransactionManager.class," << diContext << "Context.class);" << System.lineSeparator() << System.lineSeparator() +
                 "    @Override" << System.lineSeparator() +
                 "    //This method called from hc map store for both persists AND updates :(" << System.lineSeparator() +
                 "    public void persist(Object object) {" << System.lineSeparator() +

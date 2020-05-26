@@ -30,7 +30,7 @@ class GenerateRef extends GenerateImpl{
         output << "import transgenic.lauterbrunnen.lateral.domain.EntityReference;" << System.lineSeparator()
         output << "import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;" << System.lineSeparator()
         output << "import java.io.Serializable;" << System.lineSeparator()
-        output << "import static transgenic.lauterbrunnen.lateral.di.ApplicationDI.inject;" << System.lineSeparator()
+        output << "import static transgenic.lauterbrunnen.lateral.Lateral.inject;" << System.lineSeparator()
         output << "" << System.lineSeparator()
 
         className = proto.getSimpleName();
@@ -53,7 +53,8 @@ class GenerateRef extends GenerateImpl{
 
         output << "    private " + idfieldType + " repositoryId;" << System.lineSeparator()
         output << "    private transient " + classNameImpl + " proxee;" << System.lineSeparator()
-        output << "    private static transient final " + className + "Repository " + classNameLowerFirst + "Repository = inject(" + className + "Repository.class);" << System.lineSeparator()
+        //NOTE transient needed on the next else hazelcast will try to persist the repository
+        output << "    private transient final " + className + "Repository " + classNameLowerFirst + "Repository = inject(" + className + "Repository.class," + diContext+"Context.class);" << System.lineSeparator()
         output << System.lineSeparator()
 
         output << "    public " << classNameRef << "(" << classNameImpl << " " << classNameLowerFirst << ") {" << System.lineSeparator()

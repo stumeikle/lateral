@@ -15,6 +15,7 @@ class GenerateRetrieverInterface {
     private String cachePackage;
     private String  basePath;
     private DomainProtoManager domainProtoManager;
+    private String diContext;
 
     void setDomainProtoManager(DomainProtoManager domainProtoManager1) {
         this.domainProtoManager = domainProtoManager1;
@@ -32,6 +33,10 @@ class GenerateRetrieverInterface {
         this.basePath = basePath;
     }
 
+    void setDiContext(String diContext) {
+        this.diContext = diContext;
+    }
+
     void generate(Class proto) {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -41,6 +46,7 @@ class GenerateRetrieverInterface {
         VelocityContext context = new VelocityContext();
         context.put("cachePackage", cachePackage);
         context.put("name", proto.getSimpleName());
+        context.put("diContext", diContext);
 
         StringWriter writer = new StringWriter();
         t.merge(context,writer);

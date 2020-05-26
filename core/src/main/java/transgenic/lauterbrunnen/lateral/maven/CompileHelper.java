@@ -39,7 +39,15 @@ public class CompileHelper {
                     null, compilationUnits);
             boolean success = task.call();
             fileManager.close();
+
+            if (!success) {
+                for(Diagnostic diagnostic: diagnostics.getDiagnostics()) {
+                    System.out.println("" + diagnostic);
+                }
+            }
+
         } catch(Exception e) {
+            System.out.println("Exception produced");
             e.printStackTrace();
         }
     }

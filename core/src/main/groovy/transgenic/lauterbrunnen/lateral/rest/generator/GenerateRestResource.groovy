@@ -13,9 +13,19 @@ class GenerateRestResource {
 
     protected String outputPackage;
     protected String basePath;
+    protected String diContext;
+    protected String domainGeneratedPackage;
 
     def setOutputPackage( p ) {
         this.outputPackage = p;
+    }
+
+    def setDiContext(String diContext) {
+        this.diContext = diContext;
+    }
+
+    def setDomainGeneratedPackage(String domainGeneratedPackage) {
+        this.domainGeneratedPackage = domainGeneratedPackage;
     }
 
     public void setBasePath(String basePath) {
@@ -32,6 +42,8 @@ class GenerateRestResource {
         VelocityContext context = new VelocityContext();
 
         context.put("restGeneratedPackage", outputPackage);
+        context.put("diContext", diContext);
+        context.put("domainGeneratedPackage", domainGeneratedPackage);
 
         StringBuilder   sb = new StringBuilder();
         boolean first = true;
