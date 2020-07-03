@@ -1,0 +1,23 @@
+package ${jpaEntityPackage};
+
+//DO NOT MODIFY, this class was generated
+//This entity file is specific to Cassandra Db using Datastax ORM
+
+import com.datastax.driver.mapping.annotations.Column;
+import com.datastax.driver.mapping.annotations.PartitionKey;
+import com.datastax.driver.mapping.annotations.Table;
+
+@Table( keyspace = "${diContext}" , name="${tableName}",
+readConsistency = "QUORUM",
+writeConsistency = "QUORUM",
+caseSensitiveKeyspace = false,
+caseSensitiveTable = false)
+public class ${entityName} {
+
+    static public String tableCreationCQL = "CREATE TABLE IF NOT EXISTS ${diContext}.${tableName} " +
+                "${cassandraTableDefinition}";
+
+${fieldDefinitions}
+
+${gettersAndSetters}
+}

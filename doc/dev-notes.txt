@@ -951,3 +951,28 @@ Looking good. The broadcastbus archetype needs updating but the simple microserv
 Need to remind myself where we got to with all this. I'm thinking more i need to re-review Kubernetes, do we really need
 to support multiple domains in a single application or are there other ways around this?
 
+20200701
+
+Cassandra support. Manual class creation and testing done. Initial exploration with Kundera fails as Kundera appear to
+package a version of guava together with a vesrion of datastax which doesn't support it ! It's anyway very large and
+it was easy enough to just use the Datastax mapper directly.
+
+New entity and persistence generators will be needed for cassandra.
+One thing about the field types. We'll need to convert from native java -> cassandra-aligned native java -> cassandra types.
+Which makes things a bit bothersome perhaps. It's a pity the datastax mapper does not support table creation as if it
+did we could forget about the cassandra types part of this.
+
+Example
+
+java            cassandra-aligned java      cassandra
+-----           ----------------------      ----------
+string          string                      text
+int             int                         int
+long            long / Long                 bigint
+list            set (!)                     set
+UniqueId        UUID                        uuid
+
+default conversions inherent in Datastax mapper given here:
+https://docs.datastax.com/en/developer/java-driver/3.1/manual/#cql-to-java-type-mapping
+
+We already have a mechanism for converting types for entities so we'll reuse that for this.

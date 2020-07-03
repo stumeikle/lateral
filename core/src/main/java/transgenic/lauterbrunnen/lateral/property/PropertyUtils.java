@@ -20,4 +20,31 @@ public class PropertyUtils {
 
         return Optional.empty();
     }
+
+    public static String getString(Properties properties, String key, String defaultValue) {
+        if (properties !=null) {
+            String value = (String) properties.get(key);
+
+            if (value!=null) {
+                return value;
+            }
+        }
+
+        return defaultValue;
+    }
+
+    public static int getInteger(Properties properties, String key, int defaultValue) {
+        if (properties !=null) {
+            String value = (String) properties.get(key);
+
+            if (value!=null) {
+                try {
+                    int intValue = Integer.parseInt(value.trim());
+                    return intValue;
+                } catch(Exception e) {}
+            }
+        }
+
+        return defaultValue;
+    }
 }

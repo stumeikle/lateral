@@ -52,6 +52,14 @@ public class UniqueId implements Serializable{
         return result;
     }
 
+    //You can create from a uuid but you should only do this if the uuid was created from a unique id in the first place
+    //WARNING . else the necessary bit reordering will not occur.
+    public static UniqueId revertUuidToUniqueId(UUID uuid) {
+        UniqueId reversed = new UniqueId();
+        reversed.setValue(toByteArray(uuid));
+        return reversed;
+    }
+
     //taken from https://gist.github.com/lifecoder/1153724
     private static byte[] toByteArray(UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);

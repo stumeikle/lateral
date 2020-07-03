@@ -12,5 +12,4 @@ public interface Retriever {
     Object load(Object o);
     Map<Object, Object> loadAll(Collection<Object> collection);
     Iterable<Object> loadAllKeys();
-    long getLastUpdateId();
 }

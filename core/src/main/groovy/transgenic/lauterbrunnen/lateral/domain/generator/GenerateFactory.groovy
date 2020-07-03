@@ -71,6 +71,8 @@ class GenerateFactory extends GenerateRepo {
         output << "        return (supplier!=null ? supplier.get() : null);" << System.lineSeparator()
         output << "    }" << System.lineSeparator()
 
+        boolean anyClassWithSequences=false;
+
         for (Class proto : prototypeClasses) {
 
             String lc1Name = proto.getSimpleName().substring(0, 1).toLowerCase() + proto.getSimpleName().substring(1);
@@ -83,6 +85,7 @@ class GenerateFactory extends GenerateRepo {
                     "Impl();" << System.lineSeparator();
 
             if (sequencesPresent) {
+                anyClassWithSequences=true;
                 output << "        try {" << System.lineSeparator();
 
                 for (String field : sequenceFields) {
@@ -112,9 +115,11 @@ class GenerateFactory extends GenerateRepo {
         }
 
         //boilerplate
-        if (sequencesPresent) {
+        if (anyClassWithSequences) {
 
             output << System.lineSeparator();
+            //not sure about this #circular dependencies?
+            output << "    private static Repository repository;" << System.lineSeparator();
             output << "    protected static long incrementSequence(String name) throws PersistenceException{" << System.lineSeparator();
             output << "        if (repository==null) repository = inject(Repository.class, " << diContext << "Context.class);"<< System.lineSeparator();
             output << "        _Sequence sequence = repository.retrieve(_Sequence.class, name);" << System.lineSeparator();

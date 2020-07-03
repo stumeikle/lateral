@@ -75,20 +75,4 @@ public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
         //convert keys from dbkeys back to cache keys if needed
         return ${convertDbKeysToCacheKeys};
     }
-
-    @Override
-    public long getLastUpdateId() {
-        long retval = 0;
-
-        transactionManager.runInTransactionalContext((em)->{
-            Query query = em.createNamedQuery("${entityName}Entity.findLastUpdateId");
-            ${lcEntityName}Entity.set(query.getSingleResult());
-        });
-
-        try {
-            retval = retval + (Long)${lcEntityName}Entity.get();
-        }catch (Exception e) {}
-
-        return retval;
-    }
 }

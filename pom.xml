@@ -6,7 +6,6 @@
     <modules>
         <module>core</module>
         <module>archetype-microservice</module>
-        <module>archetype-broadcastbus</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
