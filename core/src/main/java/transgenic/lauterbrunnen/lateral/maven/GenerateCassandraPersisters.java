@@ -7,8 +7,9 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import transgenic.lauterbrunnen.lateral.entity.generator.GenerateEntityTask;
+import transgenic.lauterbrunnen.lateral.persist.GenerateCassandraPersistCommon;
 import transgenic.lauterbrunnen.lateral.persist.GeneratePersistCommon;
+import transgenic.lauterbrunnen.lateral.persist.hazelcast.generator.GenerateCassandraHazelcastPersist;
 import transgenic.lauterbrunnen.lateral.persist.hazelcast.generator.GenerateHazelcastCachePersist;
 import transgenic.lauterbrunnen.lateral.persist.zerocache.generator.GenerateZeroCachePersist;
 
@@ -18,10 +19,11 @@ import java.net.URLClassLoader;
 import java.util.Properties;
 
 /**
- * Created by stumeikle on 21/06/16.
+ * Created by stumeikle on 06/07/20.
  */
-@Mojo(name="generatePersisters")
-public class GeneratePersisters extends AbstractMojo{
+@Mojo(name="generateCassandraPersisters")
+public class GenerateCassandraPersisters extends AbstractMojo {
+
 
     @Parameter( property="generatePersisters.srcpath", defaultValue = "src/main/java")
     protected String srcPath;
@@ -96,21 +98,22 @@ public class GeneratePersisters extends AbstractMojo{
 
         for(File f: files) {
 
-            GenerateHazelcastCachePersist ghccp = new GenerateHazelcastCachePersist();
+            GenerateCassandraHazelcastPersist ghccp = new GenerateCassandraHazelcastPersist();
             ghccp.setGeneratedSourcesPath(generatedSourcesPath);
             ghccp.setPropertyFile(f);
             ghccp.setGenerateDirect(true);
             ghccp.generate();
 
-            GenerateZeroCachePersist gzccp = new GenerateZeroCachePersist();
-            gzccp.setGeneratedSourcesPath(generatedSourcesPath);
-            gzccp.setPropertyFile(f);
-            gzccp.setGenerateDirect(true);
-            gzccp.setClassLoader(this.getClass().getClassLoader());
-            gzccp.generate();
+            //TODO TODO TODO this not updated for cassandra
+//            GenerateZeroCachePersist gzccp = new GenerateZeroCachePersist();
+//            gzccp.setGeneratedSourcesPath(generatedSourcesPath);
+//            gzccp.setPropertyFile(f);
+//            gzccp.setGenerateDirect(true);
+//            gzccp.setClassLoader(this.getClass().getClassLoader());
+//            gzccp.generate();
 
             //all new for the transaction manager
-            GeneratePersistCommon gpc = new GeneratePersistCommon();
+            GenerateCassandraPersistCommon gpc = new GenerateCassandraPersistCommon();
             gpc.setGeneratedSourcesPath(generatedSourcesPath);
             gpc.setPropertyFile(f);
             gpc.generate();

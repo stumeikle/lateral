@@ -1,0 +1,137 @@
+package ${persistGeneratedPackage};
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.mapping.Mapper;
+import com.datastax.driver.mapping.MappingManager;
+import ${domainGeneratedPackage}.${diContext}Context;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import transgenic.lauterbrunnen.lateral.di.DIContext;
+import transgenic.lauterbrunnen.lateral.di.DefaultImpl;
+import transgenic.lauterbrunnen.lateral.persist.CassandraManager;
+import transgenic.lauterbrunnen.lateral.property.PropertyUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Properties;
+
+#foreach( $entity in $allEntities )
+import ${entityGeneratedPackage}.${entity}Entity;
+#end
+
+//Generated code do not edit
+
+/**
+ * Created by stumeikle on 29/06/20.
+ */
+@DefaultImpl
+@DIContext(${diContext}Context.class)
+public class CassandraManagerImpl implements CassandraManager {
+
+    private static final Log LOG = LogFactory.getLog(CassandraManagerImpl.class);
+    private final String propertyFilename="application.properties";
+    private Properties properties;
+    private Cluster cluster;
+    private Session session;
+    private MappingManager mappingManager;
+
+    //create connection
+    //close connection
+    //create tables if needed
+
+    public CassandraManagerImpl() {
+        //We have no access to the properties here, or?
+
+        properties = new Properties();
+        InputStream in = getClass().getClassLoader().getResourceAsStream(propertyFilename);
+        try {
+            properties.load(in);
+            in.close();
+        } catch (IOException | NullPointerException e) {
+            LOG.warn("Unable to load properties file.");
+        }
+
+        String node = "127.0.0.1";
+        String property = properties.getProperty("cassandra.node");
+        if (property!=null) node = property;
+
+        int port = 9042;
+        property = properties.getProperty("cassandra.port");
+        if (property!=null) {
+            try {
+                port = Integer.parseInt(property);
+            } catch(NumberFormatException nfe) {
+                LOG.warn("Unable to parse cassandra port, reverting to default " + port);
+            }
+        }
+
+        connect(node,port);
+
+        // does the mapper do this for us ???? --> no
+        Optional<Boolean> setupKST = PropertyUtils.getBoolean(properties, "cassandra.initKeyspaceAndTables");
+        if (setupKST.isPresent() && setupKST.get()==false) {
+            //dont
+        }
+        //else do
+        else
+        {
+            String strategy = PropertyUtils.getString(properties, "cassanda.replicationStrategy", "SimpleStrategy");
+            int replicationFactor = PropertyUtils.getInteger(properties, "cassandra.replicationFactor", 1);
+
+            createKeyspace("cassandramicro", strategy, replicationFactor);
+            createTables();
+        }
+    }
+
+    public ResultSet runInSession(SessionExecute sessionExecute) {
+        return sessionExecute.sessionExecute(session);
+    }
+
+    public void save(Object object) {
+        Mapper mapper = mappingManager.mapper(object.getClass());
+        mapper.save(object);
+    }
+
+    public void delete(Object key, Class objectClass) {
+        Mapper mapper = mappingManager.mapper(objectClass);
+        Object entity = mapper.get(key);
+        mapper.delete(entity);
+    }
+
+    public <T> T load(Object key, Class<T> objectClass) {
+        Mapper mapper = mappingManager.mapper(objectClass);
+        return (T) mapper.get(key);
+    }
+
+    private void connect(String node, Integer port) {
+        Cluster.Builder b = Cluster.builder().addContactPoint(node);
+        if (port != null) {
+            b.withPort(port);
+        }
+        cluster = b.build();
+        session = cluster.connect();
+        mappingManager = new MappingManager(session);
+    }
+
+    private void createKeyspace(String keyspaceName, String replicationStrategy, int replicationFactor) {
+        StringBuilder sb =
+                new StringBuilder("CREATE KEYSPACE IF NOT EXISTS ")
+                        .append(keyspaceName).append(" WITH replication = {")
+                        .append("'class':'").append(replicationStrategy)
+                        .append("','replication_factor':").append(replicationFactor)
+                        .append("};");
+
+        String query = sb.toString();
+        session.execute(query);
+    }
+
+    private void createTables() {
+#foreach( $entity in $allEntities )
+        session.execute(${entity}Entity.tableCreationCQL);
+#end
+    }
+}

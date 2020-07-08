@@ -1,0 +1,78 @@
+package ${cachePackage};
+
+import ${domainGeneratedPackage}.${implName};
+import ${domainGeneratedPackage}.${diContext}Context;
+import ${entityPackage}.${entityName}Entity;
+import ${entityPackage}.${entityName}EntityTransformer;
+import transgenic.lauterbrunnen.lateral.persist.CassandraManager;
+import transgenic.lauterbrunnen.lateral.di.DefaultImpl;
+import transgenic.lauterbrunnen.lateral.di.DIContext;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+${importCacheKey}
+
+import javax.persistence.Query;
+import java.util.*;
+import java.util.stream.Collectors;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
+
+/**
+ * Created by stumeikle on 28/11/16.
+ * Now generated. do not edit
+ */
+@DefaultImpl
+@DIContext(${diContext}Context.class)
+public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
+    private CassandraManager cassandraManager=inject(CassandraManager.class,${diContext}Context.class);
+
+    @Override
+    public Object load(Object key) {
+        //convert repository key to db key if needed
+        Object      dbKey=${convertCacheKeyToDbKey};
+
+        ${entityName}Entity ${lcEntityName}Entity = cassandraManager.load(dbKey, ${entityName}Entity.class);
+
+        //convert back to impl
+        if (${lcEntityName}Entity!=null) {
+            ${implName} ${lcImplName} = new ${implName}();
+            ${entityName}EntityTransformer.transform(${lcImplName},${lcEntityName}Entity);
+            ${lcImplName}.setLoadedFromStore(true);
+            return ${lcImplName};
+        }
+        return null;
+    }
+
+	//TODO yes, could be much optimised
+    @Override
+    public Map<Object, Object> loadAll(Collection<Object> collection) {
+        Map<Object, Object> retval = new HashMap<>();
+
+        for(Object key: collection) {
+            Object entity = load(key);
+            if (entity!=null) {
+                retval.put(key,entity);
+            }
+        }
+
+        return retval;
+    }
+
+    @Override
+    public Iterable<Object> loadAllKeys() {
+        //use sql to pull out all the keys
+        //could use accessors but i don't really want to pull all objects out
+
+        final ResultSet results = cassandraManager.runInSession(session -> {
+            return session.execute("SELECT ${idColumnName} from ${diContext}.${entityName}");
+        });
+
+        //Need to use the dbkey type here
+        ArrayList<Object> retval = new ArrayList<Object>(results.all().size());
+        for (Row row : results.all()) {
+            retval.add(row.get${cassandraIdTypeForJava}("${idColumnName}"));
+        }
+
+        //convert keys from dbkeys back to cache keys if needed
+        return ${convertDbKeysToCacheKeys};
+    }
+}

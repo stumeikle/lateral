@@ -166,6 +166,16 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- cassandra drive -->
+        <!-- would be better if this wasn't included unless needed -->
+        <!-- datastax orm -->
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-mapping</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+
+
     </dependencies>
 
 </project>
