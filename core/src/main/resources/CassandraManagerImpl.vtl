@@ -82,7 +82,7 @@ public class CassandraManagerImpl implements CassandraManager {
             String strategy = PropertyUtils.getString(properties, "cassanda.replicationStrategy", "SimpleStrategy");
             int replicationFactor = PropertyUtils.getInteger(properties, "cassandra.replicationFactor", 1);
 
-            createKeyspace("cassandramicro", strategy, replicationFactor);
+            createKeyspace("${diContext}", strategy, replicationFactor);
             createTables();
         }
     }

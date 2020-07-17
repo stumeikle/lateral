@@ -1,0 +1,128 @@
+package ${outputPackage};
+
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import transgenic.lauterbrunnen.lateral.domain.PersistenceException;
+import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;
+import transgenic.lauterbrunnen.lateral.domain.UniqueId;
+import transgenic.lauterbrunnen.lateral.persist.CassandraManager;
+import ${cacheZeroGeneratedPackage}.ZCCommonRepositoryImpl;
+import ${domainGeneratedPackage}.${entity}Impl;
+import ${domainGeneratedPackage}.${entity}Repository;
+import ${entityGeneratedPackage}.${JPAentity};
+import ${entityGeneratedPackage}.${JPAentity}Transformer;
+
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import static transgenic.lauterbrunnen.lateral.Lateral.inject;
+import ${domainGeneratedPackage}.${diContext}Context;
+
+/**
+ * Created by stumeikle on 15/07/2020.
+ * This file generated, do not edit
+ * Methods here need to propagate through to the persistent store.
+ */
+public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements ${entity}Repository {
+
+    private CassandraManager  cassandraManager = inject(CassandraManager.class, ${diContext}Context.class );
+
+    @Override
+    public void create(${entity}Impl ${lcentity}Impl) throws PersistenceException {
+        persist(${lcentity}Impl);
+    }
+
+    @Override
+    public void persist(${entity}Impl ${lcentity}Impl) throws PersistenceException {
+#if ($sequencesPresent)
+#foreach( $field in $sequenceFields )
+        ${lcentity}Impl.set${field}((int)incrementSequence("${entity}_${field}"));
+#end
+#end
+
+        ${JPAentity} ${lcentity}Entity = new ${JPAentity}();
+        ${JPAentity}Transformer.transform( ${lcentity}Entity, ${lcentity}Impl );
+        cassandraManager.save(${lcentity}Entity);
+    }
+
+    @Override
+    public ${entity}Impl retrieve(${repositoryIdType} id) ${throwValidationException}{
+
+        //convert repository key to db key if needed
+        Object      dbKey=${repositoryIdTransformation};
+
+        ${JPAentity} ${lcentity}Entity = cassandraManager.load(dbKey, ${JPAentity}.class);
+
+        //convert back to impl
+        if (${lcentity}Entity!=null) {
+            ${entity}Impl ${lcentity}Impl = new ${entity}Impl();
+            ${JPAentity}Transformer.transform(${lcentity}Impl,(${JPAentity})${lcentity}Entity);
+            ${lcentity}Impl.setLoadedFromStore(true);
+            return ${lcentity}Impl;
+        }
+        return null;
+    }
+
+    @Override
+    public void delete(${repositoryIdType} id) {
+        //convert repository key to db key if needed
+        Object      dbKey=${repositoryIdTransformation};
+        cassandraManager.delete(dbKey, ${JPAentity}.class);
+    }
+
+    @Override
+    public void update(${entity}Impl ${lcentity}Impl) throws PersistenceException {
+
+        //FIX optimistic locking not yet handled in this case TODO
+
+        ${repositoryIdType} id = ${lcentity}Impl.getRepositoryId();
+        Object      dbKey=${repositoryIdTransformation};
+
+        //TODO no locking here
+        ${JPAentity} ${lcentity}Entity = cassandraManager.load(dbKey, ${JPAentity}.class);
+        ${JPAentity}Transformer.transform(${lcentity}Entity, ${lcentity}Impl);
+        cassandraManager.save(${lcentity}Entity);
+    }
+
+    @Override
+    public Collection<${entity}Impl> retrieveAll() {
+
+        //(1) retrieve all of the db keys
+        final ResultSet results = cassandraManager.runInSession(session -> {
+                    return session.execute("SELECT ${idColumnName} from ${diContext}.ExampleObject");
+                });
+        //Need to use the dbkey type here
+                ArrayList<${dbIdType}> allIds = new ArrayList<${dbIdType}>(results.all().size());
+                for (Row row : results.all()) {
+                    allIds.add(row.get${cassandraIdTypeForJava}("${idColumnName}"));
+                }
+
+        //(2) rerieve all the objects using the db keys
+        List<${entity}Impl>    retval = new ArrayList<>();
+        for(${dbIdType} id: allIds) {
+            ${JPAentity} ${lcentity}Entity = cassandraManager.load(id, ${JPAentity}.class);
+
+            //convert back to impl
+            if (${lcentity}Entity!=null) {
+                ${entity}Impl ${lcentity}Impl = new ${entity}Impl();
+                ${JPAentity}Transformer.transform(${lcentity}Impl,(${JPAentity})${lcentity}Entity);
+                ${lcentity}Impl.setLoadedFromStore(true);
+                retval.add(${lcentity}Impl);
+            }
+        }
+
+        //(3) convert to impl and return
+        return retval;
+    }
+
+    @Override
+    public Collection<${entity}Impl> search(String predicate) {
+        return null; //for now, haven't consider how we'd do this
+    }
+
+    @Override
+    public Collection<${repositoryIdType}> retrieveKeys() {
+        return null; //for now, haven't consider how we'd do this
+    }
+}

@@ -85,6 +85,7 @@ class GenerateCassandraPersisterDirect {
         context.put("protoSimpleName", proto.getSimpleName());
         String entityName = domainProtoManager.getEntityName(proto);
         context.put("entityName", entityName);
+        context.put("importCacheKey", "import " + idFieldType + ";");
         context.put("implNameFirstLower", implName.substring(0,1).toLowerCase() + implName.substring(1) );
         context.put("entityNameFirstLower", entityName.substring(0,1).toLowerCase() + entityName.substring(1));
 

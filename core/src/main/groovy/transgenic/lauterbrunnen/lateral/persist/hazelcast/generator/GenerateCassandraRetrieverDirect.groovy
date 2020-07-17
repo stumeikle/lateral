@@ -118,12 +118,14 @@ class GenerateCassandraRetrieverDirect {
 
             //also do the reverse case for the get all keys
             StringBuilder sb = new StringBuilder();
-            sb.append("((List<");
+//            sb.append("((List<");
             String dbtype = properties.getProperty("entity.swap.type." + idFieldType);
-            sb.append(dbtype);
-            sb.append(">)");
-//            sb.append(lcName);
-            sb.append("retval)."); sb.append(System.lineSeparator());
+//            sb.append(dbtype);
+//            sb.append(">)");
+//            sb.append("retval)."); sb.append(System.lineSeparator());
+            // << seems we don't need this cast
+            sb.append("retval.");sb.append(System.lineSeparator());
+
             sb.append("            stream()."); sb.append(System.lineSeparator());
             sb.append("            map(");sb.append(System.lineSeparator());
             sb.append("                dbkey ->");
@@ -171,6 +173,8 @@ class GenerateCassandraRetrieverDirect {
     private void addTypeConvertersToProperties() {
         properties.put("entity.swap.type.java.util.List","java.util.Set");
         properties.put("entity.swap.type.transgenic.lauterbrunnen.lateral.domain.UniqueId", "java.util.UUID");
+        properties.put("entity.type.converter.transgenic.lauterbrunnen.lateral.domain.UniqueId", "UniqueId::convertToJavaUUID");
+        properties.put("entity.type.reverse.converter.transgenic.lauterbrunnen.lateral.domain.UniqueId", "UniqueId::revertUuidToUniqueId");
     }
 
     public String swapType(Type type, GenerateCassandraEntity.StringInStringOut swapTypeMethod ) {

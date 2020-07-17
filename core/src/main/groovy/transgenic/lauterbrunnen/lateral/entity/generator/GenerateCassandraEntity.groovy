@@ -111,6 +111,8 @@ class GenerateCassandraEntity {
         context.put("transform2EntityFromImpl", createTransform2EntityFromImplMethod(domainProtoManager.getEntityName(proto) + "Entity", proto));
         context.put("transform2ImplFromEntity", createTransform2ImplFromEntityMethod(domainProtoManager.getEntityName(proto) + "Entity", proto));
 
+        context.put("converterHooks", createConverterHooks());
+
         def transformerfn = basePath + "/"+jpaEntityPackage.replaceAll("\\.","/") + "/" + entityName + "Transformer.java";
         println "Writing " + transformerfn;
         def transformer = new File(transformerfn);
@@ -321,7 +323,11 @@ class GenerateCassandraEntity {
 
     private void addTypeConvertersToProperties() {
         properties.put("entity.swap.type.java.util.List","java.util.Set");
+        //Not sure if we need to specify the converter here, it might just happen by magic
+
         properties.put("entity.swap.type.transgenic.lauterbrunnen.lateral.domain.UniqueId", "java.util.UUID");
+        properties.put("entity.type.converter.transgenic.lauterbrunnen.lateral.domain.UniqueId", "UniqueId::convertToJavaUUID");
+        properties.put("entity.type.reverse.converter.transgenic.lauterbrunnen.lateral.domain.UniqueId", "UniqueId::revertUuidToUniqueId");
     }
 
     String createTransform2EntityFromImplMethod(def entityName, def proto) {
@@ -692,5 +698,19 @@ class GenerateCassandraEntity {
             }
 
         } catch(Exception e) {}
+    }
+
+    private String createConverterHooks() {
+
+        StringBuilder   sb = new StringBuilder();
+
+        //write all the hooks
+        for(GenerateConverterName converterName: converterNames) {
+            converterName.writeHookMethod( sb );
+        }
+
+
+        return sb.toString();
+
     }
 }

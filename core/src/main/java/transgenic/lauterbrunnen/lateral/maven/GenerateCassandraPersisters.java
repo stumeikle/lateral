@@ -11,6 +11,7 @@ import transgenic.lauterbrunnen.lateral.persist.GenerateCassandraPersistCommon;
 import transgenic.lauterbrunnen.lateral.persist.GeneratePersistCommon;
 import transgenic.lauterbrunnen.lateral.persist.hazelcast.generator.GenerateCassandraHazelcastPersist;
 import transgenic.lauterbrunnen.lateral.persist.hazelcast.generator.GenerateHazelcastCachePersist;
+import transgenic.lauterbrunnen.lateral.persist.zerocache.generator.GenerateCassandraZCPersist;
 import transgenic.lauterbrunnen.lateral.persist.zerocache.generator.GenerateZeroCachePersist;
 
 import java.io.*;
@@ -105,12 +106,12 @@ public class GenerateCassandraPersisters extends AbstractMojo {
             ghccp.generate();
 
             //TODO TODO TODO this not updated for cassandra
-//            GenerateZeroCachePersist gzccp = new GenerateZeroCachePersist();
-//            gzccp.setGeneratedSourcesPath(generatedSourcesPath);
-//            gzccp.setPropertyFile(f);
-//            gzccp.setGenerateDirect(true);
-//            gzccp.setClassLoader(this.getClass().getClassLoader());
-//            gzccp.generate();
+            GenerateCassandraZCPersist gzccp = new GenerateCassandraZCPersist();
+            gzccp.setGeneratedSourcesPath(generatedSourcesPath);
+            gzccp.setPropertyFile(f);
+            gzccp.setGenerateDirect(true);
+            gzccp.setClassLoader(this.getClass().getClassLoader());
+            gzccp.generate();
 
             //all new for the transaction manager
             GenerateCassandraPersistCommon gpc = new GenerateCassandraPersistCommon();

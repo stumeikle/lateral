@@ -18,7 +18,7 @@ public class TestUniqueIdToUUID {
 
         String original = uniqueId.toString();
 
-        UUID uuid = uniqueId.convertToJavaUUID();
+        UUID uuid = UniqueId.convertToJavaUUID(uniqueId);
 
         System.out.println("Corresponding uuid is " + uuid);
 

@@ -41,13 +41,13 @@ public class UniqueId implements Serializable{
     }
 
     //we could wrap UUID here but I don't want to
-    public UUID convertToJavaUUID( ) {
+    public static UUID convertToJavaUUID( UniqueId uniqueId ) {
         long msb = 0;
         long lsb = 0;
         for (int i = 0; i < 8; i++)
-            msb = (msb << 8) | (value[i] & 0xff);
+            msb = (msb << 8) | (uniqueId.value[i] & 0xff);
         for (int i = 8; i < 16; i++)
-            lsb = (lsb << 8) | (value[i] & 0xff);
+            lsb = (lsb << 8) | (uniqueId.value[i] & 0xff);
         UUID result = new UUID(msb, lsb);
         return result;
     }

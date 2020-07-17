@@ -19,7 +19,6 @@ logically we'd split the space up into parts and each part would live on a db. i
 
 self organising hdfs , self organising everything would help with scalability
 
-research house. AI. advisory. but again we'd need to be driven by clients and thats boring :-)
 
 20161108 -- where's the original list? 
 the web sockets admin stuff
@@ -56,3 +55,11 @@ comparison with spring boot
 the story . increasing speed / capacity.
 
 sql to jpql to nosql. to caching for speed. so why not start then with an application that sits on a caching layer. leave the coders free to write the business logic. as they are expensive resources.
+
+20200717
+
+Still missing support for Set<> in proto definitions. [TASK]
+
+Find a way to detect storage specific key words in the domain and replace with something specific.
+EG Order class needs to change to Order1 class if cassandra is used as the persistence store.
+
