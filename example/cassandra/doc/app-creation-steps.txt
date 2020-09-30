@@ -1,0 +1,30 @@
+
+What would we need?
+
+Basic data structures.
+Maybe some logic around object creation.
+
+A spreadsheet to populate the initial db data.
+A means to upload that.
+(Does this mean we need a secondary URL with tighter access control? or even another app)
+Maybe i could just leverage a database UI for this? -> yes but they all want monies
+maybe cassandra cli is even an option
+
+A query to return all the menu-item headers (ie food and drink)
+A query to return the next level down
+(or something similar, a menu navigator)
+
+At that point we're about ready to take orders.
+So then we need a UI to show the menu items and make selections
+
+and we'd want business robustness, docker etc. deploy the ui to the cloud
+something. maybe deploy everything to the cloud.
+
+It's quite hard really. there's a lot to do.
+
+Later i'd want to be able to add menu items, change prices, add security
+basically change the object schema and easily handle the migration.
+
+There'd definitely be an argument for using spring boot here to leverage all the contents there
+but that'll take us away from onion arch and ddd which i think we need to stay with.
+
