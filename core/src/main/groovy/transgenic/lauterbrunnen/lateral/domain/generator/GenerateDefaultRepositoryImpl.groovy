@@ -11,6 +11,8 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
  */
 class GenerateDefaultRepositoryImpl extends GenerateRepo {
 
+    Set<String> protoSubPackages;
+
     public void generateDefaultRepositoryImpl() {
         VelocityEngine ve = new VelocityEngine();
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -23,6 +25,13 @@ class GenerateDefaultRepositoryImpl extends GenerateRepo {
 //        context.put("inputPackage", inputPackage);
         context.put("diContext", diContext);
         context.put("outputPackage", outputPackage);
+
+        String subPackageImports = "";
+        for(String subPackage: protoSubPackages) {
+            subPackageImports += "import " + outputPackage + "." + subPackage + ".*;" + System.lineSeparator();
+        }
+
+        context.put("subPackageImports", subPackageImports);
 
         List<String>    protoClassNames = new ArrayList<>();
         for(Class proto: prototypeClasses) {

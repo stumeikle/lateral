@@ -5,6 +5,9 @@ import transgenic.lauterbrunnen.lateral.Lateral;
 import transgenic.lauterbrunnen.lateral.di.DefaultImpl;
 import transgenic.lauterbrunnen.lateral.di.DIContext;
 import ${inputPackage}.*;
+#foreach( $subPackage in $subPackages )
+import ${inputPackage}.$subPackage.*;
+#end
 
 /**
  * Created by stumeikle on 17/04/17.

@@ -332,9 +332,13 @@ class GenerateCassandraEntity {
 
     String createTransform2EntityFromImplMethod(def entityName, def proto) {
         StringBuilder sb = new StringBuilder();
+        String subPackage = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subPackage)) {
+            subPackage = subPackage + ".";
+        }
 
         sb << "    public static void transform(" << entityName << " entity, " <<
-                implPackage << "." << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
+                implPackage << "." << subPackage << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
         for(Field field : implClass.getDeclaredFields()) {
             if (field.getModifiers() & Modifier.TRANSIENT) continue;
             if (field.getAnnotation(Transient.class) != null) continue;
@@ -349,10 +353,14 @@ class GenerateCassandraEntity {
 
     String createTransform2ImplFromEntityMethod(def entityName, def proto) {
         StringBuilder sb = new StringBuilder();
+        String subPackage = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subPackage)) {
+            subPackage = subPackage + ".";
+        }
 
         String validationException = containsValidatedField(proto) ? " throws ValidationException" : "";
 
-        sb << "    public static void transform(" << implPackage << "." << proto.getSimpleName() << "Impl impl," <<
+        sb << "    public static void transform(" << implPackage << "." << subPackage << proto.getSimpleName() << "Impl impl," <<
                 entityName << " entity)" << validationException << " {" << System.lineSeparator();
 
         for(Field field : implClass.getDeclaredFields()) {

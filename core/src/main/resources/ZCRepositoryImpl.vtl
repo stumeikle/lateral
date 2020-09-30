@@ -5,8 +5,8 @@ import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;
 import transgenic.lauterbrunnen.lateral.domain.UniqueId;
 import transgenic.lauterbrunnen.lateral.persist.TransactionManager;
 import ${cacheZeroGeneratedPackage}.ZCCommonRepositoryImpl;
-import ${domainGeneratedPackage}.${entity}Impl;
-import ${domainGeneratedPackage}.${entity}Repository;
+import ${domainGeneratedPackage}.${subPackage}${entity}Impl;
+import ${domainGeneratedPackage}.${subPackage}${entity}Repository;
 import ${entityGeneratedPackage}.${JPAentity};
 import ${entityGeneratedPackage}.${JPAentity}Transformer;
 
@@ -60,7 +60,6 @@ public class ZC${entity}RepositoryImpl extends ZCCommonRepositoryImpl implements
         if (${lcentity}Entity.get()!=null) {
             ${entity}Impl ${lcentity}Impl = new ${entity}Impl();
             ${JPAentity}Transformer.transform(${lcentity}Impl,(${JPAentity})${lcentity}Entity.get());
-            ${lcentity}Impl.setLoadedFromStore(true);
             return ${lcentity}Impl;
         }
         return null;

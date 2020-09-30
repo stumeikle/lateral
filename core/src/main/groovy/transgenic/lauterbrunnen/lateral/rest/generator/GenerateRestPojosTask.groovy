@@ -47,6 +47,7 @@ class GenerateRestPojosTask {
             grp.setPrototypeClasses(classes);
             grp.setProperties(properties);
             grp.setDiContext(diContext);
+            grp.setSubPackage(domainProtoManager.getSubPackageForProto(proto.getSimpleName()));
             grp.generate(proto);
 
             //generate the endpoint
@@ -57,6 +58,7 @@ class GenerateRestPojosTask {
             ge.setPrototypeClasses(classes);
             ge.setProperties(properties);
             ge.setDiContext(diContext);
+            ge.setSubPackage(domainProtoManager.getSubPackageForProto(proto.getSimpleName()));
             ge.generate(proto);
 
         }

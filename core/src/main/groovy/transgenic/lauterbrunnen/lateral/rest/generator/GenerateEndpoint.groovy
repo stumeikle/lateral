@@ -24,12 +24,16 @@ class GenerateEndpoint {
     protected Properties properties;
     protected Field idField = null;
     protected String diContext;
+    protected String subPackage;
 
     public void setDiContext(String diContext) {
         this.diContext = diContext;
     }
     public void setOutputPackage(String outputPackage) {
         this.outputPackage = outputPackage;
+    }
+    public void setSubPackage(String subPackage) {
+        this.subPackage = subPackage;
     }
     public void setPrototypeClasses(List<Class> classes) {
         this.prototypeClasses = classes;
@@ -74,6 +78,8 @@ class GenerateEndpoint {
         context.put("domainGeneratedPackage", domainGeneratedPackage);
         context.put("restGeneratedPackage", outputPackage);
         context.put("diContext", diContext);
+        if (!"".equals(subPackage)) subPackage = subPackage + ".";
+        context.put("subPackage", subPackage);
 
         //
         String restPath = properties.get("rest.path");

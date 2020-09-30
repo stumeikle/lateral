@@ -15,6 +15,8 @@ class GenerateFactory extends GenerateRepo {
     private boolean optimisticLocking; //set internally
     private boolean sequencesPresent; //est internally
     private List<String> sequenceFields; //set internally
+    Set<String> protoSubPackages;
+    String protoPackage;
 
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
@@ -37,6 +39,14 @@ class GenerateFactory extends GenerateRepo {
         output << "import java.util.function.Supplier;" << System.lineSeparator()
         output << "import static transgenic.lauterbrunnen.lateral.Lateral.inject;" << System.lineSeparator();
         output << "" << System.lineSeparator()
+
+        if (protoSubPackages.size()>0) {
+            for(String protoSubPackage : protoSubPackages) {
+                output << "import " << outputPackage << "." << protoSubPackage << ".*;" << System.lineSeparator();
+            }
+            output << "" << System.lineSeparator();
+        }
+
         output << "@DefaultImpl" << System.lineSeparator()
         output << "@DIContext(" + diContext + "Context.class)" << System.lineSeparator()
         output << "public class DefaultFactoryImpl implements Factory {" << System.lineSeparator()
@@ -156,13 +166,23 @@ class GenerateFactory extends GenerateRepo {
 
     private void checkForSequencesAndOptimisticLocking(Class proto) {
 
+        //20200918 need to consider subpackages now
+        //This means we need to change outputPackage to include the extras
+        String classOutputPackage = outputPackage + proto.getName().substring(protoPackage.length());
+        classOutputPackage = classOutputPackage.replace("." + proto.getSimpleName(),"");
+
         //check the annotations on the class for optimistic locking
         optimisticLocking = false;
-        String implClassName = outputPackage + "." + proto.getSimpleName() + "Impl";
+        String implClassName = classOutputPackage + "." + proto.getSimpleName() + "Impl";
 
-        Class implClass = classLoader.loadClass(implClassName);
-        for(Annotation note: implClass.getAnnotations()) {
-            if(note.annotationType().getName().equals(OptimisticLocking.class.getName())) optimisticLocking=true;
+        Class implClass = null;
+        try {
+            implClass = classLoader.loadClass(implClassName);
+            for (Annotation note : implClass.getAnnotations()) {
+                if (note.annotationType().getName().equals(OptimisticLocking.class.getName())) optimisticLocking = true;
+            }
+        } catch(Exception e) {
+            e.printStackTrace()
         }
 
         sequencesPresent=false;

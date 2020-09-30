@@ -1,5 +1,6 @@
 package transgenic.lauterbrunnen.lateral.domain.generator
 
+import org.apache.commons.io.FileUtils
 import transgenic.lauterbrunnen.lateral.domain.DomainProtoManager
 import transgenic.lauterbrunnen.lateral.domain.PackageScanner
 
@@ -33,18 +34,18 @@ class GenerateDomainTask  {
         def libdomainbase=generatedSourcesPath;
         def generatedDir = libdomainbase + "/" + outputPackage.replaceAll("\\.","/") + "/";
         def dir = new File(generatedDir);
-        dir.mkdirs();
 
-        //clean first
-        for(File file: dir.listFiles()) file.delete();
+        //clean first inc sub packages
+        FileUtils.deleteDirectory(dir);
+        dir.mkdirs();
 
 //For each class generate an impl and an interface in the output package
 //And a reference class
         for(Class c: classes) {
 
-            //println "Found class " + c.getName();
             //if (c.getSimpleName().equals("Head")) { //ContactDetails")) {
             GenerateImpl gi = new GenerateImpl();
+            gi.setProtoPackage( domainProtoManager.getProtoPackage() );
             gi.setBasePath( libdomainbase );
             gi.setDiContext(diContext);
             gi.setOutputPackage(outputPackage );
@@ -52,6 +53,7 @@ class GenerateDomainTask  {
             gi.generateImpl( c );
 
             GenerateIFace gif = new GenerateIFace();
+            gif.setProtoPackage( domainProtoManager.getProtoPackage() );
             gif.setDiContext(diContext);
             gif.setBasePath( libdomainbase );
             gif.setOutputPackage(outputPackage );
@@ -60,6 +62,7 @@ class GenerateDomainTask  {
             gif.generateIFace( c );
 
             GenerateRef gref = new GenerateRef();
+            gref.setProtoPackage( domainProtoManager.getProtoPackage() );
             gref.setBasePath( libdomainbase );
             gref.setDiContext(diContext);
             gref.setOutputPackage(outputPackage );
@@ -67,6 +70,7 @@ class GenerateDomainTask  {
             gref.generateRef( c );
 
             GenerateRepo grepo = new GenerateRepo();
+            grepo.setProtoPackage( domainProtoManager.getProtoPackage() );
             grepo.setBasePath( libdomainbase );
             grepo.setDiContext(diContext);
             grepo.setOutputPackage(outputPackage );
@@ -76,6 +80,7 @@ class GenerateDomainTask  {
         }
 
         GenerateDefaultRepositoryImpl generateDefaultRepository = new GenerateDefaultRepositoryImpl();
+        generateDefaultRepository.setProtoSubPackages( domainProtoManager.getProtoSubPackages() );
         generateDefaultRepository.setBasePath( libdomainbase );
         generateDefaultRepository.setOutputPackage(outputPackage);
         generateDefaultRepository.setDiContext(diContext);

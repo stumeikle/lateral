@@ -71,13 +71,24 @@ class GenerateHazelcastCache {
         gm.setOutputPackage(outputPackage);
         gm.setBasePath( libdomainbase );
         gm.setDiContext(diContext);
+        gm.setSubPackages(dpm.getProtoSubPackages());
         gm.generate(repoClasses);
 
 //Generate each of the repository impls
         for( Class repo : repoClasses ) {
             GenerateRepo gr = new GenerateRepo();
             gr.setClassLoader(classLoader);
-            gr.setInputPackage(inputPackage);
+
+            //input package needs to include the sub pacakge now
+            String repoName = repo.getSimpleName();
+            String entityName = repoName.replace("Repository", "");
+
+            String ip = inputPackage;
+            String subp= dpm.getSubPackageForProto(entityName);
+            if (!"".equals(subp)) {
+                ip += "." + subp;
+            }
+            gr.setInputPackage(ip);
             gr.setOutputPackage(outputPackage);
             gr.setBasePath( libdomainbase );
             gr.setDiContext(diContext);

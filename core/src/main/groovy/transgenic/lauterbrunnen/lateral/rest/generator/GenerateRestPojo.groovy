@@ -22,7 +22,7 @@ class GenerateRestPojo {
     protected Properties properties;
     protected Field idField = null;
     protected String diContext;
-
+    protected String subPackage;
 
     public void setDiContext(String diContext) {
         this.diContext = diContext;
@@ -45,6 +45,10 @@ class GenerateRestPojo {
     }
     public void setDomainGeneratedPackage(String dgp) {
         this.domainGeneratedPackage = dgp;
+    }
+
+    public void setSubPackage(String subPackage) {
+        this.subPackage = subPackage;
     }
 
     def void generate(Class proto) {
@@ -74,6 +78,10 @@ class GenerateRestPojo {
         output << "import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;" << System.lineSeparator();
         output << "import static transgenic.lauterbrunnen.lateral.Lateral.inject;" << System.lineSeparator();
         output << "import " << domainGeneratedPackage << ".*;" << System.lineSeparator();
+        if (!"".equals(subPackage)) {
+            output << "import " << domainGeneratedPackage << "." << subPackage << ".*;" << System.lineSeparator();
+        }
+
         output << "import java.util.stream.Collectors;" << System.lineSeparator();
         output << "" << System.lineSeparator()
         output << "public class " << className << " {" << System.lineSeparator();

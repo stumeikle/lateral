@@ -6,8 +6,10 @@
     <persistence-unit name="microservice" transaction-type="RESOURCE_LOCAL">
 
         <!-- Generate Lateral Entities for microservice here: -->
-        <class>entity.generated.ExampleObjectEntity</class>
-        <class>entity.generated.ExampleReviewEntity</class>
+        <class>entity.ProductEntity</class>
+        <class>entity.ExampleObjectEntity</class>
+        <class>entity.ExampleReviewEntity</class>
+        <class>entity.ShippingEntity</class>
         <!-- End of Lateral Entities for microservice -->
 
         <!-- derby embedded driver -->

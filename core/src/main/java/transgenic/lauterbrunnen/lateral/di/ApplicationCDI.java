@@ -2,6 +2,7 @@ package transgenic.lauterbrunnen.lateral.di;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import transgenic.lauterbrunnen.lateral.Lateral;
 import transgenic.lauterbrunnen.lateral.plugin.AnnotationScanner;
 
 import java.lang.annotation.Annotation;
@@ -27,25 +28,25 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ApplicationCDI {
 
     private static final Log LOG = LogFactory.getLog(ApplicationCDI.class);
-    private static final String PROPERTY_PREFIX="di.class.for.";
-    private static final String PROPERTY_CONTEXT=".context.";
+    private static final String PROPERTY_PREFIX = "di.class.for.";
+    private static final String PROPERTY_CONTEXT = ".context.";
     private final AnnotationScanner annotationScanner = new AnnotationScanner();
     private Set<Class<? extends LateralDIContext>> contexts;
-    private Class<? extends  LateralDIContext> defaultContext = DefaultContext.class;
-    private Map<Class<? extends LateralDIContext>,Map<Class, Class>>    implementationClasses = new ConcurrentHashMap<>();
-    private Map<Class<? extends LateralDIContext>,Map<Class, Object>>   implementations = new ConcurrentHashMap<>();
+    private Class<? extends LateralDIContext> defaultContext = DefaultContext.class;
+    private Map<Class<? extends LateralDIContext>, Map<Class, Class>> implementationClasses = new ConcurrentHashMap<>();
+    private Map<Class<? extends LateralDIContext>, Map<Class, Object>> implementations = new ConcurrentHashMap<>();
     private Map<Class, Class<? extends LateralDIContext>> ifaceContextMap = new ConcurrentHashMap<>();
 
     //scan and find the contexts
-    public ApplicationCDI(Properties properties)throws DIException {
-        annotationScanner.scan("",".ejb.", "transgenic.lauterbrunnen" );
-        annotationScanner.scan("transgenic.lauterbrunnen",".ejb.", "transgenic.lauterbrunnen" );
+    public ApplicationCDI(Properties properties) throws DIException {
+        annotationScanner.scan("", ".ejb.", "transgenic.lauterbrunnen");
+        annotationScanner.scan("transgenic.lauterbrunnen", ".ejb.", "transgenic.lauterbrunnen");
 
         initialise(properties);
     }
 
-    public ApplicationCDI(String packageToScan, Properties properties) throws DIException{
-        annotationScanner.scan(packageToScan,".ejb.", "transgenic.lauterbrunnen" );
+    public ApplicationCDI(String packageToScan, Properties properties) throws DIException {
+        annotationScanner.scan(packageToScan, ".ejb.", "transgenic.lauterbrunnen");
 
         initialise(properties);
     }
@@ -130,37 +131,38 @@ public class ApplicationCDI {
             String stringKey = (String) objectKey;
             if (!stringKey.startsWith(PROPERTY_PREFIX)) continue;
 
-            stringKey=stringKey.replace(PROPERTY_PREFIX,"");
+            stringKey = stringKey.replace(PROPERTY_PREFIX, "");
             String contextClassName = defaultContext.getSimpleName();
             Class<? extends LateralDIContext> contextClass = defaultContext;
             if (stringKey.contains(PROPERTY_CONTEXT)) {
-                int position=stringKey.lastIndexOf(PROPERTY_CONTEXT) + PROPERTY_CONTEXT.length();
+                int position = stringKey.lastIndexOf(PROPERTY_CONTEXT) + PROPERTY_CONTEXT.length();
                 contextClassName = stringKey.substring(position);
-                stringKey = stringKey.substring(0,stringKey.lastIndexOf(PROPERTY_CONTEXT));
+                stringKey = stringKey.substring(0, stringKey.lastIndexOf(PROPERTY_CONTEXT));
 
                 //(3.0) check that the context class exists and is a context
-                contextClass=convertContextNameToClass(contextClassName);
+                contextClass = convertContextNameToClass(contextClassName);
             }
 
             String ifaceClassName = stringKey;
             //(3.1) check that the value implements the interface specified in the key
             //      if it does then register it.
             try {
-                Class valueClass = Class.forName((String)properties.get(objectKey));
+                Class valueClass = Class.forName((String) properties.get(objectKey));
                 Class ifaceClass = null;
 
-                for(Class iface: valueClass.getInterfaces()) {
+                for (Class iface : valueClass.getInterfaces()) {
                     if (iface.getSimpleName().equals(ifaceClassName)) {
-                        ifaceClass = iface;break;
+                        ifaceClass = iface;
+                        break;
                     }
                 }
 
-                if (ifaceClass==null) {
-                    throw new DIException("You have class " + (String)objectKey + " configured in your properties for interface " + ifaceClassName + " but it does not implement that interface.");
+                if (ifaceClass == null) {
+                    throw new DIException("You have class " + (String) objectKey + " configured in your properties for interface " + ifaceClassName + " but it does not implement that interface.");
                 }
 
-                LOG.info("Using configured class " + (String)objectKey + " for injecting " + ifaceClassName + " in context " + contextClassName);
-                registerImplementationClass( ifaceClass, contextClass, valueClass );
+                LOG.info("Using configured class " + (String) objectKey + " for injecting " + ifaceClassName + " in context " + contextClassName);
+                registerImplementationClass(ifaceClass, contextClass, valueClass);
 
             } catch (ClassNotFoundException e) {
                 throw new DIException("Class " + (String) objectKey + " specified in your properties file but I'm unable to Class.forName() it.");
@@ -172,7 +174,7 @@ public class ApplicationCDI {
         //NOT VERY EFFICIENT TODO
 
         //It's a short name here so we can't class.forname it
-        for(Class<? extends LateralDIContext> context: this.contexts) {
+        for (Class<? extends LateralDIContext> context : this.contexts) {
             if (context.getSimpleName().equals(contextClassName)) {
                 // ok
                 return context;
@@ -183,9 +185,9 @@ public class ApplicationCDI {
     }
 
     private Class<? extends LateralDIContext> getContext(Class clazz) {
-        for(Annotation note: clazz.getAnnotations()) {
+        for (Annotation note : clazz.getAnnotations()) {
             if (note.annotationType().getName().equals(DIContext.class.getName())) {
-                DIContext   diContext = (DIContext) note;
+                DIContext diContext = (DIContext) note;
                 return diContext.value();
             }
         }
@@ -199,11 +201,10 @@ public class ApplicationCDI {
         if (!ifaceContextMap.containsKey(iface)) {
             //then we'll use the default
             ifaceContextMap.put(iface, defaultContext);
-        }
-         else {
+        } else {
             Class<? extends LateralDIContext> context = ifaceContextMap.get(iface);
             if (context.equals(MultipleContexts.class)) {
-                throw new DIException("You need to specify a context when registering implementation class for " +iface.getName());
+                throw new DIException("You need to specify a context when registering implementation class for " + iface.getName());
             }
         }
 
@@ -242,11 +243,10 @@ public class ApplicationCDI {
         if (!ifaceContextMap.containsKey(iface)) {
             //then we'll use the default
             ifaceContextMap.put(iface, defaultContext);
-        }
-        else {
+        } else {
             Class<? extends LateralDIContext> context = ifaceContextMap.get(iface);
             if (context.equals(MultipleContexts.class)) {
-                throw new DIException("You need to specify a context when registering implementation class for " +iface.getName());
+                throw new DIException("You need to specify a context when registering implementation class for " + iface.getName());
             }
         }
 
@@ -262,7 +262,7 @@ public class ApplicationCDI {
 
         //(1) unique?
         if (ifaceContextMap.containsKey(interfaceClass)) {
-            Class<? extends LateralDIContext>   context = ifaceContextMap.get(interfaceClass);
+            Class<? extends LateralDIContext> context = ifaceContextMap.get(interfaceClass);
 
             if (context.equals(MultipleContexts.class)) {
                 throw new DIException("Unable to get implementation for class " + interfaceClass + " without specified context as multiple contexts implement it.");
@@ -272,17 +272,17 @@ public class ApplicationCDI {
         }
         //else we don't konw the interface
         throw new DIException("Unable to get implementation for " + interfaceClass + " as this interface is unknown.");
-   }
+    }
 
     public <T> T getImplementation(Class<T> interfaceClass, Class<? extends LateralDIContext> context) throws DIException {
 
-        Map<Class, Object>  instanceMap = implementations.get(context);
-        T   instance = (T) instanceMap.get(interfaceClass);
-        if (instance!=null) return instance;
+        Map<Class, Object> instanceMap = implementations.get(context);
+        T instance = (T) instanceMap.get(interfaceClass);
+        if (instance != null) return instance;
 
         //There is no implementation yet, try to create a new one
         Class implClass = implementationClasses.get(context).get(interfaceClass);
-        if (implClass!=null) {
+        if (implClass != null) {
             try {
                 instance = (T) implClass.newInstance();
                 registerImplementation(interfaceClass, context, instance);
@@ -309,6 +309,11 @@ public class ApplicationCDI {
         return defaultContext;
     }
 
+    //Temporary perhaps
+    public Map<Class<? extends LateralDIContext>, Map<Class, Class>> getImplementationClasses() {
+        return implementationClasses;
+    }
+
     public <T> BindBuilder bind(Class<T> interfaceClass) {
         return new BindBuilder<T>(this, interfaceClass);
     }
@@ -322,4 +327,37 @@ public class ApplicationCDI {
         }
     }
 
+    //For debug
+    //Dump the bindings
+
+    public String dumpInjectionBindings() {
+        StringBuffer sb = new StringBuffer();
+
+        for (Class<? extends LateralDIContext> context : implementationClasses.keySet()) {
+            sb.append("Context " + context.getName() + ":" + System.lineSeparator());
+            sb.append(System.lineSeparator());
+            Map<Class, Class> api2ProviderMap = implementationClasses.get(context);
+            List<Class> setAsList = new ArrayList<>(api2ProviderMap.keySet().size());
+            setAsList.addAll(api2ProviderMap.keySet());
+            //wow this is FAR TOO DIFFICULT
+            Collections.sort(setAsList, new Comparator<Object>() {
+                public int compare(Object o1, Object o2) {
+                    String s1 = ((Class) o1).getName();
+                    String s2 = ((Class) o2).getName();
+                    return s1.compareTo(s2);
+                }
+
+            });
+
+            for (Class api : setAsList) {
+                String apiName = api.getName();
+                apiName = apiName.replace("transgenic.lauterbrunnen.lateral", "<lateral>");
+
+                sb.append(apiName + " bound to " + api2ProviderMap.get(api).getName() + System.lineSeparator());
+            }
+            sb.append(System.lineSeparator());
+        }
+
+        return sb.toString();
+    }
 }

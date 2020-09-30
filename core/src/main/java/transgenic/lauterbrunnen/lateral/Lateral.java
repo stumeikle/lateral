@@ -68,6 +68,11 @@ public enum Lateral {
         }
     }
 
+    //Temporary perhaps
+    public ApplicationCDI getApplicationCDI() {
+        return applicationCDI;
+    }
+
     //------- Helper methods --------------------------------------------------------
     // Some of these catch exceptions in the name of convenience so
     // use with care!!

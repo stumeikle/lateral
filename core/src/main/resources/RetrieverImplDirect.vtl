@@ -1,6 +1,6 @@
 package ${cachePackage};
 
-import ${domainGeneratedPackage}.${implName};
+import ${domainGeneratedPackage}.${subPackage}${implName};
 import ${domainGeneratedPackage}.${diContext}Context;
 import ${entityPackage}.${entityName}Entity;
 import ${entityPackage}.${entityName}EntityTransformer;
@@ -41,7 +41,6 @@ public class ${protoName}RetrieverImplDirect implements ${protoName}Retriever {
         if (${lcEntityName}Entity.get()!=null) {
             ${implName} ${lcImplName} = new ${implName}();
             ${entityName}EntityTransformer.transform(${lcImplName},(${entityName}Entity)${lcEntityName}Entity.get());
-            ${lcImplName}.setLoadedFromStore(true);
             return ${lcImplName};
         }
         return null;    }

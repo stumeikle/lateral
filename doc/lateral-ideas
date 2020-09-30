@@ -63,3 +63,169 @@ Still missing support for Set<> in proto definitions. [TASK]
 Find a way to detect storage specific key words in the domain and replace with something specific.
 EG Order class needs to change to Order1 class if cassandra is used as the persistence store.
 
+[ADD]
+Adding automated test generation would be good.
+and a move to open api also perhaps if that makes sense. (IE auto generate a schema). That'd give us a UI too. see redoc for example. That might be tricky if we add endpoints to the API. can I convert a wadl into an open API spec? (i don't think so, not enough info). (Could i get jersey to serve a wsdl? maybe)
+
+
+[BUG] perhaps -- the cassandra persister doesn't respect the class hierarchy but it could. if B is derived from A we could use a single table to represent both, with additional columns being added for the B rows.
+
+[CHANGE] remove the version from the rest generated URLs . (use a parameter instead if needed)
+[CHANGE] add a get-all getter for the base object url
+
+[ADD] I need a good set of use cases to drive the development work and then I can use them to real-world ground the framework. think that would really focus things. *** this would be really good ***. example -- restaurant mobile app for ordering. Covid real example. 
+
+[ADD] can we add support for jib to the archetype
+
+Need to think through the generation aspects. 
+Geneartion is great, of course, but I wonder about patching.
+Example -- I generate rest endpoints with lateral. Later I want to add annotations to this to enable security, authentication and authorisation. When this happens we could --
+
+* go back to lateral, add in support for the new annotations, add in configuration to support the new annotations. and then allow the generator to regenerate the files
+* take the generated file out, add the annotations and anything else we want and we're good until we need to regenerate and at that point we have a problem. We'd need to generate and then re-merge the generated file with the current file. might be just about ok
+* do something clever with subclassing, whereby we add the annotations in the subclass and derive from the generated class. is that even possible?
+
+I think the world will keep changing and we'll often have bits to add on to generated files, so it would be great if there was a simple consistent way to patch the generated files with the users content. Like an auto merge or something.
+but it would really really need to be simple.
+
+So.... ideas
+(1) allow the user to create a patch file. A copy of the generated file which they modify
+(2) on generate we could diff the patch file and the original (if that still exists). save the patch, regen the new and then reapply the patch to the generated file
+
+that would be fine unless the generated original was deleted.
+if that happened we could regenerate it again and then repeat the process, but ... now if there were any new things added during generation, applying the user patch would *remove* them again. we'd need to distinguish ... what the user wants to add to the generated file. What the user wants to remove from the generated file and what was generated itself.
+
+maybe the user could comment all the changed lines but that's a bit natty.
+
+we could tag the patch file with a hash code. generated from a09wroijs. then if the generated file is missing we regen it. if the hash is the same then we can apply the patch. if the hash differs then we can't. 
+so what do we do in that case? (so far we just have a golden rule - don't delete the generated sources if you are changing the generation options)
+
+i somewhat like that solution. but not entirely. if we could copy the originals for any patched files that'd be better. but i'd want it to be automatic. meh. 
+
+
+Another way might be ...
+* restrict what you can patch with files to adding methods and annotations
+* allow the user to create a patch file which has methods which match the generated and use that to update the generated file.
+
+
+======================================================================================================
+And finally a last alternative would be to say -- you can't do it.
+If you want to change a file, copy it and change it and if you regen you'll need to back merge.
+That's not too bad, so long as we can change a single file and we don't need to change everything.
+And we could use the hash numbers to ensure we notify the user when to back merge.
+======================================================================================================
+
+not entirely convinced but it might work.
+with jersey specifically we might not even need it.
+
+
+20200901
+
+Feels like we're losing our way a bit at the moment, lateral losing integrity.
+Need to circle back round and consider a few use cases. I think i've gone off down too many paths and now it's all
+getting natty and complicated.
+
++ orm, generation in general
++ prototyping
+- can we , should we be able to specify our own hash code and equals in the protos
+- need set support
++ cassandra, good but
+- needs fixing re the keys
+- need a clear strategy to build on the generation, either with more config or something simple and elegant
+- not a big fan of the generation.properties or all the pom file inclusions.
+- the whole uuid thing is a bit annoying tbh
+
+20200902
+
+Need to think through some examples.
+I create the domain model and business logic. (ok)
+I choose cache and store options.
+I need to provide a way to load the initial datastore contents.
+(IE populate the db)
+I need to provide a means to selectively load the datastore into the cache on start up
+(So I need to understand the difference between the cache and the store essentially.)
+(Even though I should not have direct access to the store)
+I might need to modify the mapping from the cache to the db.
+(Eg I might need to add in extra indexes if the store is cassandra, or set partition and cluster keys)
+I might need to provide a way to access all the values in the db or all the keys at least
+I might need to provide access to db sql queries. Repo specific functions
+I might need to create additional applications (eg elastic search populator).
+These might need to be based off the same domain elements.
+
+That's kind of it really. I don't need to make many choices.
+
+I like the idea with spring boot that a lot can be hidden behind an annotation. that keeps changes out of the
+way of the developers.
+
+Looking at designs for Lateral 3. I take the point i'm kind of promoting anemic domain models with what we have so far.
+
+
+20200903
+
+is it worth trying to be all fancy and allow users to create their own objects which we mirror into the store?
+Or is it not worth the bother? What about the repository id, vs the hashcode?
+
+Should users be able to do MyObject myObject = new MyObject(); or should they use the factory?
+(are there cases such as sequence ids where the store is needed to create the new object?)
+
+if Repository.retrieve() returns a proxy instead of the original object will that always be transparent?
+
+what about serialization? I'm sure the domain classes will need to be serialised so how is that going to work?
+
+if MyObjectImpl is a proxy to a MyObject instance we'll need to know the constructor for myobject.
+even that won't work -- business logic methods in MyObject might reference MyObject private fields and that
+won't work with cache/ store based backing. we'd need to copy all the methods from MyObject into the MyObjectImpl
+and replace all direct accesses with getters and setters. The chance of failure is big.
+
+if we just have translations from the domain objects to the impls then we'll still have problems with the
+references.
+
+where is this all taking us? if i have an existing domain model do i need to essentially create DTOs for
+lateral and how would that look? couldn't lateral just create them for me anyway.
+
+
+Need some values / principles to guide us
+-----------------------------------------
+
+* should take minimal effort to move an existing domain model into lateral
+*
+
+
+20200908
+
+Things to change --
+* remove the isLoadedFromStore stuff. it's never used anyway
+* consider how to restrict access to the domain model fields. use package level protection or something
+    => add access aspect annotations
+* check if we need the factory at all now (defaultfactory) . we might but i'm not sure.
+    think we do. but then we need to ensure domain objects are always consistent and complete. I would argue
+    that is what the domain is there for in the first place.
+    => add a way to validate objects before they are committed to the cache or store.
+* consider fancy checks using the stack for dev testing.
+    -- we could use generate-test-sources for this
+    => fine, use aspects for this
+* make the impls have package protected constructors to prevent other instantiation
+* refactor rest and entity to ensure no domain violation. or explicitly call the validator or full constructor
+
+I'd like maybe entity to have setter access, but should stilll validate
+Rest should probably not have setter access.
+Non domain should not have setter access
+
+Define a means to create objects from outside if needed. Probably full constructor.
+
+tasks in order
+[1] remove isLoadedFromStore  [DONE]
+[1.5] fix bug in project 'microservice' when renaming generated object directories. exampleobjectreviewtransformer [DONE]
+[2] check what happens if we have sub packages in the domain proto (IE would be good if we retain the structure) [DONE]
+[3] add validate before store
+[4] add object creation mechanisms, and change entity? and rest to use them
+[5] add aspects for access control
+[6] force? users to put a repositoryid in each class
+[7] double check what happens if we use value objects in our domain. how to (eg) store these in the db in different ways
+
+
+That'll leave us in a much nicer place.
+
+After that continue with the usability improvements and useful feedback during build.
+
+

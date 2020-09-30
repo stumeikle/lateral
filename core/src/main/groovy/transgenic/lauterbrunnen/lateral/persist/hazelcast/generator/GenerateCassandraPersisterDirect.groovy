@@ -21,6 +21,7 @@ class GenerateCassandraPersisterDirect {
     protected String diContext;
     protected Properties properties;
     protected String idFieldType;
+    protected Boolean idFieldTypePrimitive;
 
     String getBasePath() {
         return basePath
@@ -66,6 +67,11 @@ class GenerateCassandraPersisterDirect {
         this.idFieldType = idFieldType;
     }
 
+    void setIdFieldTypePrimitive(Boolean primitive) {
+        this.idFieldTypePrimitive = primitive;
+    }
+
+
     public void generate(Class proto) {
 
         //velocity
@@ -83,9 +89,16 @@ class GenerateCassandraPersisterDirect {
         context.put("diContext", diContext);
         context.put("entityPackage", entityPackage);
         context.put("protoSimpleName", proto.getSimpleName());
+        String subPackage = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subPackage)) subPackage = subPackage + ".";
+
+        context.put("subPackage", subPackage);
         String entityName = domainProtoManager.getEntityName(proto);
         context.put("entityName", entityName);
-        context.put("importCacheKey", "import " + idFieldType + ";");
+        if (idFieldTypePrimitive==null || idFieldTypePrimitive==false)
+            context.put("importCacheKey", "import " + idFieldType + ";");
+        else
+            context.put("importCacheKey", "");
         context.put("implNameFirstLower", implName.substring(0,1).toLowerCase() + implName.substring(1) );
         context.put("entityNameFirstLower", entityName.substring(0,1).toLowerCase() + entityName.substring(1));
 

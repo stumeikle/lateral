@@ -27,6 +27,8 @@ class GenerateDomainTaskPt2 extends GenerateDomainTask{
         def libdomainbase=generatedSourcesPath;
 
         GenerateFactory generateFactory = new GenerateFactory();
+        generateFactory.setProtoPackage(domainProtoManager.getProtoPackage());
+        generateFactory.setProtoSubPackages( domainProtoManager.getProtoSubPackages() );
         generateFactory.setBasePath( libdomainbase );
         generateFactory.setOutputPackage(outputPackage );
         generateFactory.setPrototypeClasses(classes);

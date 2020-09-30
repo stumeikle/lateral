@@ -43,6 +43,7 @@ class GenerateCassandraHazelcastPersist {
         for (File file : dir.listFiles()) file.delete();
 
         Map<String, String> idFields = new HashMap<>();
+        Map<String, Boolean> idFieldPrimitive = new HashMap<>();
         Map<String, String> idFieldNames = new HashMap<>();
 
         if (generateDirect) {
@@ -70,6 +71,7 @@ class GenerateCassandraHazelcastPersist {
                             }
 
                             idFields.put(proto.getName(), fn);
+                            idFieldPrimitive.put( proto.getName(), field.getType().isPrimitive());
                             idFieldNames.put(name, repositoryIdFieldName);
                         }
                     }
@@ -102,6 +104,7 @@ class GenerateCassandraHazelcastPersist {
                 String name = proto.getName().replace(entityPackage, implPackage);
                 String idFieldType = idFields.get(name);
                 gp.setIdFieldType(idFieldType);
+                gp.setIdFieldTypePrimitive( idFieldPrimitive.get(name));
 
                 gp.generate(proto);
                 GeneratePersisterInterface gpi = new GeneratePersisterInterface();
@@ -118,13 +121,6 @@ class GenerateCassandraHazelcastPersist {
             gri.setDiContext(diContext);
             gri.generate(proto);
 
-            //Deprecated
-//            GenerateRetrieverRemote grr = new GenerateRetrieverRemote();
-//            grr.setCachePackage(cachePackage);
-//            grr.setBasePath(dbdumpbase);
-//            grr.setImplPackage(implPackage);
-//            grr.generate(proto);
-
             if (generateDirect) {
                 GenerateCassandraRetrieverDirect gr = new GenerateCassandraRetrieverDirect();
                 gr.setDomainProtoManager(domainProtoManager);
@@ -138,25 +134,6 @@ class GenerateCassandraHazelcastPersist {
                 gr.setDiContext(diContext);
                 gr.generate(proto);
             }
-
-            //Deprecated
-//            GenerateMapStore gms = new GenerateMapStore();
-//            gms.setBasePath( dbdumpbase  );
-//            gms.setImplPackage( implPackage );
-//            gms.setCachePackage(cachePackage);
-//            gms.setEntityPackage(entityPackage);
-//            gms.generate(proto);
-
-        }
-
-        if (generateDirect) {
-            GenerateChangeListener gcl = new GenerateChangeListener();
-            gcl.setBasePath(dbdumpbase);
-            gcl.setImplPackage(implPackage);
-            gcl.setCachePackage(cachePackage);
-            gcl.setEntityPackage(entityPackage);
-            gcl.setDiContext(diContext);
-            gcl.generate(classes, idFields);
 
         }
 

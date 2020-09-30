@@ -5,10 +5,7 @@ import transgenic.lauterbrunnen.lateral.plugin.AnnotationScanner;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by stumeikle on 13/01/17.
@@ -17,17 +14,19 @@ public class DomainProtoManager {
 
     private static final String internalPackage="transgenic.lauterbrunnen.lateral.domain.internal";
     private Properties properties;
-    private String entityPackage;
+    private String protoPackage;
     private List<Class> protoClasses;
     private List<Class> externalProtoClasses;
+    private Set<String> protoSubPackages;
+    private Map<String, String> proto2SubPackageMap = new HashMap<>();
 
     public DomainProtoManager(Properties properties) {
         this.properties = properties;
 
         //find the classes and add in any system classes
-        entityPackage = (String) properties.get("domain.proto.package");
+        protoPackage = (String) properties.get("domain.proto.package");
         protoClasses = new ArrayList<>();
-        protoClasses.addAll(PackageScanner.getClasses(entityPackage));
+        protoClasses.addAll(PackageScanner.getClasses(protoPackage));
 
        //Skip the enums
         Iterator<Class> iterator = protoClasses.iterator();
@@ -48,10 +47,39 @@ public class DomainProtoManager {
         if (!annotationExists(externalProtoClasses, Sequence.class)) {
             protoClasses.remove(_Sequence.class);
         }
+
+        protoSubPackages = new HashSet<>();
+        for(Class c: protoClasses) {
+            String protoName = c.getName();
+            protoName = protoName.replace(protoPackage + ".","");
+
+            if (protoName.contains(".")) {
+                protoName = protoName.replace("." + c.getSimpleName(),"");
+                protoSubPackages.add(protoName);
+                proto2SubPackageMap.put(c.getSimpleName(), protoName);
+            }
+        }
+    }
+
+    public String getSubPackageForProto(String proto) {
+        String retval = proto2SubPackageMap.get(proto);
+        if(retval==null) {
+            retval="";
+        }
+
+        return retval;
+    }
+
+    public Set<String> getProtoSubPackages() {
+        return this.protoSubPackages;
     }
 
     public List<Class> getProtoClasses() {
         return protoClasses;
+    }
+
+    public String getProtoPackage() {
+        return this.protoPackage;
     }
 
     public boolean  containsClass(Class c) {
@@ -59,7 +87,7 @@ public class DomainProtoManager {
     }
 
     public String stripPackageName(Class c) {
-        String ep = entityPackage + ".";
+        String ep = protoPackage + ".";
         String ip = internalPackage + ".";
 
         if (c.getName().startsWith(ep)) {

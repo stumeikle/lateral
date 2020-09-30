@@ -43,9 +43,12 @@ class GenerateCassandraRepositoryImpl {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Class implClass = null;
 
+        String subPackage = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subPackage)) subPackage = subPackage + ".";
+
         try
         {
-            implClass = loader.loadClass(domainGeneratedPackage + "." + proto.getSimpleName()+"Impl");//Class.forName(domainGeneratedPackage + "." + proto.getSimpleName()+"Impl");
+            implClass = loader.loadClass(domainGeneratedPackage + "." + subPackage + proto.getSimpleName()+"Impl");//Class.forName(domainGeneratedPackage + "." + proto.getSimpleName()+"Impl");
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -103,6 +106,7 @@ class GenerateCassandraRepositoryImpl {
         context.put("sequenceFields", sequenceFields);
         context.put("throwValidationException", validationPresent ? "throws ValidationException": "");
         context.put("diContext", diContext);
+        context.put("subPackage", subPackage);
 
         String name = proto.getName().replace(entityGeneratedPackage, domainGeneratedPackage);
         String idFieldName = idFieldNames.get(name);

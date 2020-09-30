@@ -65,6 +65,12 @@ class GeneratePersister {
         String entity = entityName;
 
         output << "import " << implPackage << ".*;" << System.lineSeparator();
+
+        String subPackage = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subPackage)) {
+            output << "import " << implPackage << "." << subPackage << ".*;" << System.lineSeparator();
+        }
+
         output << "import " << entityPackage << "." << entityName << ";" << System.lineSeparator()
         output << "import " << entityPackage << "." << entityName << "Transformer;" << System.lineSeparator()
         output << "import transgenic.lauterbrunnen.lateral.persist.Persister;" << System.lineSeparator()+

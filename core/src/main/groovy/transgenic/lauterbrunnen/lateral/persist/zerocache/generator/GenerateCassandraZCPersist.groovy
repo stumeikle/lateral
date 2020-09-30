@@ -146,6 +146,7 @@ class GenerateCassandraZCPersist {
         grmi.outputPackage = outputPackage;
         grmi.basePath = dbdumpbase;
         grmi.diContext = diContext;
+        grmi.subPackages = domainProtoManager.getProtoSubPackages();
         grmi.generate(classes);
 
 

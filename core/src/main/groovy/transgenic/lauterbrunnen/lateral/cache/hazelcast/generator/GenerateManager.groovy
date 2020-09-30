@@ -10,6 +10,7 @@ class GenerateManager {
     protected String inputPackage;
     protected String basePath;
     protected String diContext;
+    def Set<String> subPackages;
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
@@ -50,6 +51,10 @@ class GenerateManager {
                 "import transgenic.lauterbrunnen.lateral.di.DIContext;" <<System.lineSeparator() +
                 "import transgenic.lauterbrunnen.lateral.cache.hazelcast.HCRepositoryManager;" << System.lineSeparator()
         output << "import " + inputPackage + ".*;" << System.lineSeparator()
+
+        for(String subpackage: subPackages) {
+            output << "import " + inputPackage + "." + subpackage + ".*;" << System.lineSeparator()
+        }
 
         output << "" << System.lineSeparator()
         output << "@DefaultImpl" << System.lineSeparator()

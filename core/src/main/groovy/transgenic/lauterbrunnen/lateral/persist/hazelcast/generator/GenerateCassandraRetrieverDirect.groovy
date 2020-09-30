@@ -102,6 +102,10 @@ class GenerateCassandraRetrieverDirect {
         context.put("protoName", proto.getSimpleName());
         context.put("diContext", diContext);
 
+        String subPackage = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if(!"".equals(subPackage)) subPackage = subPackage + ".";
+        context.put("subPackage", subPackage);
+
         //figure out if we need to convert the cache key to a db key
         context.put("convertCacheKeyToDbKey","key");
         context.put("importCacheKey","");

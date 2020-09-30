@@ -361,7 +361,7 @@ class GenerateEntity {
             typeName = ((ParameterizedType)type).getRawType().getTypeName();
         }
 
-        if (typeName.contains(implPackage)) {
+        if (typeName.startsWith(implPackage)) {
             String ref = type.getTypeName() + "Reference";
 
             //sometimes the repository id is eg unique id but we need to convert it to eg byte[]
@@ -497,14 +497,24 @@ class GenerateEntity {
     }
 
     private void writeTransformToDeclaration(def transformTo, Class proto) {
+
+        String subP = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subP)) {
+            subP = subP + ".";
+        }
+
         transformTo << "    public static void transform(" << entityName << " entity, " <<
-                implPackage << "." << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
+                implPackage << "." << subP << proto.getSimpleName() << "Impl impl) {" << System.lineSeparator();
     }
 
     private void writeTransformFromDeclaration( def transformFrom, Class proto) {
         String validationException = containsValidatedField(proto) ? " throws ValidationException" : "";
+        String subP = domainProtoManager.getSubPackageForProto(proto.getSimpleName());
+        if (!"".equals(subP)) {
+            subP = subP + ".";
+        }
 
-        transformFrom << "    public static void transform(" << implPackage << "." << proto.getSimpleName() << "Impl impl," <<
+        transformFrom << "    public static void transform(" << implPackage << "." << subP << proto.getSimpleName() << "Impl impl," <<
                 entityName << " entity)" << validationException << " {" << System.lineSeparator();
     }
 
@@ -570,7 +580,7 @@ class GenerateEntity {
 
         //Different here. We need to look at the type in the Impl not the type in the entity
         //to know if we need to convert, eg, byte[] to new ObjectReference(byte[] bb)
-        if (typeName.contains(implPackage)) {
+        if (typeName.startsWith(implPackage)) {
             String ref = type.getTypeName() + "Reference";
 
             //(2) fine if there is a conversion then let's convert

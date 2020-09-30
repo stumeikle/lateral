@@ -112,13 +112,6 @@ class GenerateHazelcastCachePersist {
             gri.setDiContext(diContext);
             gri.generate(proto);
 
-            //Deprecated
-//            GenerateRetrieverRemote grr = new GenerateRetrieverRemote();
-//            grr.setCachePackage(cachePackage);
-//            grr.setBasePath(dbdumpbase);
-//            grr.setImplPackage(implPackage);
-//            grr.generate(proto);
-
             if (generateDirect) {
                 GenerateRetrieverDirect gr = new GenerateRetrieverDirect();
                 gr.setDomainProtoManager(domainProtoManager);
@@ -131,24 +124,6 @@ class GenerateHazelcastCachePersist {
                 gr.setDiContext(diContext);
                 gr.generate(proto);
             }
-
-//            GenerateMapStore gms = new GenerateMapStore();
-//            gms.setBasePath( dbdumpbase  );
-//            gms.setImplPackage( implPackage );
-//            gms.setCachePackage(cachePackage);
-//            gms.setEntityPackage(entityPackage);
-//            gms.generate(proto);
-
-        }
-
-        if (generateDirect) {
-            GenerateChangeListener gcl = new GenerateChangeListener();
-            gcl.setBasePath(dbdumpbase);
-            gcl.setImplPackage(implPackage);
-            gcl.setCachePackage(cachePackage);
-            gcl.setEntityPackage(entityPackage);
-            gcl.setDiContext(diContext);
-            gcl.generate(classes, idFields);
 
         }
 

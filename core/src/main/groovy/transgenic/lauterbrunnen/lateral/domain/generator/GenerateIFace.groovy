@@ -13,14 +13,26 @@ import java.lang.reflect.Field
 class GenerateIFace extends GenerateImpl{
 
     DomainProtoManager dpm;
+    String protoPackage;
 
     public void generateIFace(Class proto) {
 
-        def fn = basePath + "/" + outputPackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + ".java";
+        //20200918 need to consider subpackages now
+        //This means we need to change outputPackage to include the extras
+        String classOutputPackage = outputPackage + proto.getName().substring(protoPackage.length());
+        classOutputPackage = classOutputPackage.replace("." + proto.getSimpleName(),"");
+
+        def fn = basePath + "/" + classOutputPackage.replaceAll("\\.","/") + "/" + proto.getSimpleName() + ".java";
         println "Writing " + fn;
         def output = new File(fn);
 
-        output << "package " + outputPackage + ";" << System.lineSeparator()
+        //Check the parent directory exists
+        def parentDir = new File(output.getParent());
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        output << "package " + classOutputPackage + ";" << System.lineSeparator()
         output << "" << System.lineSeparator();
         output << "import transgenic.lauterbrunnen.lateral.domain.validation.ValidationException;" << System.lineSeparator()
         output << "" << System.lineSeparator();
