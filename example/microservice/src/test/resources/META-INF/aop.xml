@@ -1,0 +1,9 @@
+<aspectj>
+    <aspects>
+        <aspect name="transgenic.lauterbrunnen.lateral.domain.AccessRestrictedAspect"/>
+        <weaver options="-verbose -showWeaveInfo">
+            <include within="domain.*"/>
+            <include within="transgenic.lauterbrunnen.lateral.domain.*" />
+        </weaver>
+    </aspects>
+</aspectj>

@@ -217,9 +217,9 @@ tasks in order
 [1] remove isLoadedFromStore  [DONE]
 [1.5] fix bug in project 'microservice' when renaming generated object directories. exampleobjectreviewtransformer [DONE]
 [2] check what happens if we have sub packages in the domain proto (IE would be good if we retain the structure) [DONE]
-[3] add validate before store
+[3] add validate before store [is this there already?]
 [4] add object creation mechanisms, and change entity? and rest to use them
-[5] add aspects for access control
+[5] add aspects for access control [DONE]
 [6] force? users to put a repositoryid in each class
 [7] double check what happens if we use value objects in our domain. how to (eg) store these in the db in different ways
 
@@ -228,4 +228,11 @@ That'll leave us in a much nicer place.
 
 After that continue with the usability improvements and useful feedback during build.
 
+20201003
+
+Extra task now -- create a super simple cache so we can test the domain without waiting for hazelcast to start
+
+QUESTION: why have all these values in generate.properties? we could just use sensible conventions.
+EG if i switch to hashmap cache for testing, do I really need to specify the output package in generate? surely sensible defaults would
+be good.
 

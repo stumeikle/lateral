@@ -23,6 +23,17 @@ class GenerateImpl {
     protected String basePath;
     private Map<String, Class> classMap = new HashMap<>();
     protected String diContext=null;
+    protected String accessRestrictedPackage=null;
+
+    public void setAccessRestrictedPackage(String accessRestrictedPackage) {
+        this.accessRestrictedPackage = accessRestrictedPackage;
+
+        if (this.accessRestrictedPackage==null) this.accessRestrictedPackage="";
+        else {
+            this.accessRestrictedPackage="(callerPackagePrefix=\"" + this.accessRestrictedPackage + "\")";
+        }
+
+    }
 
     public void setProtoPackage(String protoPackage) {
         this.protoPackage = protoPackage;
@@ -133,6 +144,7 @@ class GenerateImpl {
         output << "public class " + proto.getSimpleName() + "Impl implements " + proto.getSimpleName() + ",Serializable,EntityImpl {"<< System.lineSeparator()
 
         output << "    private long updateId;" << System.lineSeparator()
+        output << "    @AccessRestricted" << accessRestrictedPackage << System.lineSeparator();
         output << "    public void setUpdateId(long updateId) { this.updateId = updateId; }" << System.lineSeparator()
         output << "    public long getUpdateId() { return this.updateId; }" << System.lineSeparator()
         output << ""<< System.lineSeparator();
@@ -216,6 +228,7 @@ class GenerateImpl {
                     "        return repositoryId;" + System.lineSeparator() +
                     "    }"<< System.lineSeparator();
             //we need a setter in this case
+            output << "    @AccessRestricted" << accessRestrictedPackage<<  System.lineSeparator();
             output << "    public void setRepositoryId( UniqueId repositoryId ) {" << System.lineSeparator()
             output << "        this.repositoryId = repositoryId;" << System.lineSeparator()
             output << "    }" << System.lineSeparator()
@@ -292,6 +305,7 @@ class GenerateImpl {
                 output << "    }"<< System.lineSeparator();
 
                 output << ""<< System.lineSeparator();
+                output << "    @AccessRestricted" << accessRestrictedPackage << System.lineSeparator();
                 output << "    @Override"<< System.lineSeparator()
                 output << "    public void set" + shortName + "(" + swapType(field.getGenericType()) + " " + shortNameFirstLower + ") {"<< System.lineSeparator();
                 output << "        this." + field.getName() + " = " + shortNameFirstLower + ";"<< System.lineSeparator();
@@ -325,6 +339,7 @@ class GenerateImpl {
                 output << "    }"<< System.lineSeparator()
 
                 output << ""<< System.lineSeparator()
+                output << "    @AccessRestricted" << accessRestrictedPackage << System.lineSeparator();
                 output << "    @Override"<< System.lineSeparator()
                 output << "    public void set" + convertFirstCharToUpper(field.getName()) + "(" + tn + " " + field.getName() + ") " + validateString + "{"<< System.lineSeparator()
                 if (validate) {

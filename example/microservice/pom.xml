@@ -15,6 +15,12 @@
             <version>2.0</version>
         </dependency>
         <dependency>
+            <groupId>transgenic.lauterbrunnen</groupId>
+            <artifactId>lateral-aspects</artifactId>
+            <version>2.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast-client</artifactId>
             <version>3.6.2</version>
@@ -45,6 +51,12 @@
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>javax.persistence</artifactId>
             <version>2.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -88,12 +100,25 @@
                         <goals>
                             <goal>compileProtoGenerateImpl</goal>
                             <goal>compileImplGenerateCache</goal>
-                            <goal>generateEntities</goal>
-                            <goal>generatePersisters</goal>
-                            <goal>generateRestPojos</goal>
+                            <!--<goal>generateEntities</goal>-->
+                            <!--<goal>generatePersisters</goal>-->
+                            <!--<goal>generateRestPojos</goal>-->
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.10</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/1.8.9/aspectjweaver-1.8.9.jar
+                    </argLine>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <forkMode>always</forkMode>
+                </configuration>
             </plugin>
         </plugins>
     </build>

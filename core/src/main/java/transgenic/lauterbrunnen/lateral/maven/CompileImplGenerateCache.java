@@ -6,6 +6,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import transgenic.lauterbrunnen.lateral.cache.hashmap.generator.GenerateHashMapCache;
 import transgenic.lauterbrunnen.lateral.cache.hazelcast.generator.GenerateHazelcastCache;
 import transgenic.lauterbrunnen.lateral.cache.zero.generator.GenerateZeroCache;
 import transgenic.lauterbrunnen.lateral.domain.generator.GenerateDomainTask;
@@ -80,7 +81,7 @@ public class CompileImplGenerateCache extends AbstractMojo {
             e.printStackTrace();
         }
 
-        //(3) generate the impl to generated-sources
+        //(3) generate the impl eto generated-sources
         File f= new File(resourcesPath + "/generate.properties");
 
         GenerateHazelcastCache ghcc = new GenerateHazelcastCache();
@@ -88,6 +89,12 @@ public class CompileImplGenerateCache extends AbstractMojo {
         ghcc.setGeneratedSourcesPath(generatedSourcesPath);
         ghcc.setPropertyFile(f);
         ghcc.generate();
+
+        GenerateHashMapCache ghmc = new GenerateHashMapCache();
+        ghmc.setClassLoader(urlClassLoader);
+        ghmc.setGeneratedSourcesPath(generatedSourcesPath);
+        ghmc.setPropertyFile(f);
+        ghmc.generate();
 
         GenerateZeroCache gzc = new GenerateZeroCache();
         gzc.setClassLoader(urlClassLoader);

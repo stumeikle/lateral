@@ -27,6 +27,7 @@ class GenerateDomainTask  {
 
         String outputPackage = properties.get("domain.generated.package");
         String diContext = properties.get("lateral.di.context");
+        String accessRestrictedPackage = properties.get("domain.access.restricted.to.package.prefix");
 
         def domainProtoManager = new DomainProtoManager(properties);
         def classes = domainProtoManager.getProtoClasses();
@@ -50,6 +51,7 @@ class GenerateDomainTask  {
             gi.setDiContext(diContext);
             gi.setOutputPackage(outputPackage );
             gi.setPrototypeClasses(classes);
+            gi.setAccessRestrictedPackage(accessRestrictedPackage);
             gi.generateImpl( c );
 
             GenerateIFace gif = new GenerateIFace();
@@ -67,6 +69,7 @@ class GenerateDomainTask  {
             gref.setDiContext(diContext);
             gref.setOutputPackage(outputPackage );
             gref.setPrototypeClasses(classes);
+            gref.setAccessRestrictedPackage(accessRestrictedPackage);
             gref.generateRef( c );
 
             GenerateRepo grepo = new GenerateRepo();

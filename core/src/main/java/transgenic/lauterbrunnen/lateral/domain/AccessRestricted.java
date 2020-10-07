@@ -6,10 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by stumeikle on 29/05/16.
+ * Created by stumeikle on 01/10/20.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface RepositoryId {
-    public String callersPackagePrefix() default "";
+@Target(ElementType.METHOD)
+public @interface AccessRestricted {
+
+    public String callerPackagePrefix() default "";
 }
