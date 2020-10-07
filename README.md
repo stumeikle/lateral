@@ -1,3 +1,5 @@
+20201007 Recommend you don't start using this product; it is not yet ready for public consumption in it's current form.
+
 # lateral
 toolkit and framework for rapid enterprise application development
 
